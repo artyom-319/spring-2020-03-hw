@@ -22,7 +22,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-class QuestionFileSourceTest {
+public class QuestionFileSourceTest {
     private static final String FILE_NAME = "test.txt";
 
     private List<String> lines;
