@@ -24,6 +24,8 @@ import static org.mockito.Mockito.when;
 @ExtendWith(MockitoExtension.class)
 public class QuestionFileSourceTest {
     private static final String FILE_NAME = "test.txt";
+    private static final String QUESTION_TEXT = "MockedText";
+    private static final String EXPECTED_ANSWER = "MockedAnswer";
 
     private List<String> lines;
 
@@ -36,13 +38,17 @@ public class QuestionFileSourceTest {
         lines = getLinesFromTestFile();
         source = new QuestionFileSource(converter, FILE_NAME);
         when(converter.convertLine(anyString()))
-                .thenReturn(new Question("MockedText", "MockedAnswer"));
+                .thenReturn(new Question(QUESTION_TEXT, EXPECTED_ANSWER));
     }
 
     @Test
     public void provideQuestions() {
         List<Question> questions = source.provideQuestions();
         Assertions.assertEquals(5, questions.size(), "Должно было создаться 5 вопросов");
+        questions.forEach(q -> {
+            Assertions.assertEquals(QUESTION_TEXT, q.getText(), "Тексты вопроса не совпадают");
+            Assertions.assertEquals(EXPECTED_ANSWER, q.getExpectedAnswer(), "Правильные ответы не совпадают");
+        });
 
         ArgumentCaptor<String> captor = ArgumentCaptor.forClass(String.class);
         verify(converter, times(5)).convertLine(captor.capture());
