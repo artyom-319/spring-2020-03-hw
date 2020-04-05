@@ -12,12 +12,13 @@ public class ConsoleQuiz implements Quiz {
     private QuestionSource questionSource;
     private List<Question> questions;
     private Set<Answer> answers = new HashSet<>();
+    private String userName;
 
     public ConsoleQuiz(QuestionSource source) {
         this.questionSource = source;
     }
 
-    public List<Question> getQuestions() {
+    private List<Question> getQuestions() {
         if (questions == null)
             questions = questionSource.provideQuestions();
         Collections.shuffle(questions);
@@ -30,6 +31,8 @@ public class ConsoleQuiz implements Quiz {
 
     public void run() {
         try (Scanner scanner = new Scanner(System.in)) {
+            System.out.println("Для начала введите ваши имя и фамилию:");
+            userName = scanner.nextLine();
             for (Question question : getQuestions()) {
                 Answer answer = new Answer(question);
                 while (!answer.isAccepted()) {
@@ -61,6 +64,6 @@ public class ConsoleQuiz implements Quiz {
         long correct = answers.stream()
                 .filter(Answer::isCorrect)
                 .count();
-        return "\nВаш результат: " + correct + " / " + answers.size() + "\nПоздравляем!";
+        return '\n' + userName + ", ваш результат: " + correct + " / " + answers.size() + "\nПоздравляем!";
     }
 }
