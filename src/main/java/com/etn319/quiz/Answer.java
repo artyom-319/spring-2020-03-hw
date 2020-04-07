@@ -8,14 +8,13 @@ import java.util.Objects;
  */
 public class Answer {
     private static final String VAR_PATTERN = "/";
-    private Question question;
+    private final Question question;
     private String text;
     private boolean isCorrect;
 
     public Answer(Question question) {
         this.question = question;
     }
-
 
     /**
      * Принимает ответ на вопрос. Может принять как полный ответ, так и его номер при наличии вариантов ответа.

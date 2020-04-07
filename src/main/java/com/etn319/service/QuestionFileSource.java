@@ -10,9 +10,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class QuestionFileSource implements QuestionSource {
-    private String resourceFilePath;
-
-    private QuestionConverter converter;
+    private final String resourceFilePath;
+    private final QuestionConverter converter;
 
     public QuestionFileSource(QuestionConverter converter, String resourceFilePath) {
         this.converter = converter;

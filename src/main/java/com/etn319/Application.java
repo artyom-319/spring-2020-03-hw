@@ -9,6 +9,5 @@ public class Application {
         ApplicationContext context = new ClassPathXmlApplicationContext("spring-config.xml");
         Quiz quiz = context.getBean(Quiz.class);
         quiz.run();
-        System.out.println(quiz.getTextResults());
     }
 }
