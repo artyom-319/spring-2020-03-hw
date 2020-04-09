@@ -2,6 +2,7 @@ package com.etn319.quiz;
 
 import com.etn319.service.QuestionSource;
 import org.springframework.context.MessageSource;
+import org.springframework.stereotype.Component;
 
 import java.util.Collections;
 import java.util.HashSet;
@@ -10,6 +11,7 @@ import java.util.Locale;
 import java.util.Scanner;
 import java.util.Set;
 
+@Component
 public class ConsoleQuiz implements Quiz {
     private final QuestionSource questionSource;
     private final MessageSource messageSource;

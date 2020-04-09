@@ -17,6 +17,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.only;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -31,14 +32,18 @@ public class QuestionFileSourceTest {
 
     @Mock
     private QuestionConverter converter;
+    @Mock
+    private ResourceResolver resourceResolver;
     private QuestionFileSource source;
 
     @BeforeEach
     public void setUp() {
         lines = getLinesFromTestFile();
-        source = new QuestionFileSource(converter, FILE_NAME);
+        source = new QuestionFileSource(resourceResolver, converter, FILE_NAME);
         when(converter.convertLine(anyString()))
                 .thenReturn(new Question(QUESTION_TEXT, EXPECTED_ANSWER));
+        when(resourceResolver.getResourceAsStream(anyString()))
+                .thenReturn(getClass().getClassLoader().getResourceAsStream(FILE_NAME));
     }
 
     @Test
@@ -50,10 +55,15 @@ public class QuestionFileSourceTest {
             Assertions.assertEquals(EXPECTED_ANSWER, q.getExpectedAnswer(), "Правильные ответы не совпадают");
         });
 
-        ArgumentCaptor<String> captor = ArgumentCaptor.forClass(String.class);
-        verify(converter, times(5)).convertLine(captor.capture());
-        Assertions.assertLinesMatch(lines, captor.getAllValues(),
+        ArgumentCaptor<String> convertLineCaptor = ArgumentCaptor.forClass(String.class);
+        verify(converter, times(5)).convertLine(convertLineCaptor.capture());
+        Assertions.assertLinesMatch(lines, convertLineCaptor.getAllValues(),
                 "Аргументы, переданные конвертеру, не совпадают");
+
+        ArgumentCaptor<String> fileNameCapror = ArgumentCaptor.forClass(String.class);
+        verify(resourceResolver, only()).getResourceAsStream(fileNameCapror.capture());
+        Assertions.assertEquals(FILE_NAME, fileNameCapror.getValue(),
+                "Аргумент, переданный resourceResolver'у, не совпадает с ожидаемым");
     }
 
     private List<String> getLinesFromTestFile() {
