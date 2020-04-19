@@ -8,10 +8,4 @@ public interface Quiz {
      * Запустить квиз
      */
     void run();
-
-    /**
-     * Получить результаты в виде текста
-     * @return Строка с результатами
-     */
-    String getTextResults();
 }

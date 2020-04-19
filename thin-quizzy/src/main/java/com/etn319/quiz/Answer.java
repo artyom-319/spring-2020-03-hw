@@ -8,14 +8,18 @@ import java.util.Objects;
  */
 public class Answer {
     private static final String VAR_PATTERN = "/";
-    private Question question;
+    private final Question question;
     private String text;
     private boolean isCorrect;
+
+    public static final int ALREADY_ACCEPTED_CODE = 0;
+    public static final int NO_OPTIONS_CODE = 1;
+    public static final int OPTION_OUT_OF_RANGE_CODE = 2;
+    public static final int BAD_OPTION_CODE = 3;
 
     public Answer(Question question) {
         this.question = question;
     }
-
 
     /**
      * Принимает ответ на вопрос. Может принять как полный ответ, так и его номер при наличии вариантов ответа.
@@ -25,7 +29,7 @@ public class Answer {
      */
     public void accept(String attempt) throws RuntimeException {
         if (isAccepted())
-            throw new RuntimeException("Ответ уже был принят");
+            throw new AnswerException(ALREADY_ACCEPTED_CODE);
         text = parseAnswer(attempt);
         isCorrect = text.equalsIgnoreCase(question.getExpectedAnswer());
     }
@@ -53,19 +57,18 @@ public class Answer {
 
         if (parsed.startsWith(VAR_PATTERN)) {
             if (answerOptions.isEmpty())
-                throw new RuntimeException("Question without options - usage of \'/\' pattern not supported\n" +
-                        "Type exact answer");
+                throw new AnswerException(NO_OPTIONS_CODE);
 
             String sOption = parsed.substring(VAR_PATTERN.length()).trim();
             int optionsSize = answerOptions.size();
             try {
                 int optionNumber = Integer.parseInt(sOption);
                 if (optionNumber <= 0 || optionNumber > optionsSize)
-                    throw new RuntimeException("Option must be in 1..." + optionsSize + ". Found: " + optionNumber);
+                    throw new AnswerException(OPTION_OUT_OF_RANGE_CODE, optionsSize, optionNumber);
 
                 parsed = answerOptions.get(optionNumber - 1);
             } catch (NumberFormatException e) {
-                throw new RuntimeException("Must be a number: " + sOption);
+                throw new AnswerException(BAD_OPTION_CODE, sOption);
             }
         }
         return parsed;

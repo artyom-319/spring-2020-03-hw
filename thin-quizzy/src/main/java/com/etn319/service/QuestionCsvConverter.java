@@ -6,7 +6,7 @@ import java.util.Arrays;
 import java.util.List;
 
 public class QuestionCsvConverter implements QuestionConverter {
-    private String delim;
+    private final String delim;
 
     public QuestionCsvConverter(String delim) {
         this.delim = delim;

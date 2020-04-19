@@ -10,11 +10,12 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class QuestionFileSource implements QuestionSource {
-    private String resourceFilePath;
+    private final ResourceResolver resourceResolver;
+    private final String resourceFilePath;
+    private final QuestionConverter converter;
 
-    private QuestionConverter converter;
-
-    public QuestionFileSource(QuestionConverter converter, String resourceFilePath) {
+    public QuestionFileSource(ResourceResolver resourceResolver, QuestionConverter converter, String resourceFilePath) {
+        this.resourceResolver = resourceResolver;
         this.converter = converter;
         this.resourceFilePath = resourceFilePath;
     }
@@ -22,7 +23,7 @@ public class QuestionFileSource implements QuestionSource {
     @Override
     public List<Question> provideQuestions() {
         List<Question> questions = new ArrayList<>();
-        try (InputStream is = getClass().getClassLoader().getResourceAsStream(resourceFilePath)) {
+        try (InputStream is = resourceResolver.getResourceAsStream(resourceFilePath)) {
         BufferedReader reader = new BufferedReader(new InputStreamReader(is));
             String line;
             while ((line = reader.readLine()) != null) {
