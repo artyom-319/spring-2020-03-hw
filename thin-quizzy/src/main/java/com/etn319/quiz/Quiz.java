@@ -7,5 +7,5 @@ public interface Quiz {
     /**
      * Запустить квиз
      */
-    void run();
+    void run(String... args);
 }

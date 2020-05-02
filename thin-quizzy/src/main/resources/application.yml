@@ -1,0 +1,11 @@
+csv.delimiter: ;
+
+question.source:
+  filename: questions
+  extension: .csv
+
+locale:
+  country: US
+  language: en
+
+spring.messages.basename: i18n.bundle

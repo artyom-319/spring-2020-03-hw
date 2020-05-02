@@ -1,6 +1,7 @@
 package com.etn319.quiz;
 
 import com.etn319.service.QuestionSource;
+import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.MessageSource;
 import org.springframework.stereotype.Component;
 
@@ -12,7 +13,7 @@ import java.util.Scanner;
 import java.util.Set;
 
 @Component
-public class ConsoleQuiz implements Quiz {
+public class ConsoleQuiz implements Quiz, CommandLineRunner {
     private final QuestionSource questionSource;
     private final MessageSource messageSource;
     private final Locale locale;
@@ -37,7 +38,7 @@ public class ConsoleQuiz implements Quiz {
         return questions;
     }
 
-    public void run() {
+    public void run(String... args) {
         try (Scanner scanner = new Scanner(System.in)) {
             System.out.println(messageSource.getMessage("quiz.enter.name", null, locale));
             userName = scanTillNotEmpty(scanner);
@@ -62,21 +63,7 @@ public class ConsoleQuiz implements Quiz {
                                     new String[]{question.getExpectedAnswer()}, locale));
                         answers.add(answer);
                     } catch (AnswerException e) {
-                        String messageCode = null;
-                        switch (e.getCode()) {
-                            case (Answer.ALREADY_ACCEPTED_CODE):
-                                messageCode = "answer.accepted.already";
-                                break;
-                            case (Answer.NO_OPTIONS_CODE):
-                                messageCode = "answer.options.unavailable";
-                                break;
-                            case (Answer.OPTION_OUT_OF_RANGE_CODE):
-                                messageCode = "answer.option.out.of.range";
-                                break;
-                            case (Answer.BAD_OPTION_CODE):
-                                messageCode = "answer.option.bad";
-                                break;
-                        }
+                        String messageCode = getMessageCode(e.getCode());
                         if (messageCode != null)
                             System.out.println(messageSource.getMessage(messageCode, e.getArgs(), locale));
                     }
@@ -84,6 +71,20 @@ public class ConsoleQuiz implements Quiz {
             }
             printTextResult();
         }
+    }
+
+    private String getMessageCode(int errorCode) {
+        switch (errorCode) {
+            case (Answer.ALREADY_ACCEPTED_CODE):
+                return "answer.accepted.already";
+            case (Answer.NO_OPTIONS_CODE):
+                return "answer.options.unavailable";
+            case (Answer.OPTION_OUT_OF_RANGE_CODE):
+                return "answer.option.out.of.range";
+            case (Answer.BAD_OPTION_CODE):
+                return "answer.option.bad";
+        }
+        return null;
     }
 
     private void printTextResult() {
