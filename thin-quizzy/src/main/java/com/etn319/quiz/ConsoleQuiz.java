@@ -13,7 +13,7 @@ import java.util.Scanner;
 import java.util.Set;
 
 @Component
-public class ConsoleQuiz implements Quiz, CommandLineRunner {
+public class ConsoleQuiz implements Quiz {
     private final QuestionSource questionSource;
     private final MessageSource messageSource;
     private final Locale locale;
@@ -38,7 +38,7 @@ public class ConsoleQuiz implements Quiz, CommandLineRunner {
         return questions;
     }
 
-    public void run(String... args) {
+    public void run() {
         try (Scanner scanner = new Scanner(System.in)) {
             System.out.println(messageSource.getMessage("quiz.enter.name", null, locale));
             userName = scanTillNotEmpty(scanner);
