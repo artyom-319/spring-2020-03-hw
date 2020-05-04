@@ -1,6 +1,6 @@
 package com.etn319.runners.shell;
 
-import com.etn319.quiz.Quiz;
+import com.etn319.service.quiz.Quiz;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.shell.Availability;
 import org.springframework.shell.standard.ShellComponent;

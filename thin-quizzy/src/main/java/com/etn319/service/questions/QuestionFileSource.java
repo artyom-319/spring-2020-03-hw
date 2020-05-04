@@ -1,6 +1,6 @@
-package com.etn319.service;
+package com.etn319.service.questions;
 
-import com.etn319.quiz.Question;
+import com.etn319.domain.Question;
 import com.etn319.resource.ResourceResolver;
 
 import java.io.BufferedReader;

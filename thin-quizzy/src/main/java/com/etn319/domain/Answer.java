@@ -1,4 +1,4 @@
-package com.etn319.quiz;
+package com.etn319.domain;
 
 import java.util.List;
 import java.util.Objects;

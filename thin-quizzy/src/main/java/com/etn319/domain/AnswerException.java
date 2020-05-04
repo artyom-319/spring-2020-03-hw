@@ -1,4 +1,4 @@
-package com.etn319.quiz;
+package com.etn319.domain;
 
 public class AnswerException extends RuntimeException {
     private int code;

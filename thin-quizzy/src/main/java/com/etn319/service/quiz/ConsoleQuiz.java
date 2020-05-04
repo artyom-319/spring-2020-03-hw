@@ -1,6 +1,9 @@
-package com.etn319.quiz;
+package com.etn319.service.quiz;
 
-import com.etn319.service.QuestionSource;
+import com.etn319.domain.Answer;
+import com.etn319.domain.AnswerException;
+import com.etn319.domain.Question;
+import com.etn319.service.questions.QuestionSource;
 import com.etn319.service.io.IOService;
 import com.etn319.service.message.MessageService;
 import org.springframework.context.annotation.Scope;

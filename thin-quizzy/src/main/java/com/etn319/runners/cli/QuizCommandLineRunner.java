@@ -1,6 +1,6 @@
 package com.etn319.runners.cli;
 
-import com.etn319.quiz.Quiz;
+import com.etn319.service.quiz.Quiz;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
