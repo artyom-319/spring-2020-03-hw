@@ -1,4 +1,4 @@
-package com.etn319.service;
+package com.etn319.resource;
 
 import java.io.InputStream;
 

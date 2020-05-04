@@ -1,29 +1,28 @@
 package com.etn319.quiz;
 
 import com.etn319.service.QuestionSource;
-import org.springframework.context.MessageSource;
+import com.etn319.service.io.IOService;
+import com.etn319.service.message.MessageService;
 import org.springframework.stereotype.Component;
 
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Locale;
-import java.util.Scanner;
 import java.util.Set;
 
 @Component
 public class ConsoleQuiz implements Quiz {
     private final QuestionSource questionSource;
-    private final MessageSource messageSource;
-    private final Locale locale;
+    private final MessageService messageService;
+    private final IOService ioService;
     private List<Question> questions;
     private Set<Answer> answers = new HashSet<>();
     private String userName;
 
-    public ConsoleQuiz(QuestionSource source, MessageSource messageSource, Locale locale) {
+    public ConsoleQuiz(QuestionSource source, MessageService messageService, IOService ioService) {
         this.questionSource = source;
-        this.messageSource = messageSource;
-        this.locale = locale;
+        this.messageService = messageService;
+        this.ioService = ioService;
     }
 
     private List<Question> getQuestions() {
@@ -38,69 +37,57 @@ public class ConsoleQuiz implements Quiz {
     }
 
     public void run() {
-        try (Scanner scanner = new Scanner(System.in)) {
-            System.out.println(messageSource.getMessage("quiz.enter.name", null, locale));
-            userName = scanTillNotEmpty(scanner);
-            for (Question question : getQuestions()) {
-                Answer answer = new Answer(question);
-                while (!answer.isAccepted()) {
-                    try {
-                        System.out.println('\n' + question.getText());
-                        List<String> answerOptions = question.getAnswerOptions();
-                        if (question.hasAnswerOptions()) {
-                            System.out.println(
-                                    messageSource.getMessage("question.suggest.options", null, locale));
-                            for (int i = 0; i < answerOptions.size(); i++) {
-                                System.out.println(i + 1 + ". " + answerOptions.get(i));
-                            }
+        ioService.print(messageService.getMessage("quiz.enter.name"));
+        userName = ioService.read();
+        for (Question question : getQuestions()) {
+            Answer answer = new Answer(question);
+            while (!answer.isAccepted()) {
+                try {
+                    ioService.print('\n' + question.getText());
+                    List<String> answerOptions = question.getAnswerOptions();
+                    if (question.hasAnswerOptions()) {
+                        ioService.print(messageService.getMessage("question.suggest.options"));
+                        for (int i = 0; i < answerOptions.size(); i++) {
+                            ioService.print(i + 1 + ". " + answerOptions.get(i));
                         }
-                        answer.accept(scanTillNotEmpty(scanner));
-                        if (answer.isCorrect())
-                            System.out.println(messageSource.getMessage("answer.correct", null, locale));
-                        else
-                            System.out.println(messageSource.getMessage("answer.incorrect",
-                                    new String[]{question.getExpectedAnswer()}, locale));
-                        answers.add(answer);
-                    } catch (AnswerException e) {
-                        String messageCode = null;
-                        switch (e.getCode()) {
-                            case (Answer.ALREADY_ACCEPTED_CODE):
-                                messageCode = "answer.accepted.already";
-                                break;
-                            case (Answer.NO_OPTIONS_CODE):
-                                messageCode = "answer.options.unavailable";
-                                break;
-                            case (Answer.OPTION_OUT_OF_RANGE_CODE):
-                                messageCode = "answer.option.out.of.range";
-                                break;
-                            case (Answer.BAD_OPTION_CODE):
-                                messageCode = "answer.option.bad";
-                                break;
-                        }
-                        if (messageCode != null)
-                            System.out.println(messageSource.getMessage(messageCode, e.getArgs(), locale));
                     }
+                    answer.accept(ioService.read());
+                    if (answer.isCorrect())
+                        ioService.print(messageService.getMessage("answer.correct"));
+                    else
+                        ioService.print(messageService.getMessage("answer.incorrect",
+                                question.getExpectedAnswer()));
+                    answers.add(answer);
+                } catch (AnswerException e) {
+                    String messageCode = getMessageCode(e.getCode());
+                    if (messageCode != null)
+                        ioService.print(messageService.getMessage(messageCode, e.getArgs()));
                 }
             }
-            printTextResult();
         }
+        printTextResult();
+    }
+
+    private String getMessageCode(int errorCode) {
+        switch (errorCode) {
+            case (Answer.ALREADY_ACCEPTED_CODE):
+                return "answer.accepted.already";
+            case (Answer.NO_OPTIONS_CODE):
+                return "answer.options.unavailable";
+            case (Answer.OPTION_OUT_OF_RANGE_CODE):
+                return "answer.option.out.of.range";
+            case (Answer.BAD_OPTION_CODE):
+                return "answer.option.bad";
+        }
+        return null;
     }
 
     private void printTextResult() {
         long correct = answers.stream()
                 .filter(Answer::isCorrect)
                 .count();
-        String textResult = messageSource.getMessage("quiz.results",
-                new Object[]{userName, correct, answers.size()}, locale);
-        System.out.println(textResult);
-    }
-
-    private String scanTillNotEmpty(Scanner scanner) {
-        String result = scanner.nextLine();
-
-        while (result == null || result.isEmpty())
-            result = scanner.nextLine();
-
-        return result;
+        String textResult = messageService.getMessage("quiz.results",
+                userName, correct, answers.size());
+        ioService.print(textResult);
     }
 }

@@ -1,4 +1,4 @@
-package com.etn319.service;
+package com.etn319.resource;
 
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.support.LocalizedResourceHelper;
