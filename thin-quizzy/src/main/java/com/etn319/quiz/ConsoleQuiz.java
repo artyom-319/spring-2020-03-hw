@@ -3,14 +3,17 @@ package com.etn319.quiz;
 import com.etn319.service.QuestionSource;
 import com.etn319.service.io.IOService;
 import com.etn319.service.message.MessageService;
+import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 
 @Component
+@Scope("prototype")
 public class ConsoleQuiz implements Quiz {
     private final QuestionSource questionSource;
     private final MessageService messageService;
@@ -23,34 +26,27 @@ public class ConsoleQuiz implements Quiz {
         this.questionSource = source;
         this.messageService = messageService;
         this.ioService = ioService;
+        questions = questionSource.provideQuestions();
     }
 
-    private List<Question> getQuestions() {
-        if (questions == null)
-            questions = questionSource.provideQuestions();
+    private void shuffleQuestions() {
         Collections.shuffle(questions);
         questions.stream()
                 .filter(Question::hasAnswerOptions)
                 .map(Question::getAnswerOptions)
                 .forEach(Collections::shuffle);
-        return questions;
     }
 
     public void run() {
-        ioService.print(messageService.getMessage("quiz.enter.name"));
-        userName = ioService.read();
-        for (Question question : getQuestions()) {
+        if (!participantApplied())
+            applyParticipantFromIo();
+
+        shuffleQuestions();
+        for (Question question : questions) {
             Answer answer = new Answer(question);
             while (!answer.isAccepted()) {
                 try {
-                    ioService.print('\n' + question.getText());
-                    List<String> answerOptions = question.getAnswerOptions();
-                    if (question.hasAnswerOptions()) {
-                        ioService.print(messageService.getMessage("question.suggest.options"));
-                        for (int i = 0; i < answerOptions.size(); i++) {
-                            ioService.print(i + 1 + ". " + answerOptions.get(i));
-                        }
-                    }
+                    printQuestion(question);
                     answer.accept(ioService.read());
                     if (answer.isCorrect())
                         ioService.print(messageService.getMessage("answer.correct"));
@@ -66,6 +62,59 @@ public class ConsoleQuiz implements Quiz {
             }
         }
         printTextResult();
+    }
+
+    @Override
+    public void applyParticipant(String userName) {
+        this.userName = userName;
+        clearResults();
+    }
+
+    private void applyParticipantFromIo() {
+        ioService.print(messageService.getMessage("quiz.enter.name"));
+        userName = ioService.read();
+        clearResults();
+    }
+
+    @Override
+    public void dropParticipant() {
+        userName = null;
+        clearResults();
+    }
+
+    @Override
+    public boolean participantApplied() {
+        return Objects.nonNull(userName);
+    }
+
+    @Override
+    public boolean isFinished() {
+        long answersCount = answers.stream()
+                .filter(Answer::isAccepted)
+                .count();
+        int questionsCount = questions.size();
+        return answersCount == questionsCount;
+    }
+
+    @Override
+    public void clearResults() {
+        answers.clear();
+    }
+
+    @Override
+    public void shareResults() {
+        ioService.print("Sharing results...");
+    }
+
+    private void printQuestion(Question question) {
+        ioService.print('\n' + question.getText());
+        List<String> answerOptions = question.getAnswerOptions();
+        if (question.hasAnswerOptions()) {
+            ioService.print(messageService.getMessage("question.suggest.options"));
+            for (int i = 0; i < answerOptions.size(); i++) {
+                ioService.print(i + 1 + ". " + answerOptions.get(i));
+            }
+        }
     }
 
     private String getMessageCode(int errorCode) {
