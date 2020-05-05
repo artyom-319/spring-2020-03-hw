@@ -29,12 +29,18 @@ public class ConsoleQuiz implements Quiz {
         this.questionSource = source;
         this.messageService = messageService;
         this.ioService = ioService;
-        questions = questionSource.provideQuestions();
+    }
+
+    @Override
+    public List<Question> questions() {
+        if (questions == null)
+            questions = questionSource.provideQuestions();
+        return questions;
     }
 
     private void shuffleQuestions() {
-        Collections.shuffle(questions);
-        questions.stream()
+        Collections.shuffle(questions());
+        questions().stream()
                 .filter(Question::hasAnswerOptions)
                 .map(Question::getAnswerOptions)
                 .forEach(Collections::shuffle);
@@ -45,7 +51,7 @@ public class ConsoleQuiz implements Quiz {
             applyParticipantFromIo();
 
         shuffleQuestions();
-        for (Question question : questions) {
+        for (Question question : questions()) {
             Answer answer = new Answer(question);
             while (!answer.isAccepted()) {
                 try {
@@ -95,7 +101,7 @@ public class ConsoleQuiz implements Quiz {
         long answersCount = answers.stream()
                 .filter(Answer::isAccepted)
                 .count();
-        int questionsCount = questions.size();
+        int questionsCount = questions().size();
         return answersCount == questionsCount;
     }
 
@@ -134,12 +140,28 @@ public class ConsoleQuiz implements Quiz {
         return null;
     }
 
-    private void printTextResult() {
-        long correct = answers.stream()
+    @Override
+    public int countCorrectAnswers() {
+        return (int) answers.stream()
                 .filter(Answer::isCorrect)
                 .count();
+    }
+
+    @Override
+    public int countIncorrectAnswers() {
+        return (int) answers.stream()
+                .filter(Answer::isIncorrect)
+                .count();
+    }
+
+    @Override
+    public int countGivenAnswers() {
+        return answers.size();
+    }
+
+    private void printTextResult() {
         String textResult = messageService.getMessage("quiz.results",
-                userName, correct, answers.size());
+                userName, countCorrectAnswers(), countGivenAnswers());
         ioService.print(textResult);
     }
 }

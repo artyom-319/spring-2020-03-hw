@@ -50,6 +50,14 @@ public class Answer {
         return isCorrect;
     }
 
+    /**
+     * Проверяет неправильность данного ответа
+     * @return true, если ответ неверен, false, если верен
+     */
+    public boolean isIncorrect() {
+        return !isCorrect();
+    }
+
     private String parseAnswer(String answer) {
         Objects.requireNonNull(answer);
         List<String> answerOptions = question.getAnswerOptions();
