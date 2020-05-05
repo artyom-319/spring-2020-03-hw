@@ -5,10 +5,14 @@ import com.etn319.resource.ResourceResolver;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.test.context.TestPropertySource;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -18,12 +22,13 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.only;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 
-@ExtendWith(MockitoExtension.class)
+@SpringBootTest
+@TestPropertySource(properties = "file.name=test.txt")
 public class QuestionFileSourceTest {
     private static final String FILE_NAME = "test.txt";
     private static final String QUESTION_TEXT = "MockedText";
@@ -31,20 +36,29 @@ public class QuestionFileSourceTest {
 
     private List<String> lines;
 
-    @Mock
+    @Configuration
+    static class Config {
+        @Bean
+        QuestionSource questionSource(ResourceResolver resourceResolver, QuestionConverter converter,
+                                      @Value("${file.name}") String resourceFilePath) {
+            return new QuestionFileSource(resourceResolver, converter, resourceFilePath);
+        }
+    }
+
+    @MockBean
     private QuestionConverter converter;
-    @Mock
+    @MockBean
     private ResourceResolver resourceResolver;
-    private QuestionFileSource source;
+    @Autowired
+    private QuestionSource source;
 
     @BeforeEach
     public void setUp() {
         lines = getLinesFromTestFile();
-        source = new QuestionFileSource(resourceResolver, converter, FILE_NAME);
-        when(converter.convertLine(anyString()))
-                .thenReturn(new Question(QUESTION_TEXT, EXPECTED_ANSWER));
-        when(resourceResolver.getResourceAsStream(anyString()))
-                .thenReturn(getClass().getClassLoader().getResourceAsStream(FILE_NAME));
+        given(converter.convertLine(anyString()))
+                .willReturn(new Question(QUESTION_TEXT, EXPECTED_ANSWER));
+        given(resourceResolver.getResourceAsStream(anyString()))
+                .willReturn(getClass().getClassLoader().getResourceAsStream(FILE_NAME));
     }
 
     @Test
