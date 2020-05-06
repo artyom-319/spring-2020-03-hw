@@ -17,6 +17,7 @@
 
     <modules>
         <module>thin-quizzy</module>
+        <module>bookeeper</module>
     </modules>
 
     <properties>
