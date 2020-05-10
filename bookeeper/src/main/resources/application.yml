@@ -1,0 +1,11 @@
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:5432/bookeeper
+    username: bookeeper
+    password: bookeeper-dev
+    driver-class-name: org.postgresql.Driver
+    initialization-mode : embedded
+#    schema: schema.sql
+#    data: data.sql
+
+  messages.basename: i18n.bundle
