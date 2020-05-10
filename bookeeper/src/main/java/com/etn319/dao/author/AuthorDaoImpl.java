@@ -1,8 +1,10 @@
 package com.etn319.dao.author;
 
+import com.etn319.dao.EntityNotFoundException;
 import com.etn319.dao.mappers.AuthorRowMapper;
 import com.etn319.model.Author;
 import lombok.RequiredArgsConstructor;
+import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcOperations;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
@@ -24,8 +26,12 @@ public class AuthorDaoImpl implements AuthorDao {
 
     @Override
     public Author getById(long id) {
-        return jdbcTemplate.queryForObject("select * from authors where id = :id",
-                Collections.singletonMap("id", id), new AuthorRowMapper());
+        try {
+            return jdbcTemplate.queryForObject("select * from authors where id = :id",
+                    Collections.singletonMap("id", id), new AuthorRowMapper());
+        } catch (EmptyResultDataAccessException e) {
+            throw new EntityNotFoundException();
+        }
     }
 
     @Override
@@ -46,24 +52,27 @@ public class AuthorDaoImpl implements AuthorDao {
     }
 
     @Override
-    public boolean update(Author author) {
+    public Author update(Author author) {
         var params = new MapSqlParameterSource()
                 .addValue("id", author.getId())
                 .addValue("name", author.getName())
                 .addValue("country", author.getCountry());
         int updated =
                 jdbcTemplate.update("update authors set name = :name, country = :country where id = :id", params);
-        return updated > 0;
+        if (updated == 0)
+            throw new EntityNotFoundException();
+        return author;
     }
 
     @Override
-    public boolean delete(Author author) {
-        return deleteById(author.getId());
+    public void delete(Author author) {
+        deleteById(author.getId());
     }
 
     @Override
-    public boolean deleteById(long id) {
+    public void deleteById(long id) {
         int affected = jdbcTemplate.update("delete from authors where id = :id", Collections.singletonMap("id", id));
-        return affected > 0;
+        if (affected == 0)
+            throw new EntityNotFoundException();
     }
 }

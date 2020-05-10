@@ -1,5 +1,6 @@
 package com.etn319.dao.book;
 
+import com.etn319.dao.EntityNotFoundException;
 import com.etn319.dao.mappers.BookRowMapper;
 import com.etn319.model.Author;
 import com.etn319.model.Book;
@@ -14,12 +15,21 @@ import org.springframework.stereotype.Repository;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 @SuppressWarnings("ConstantConditions")
 @Repository
 @RequiredArgsConstructor
 public class BookDaoImpl implements BookDao {
+    private static final String DOT = ".";
+    private static final String UNDERLINE = "_";
     private final NamedParameterJdbcOperations jdbcTemplate;
+    private List<String> selectables = List.of(
+            "books.id", "books.title",
+            "authors.id", "authors.name", "authors.country",
+            "genres.id", "genres.title"
+    );
+    private String aliasSelectables = toAliasString(selectables);
 
     @Override
     public int count() {
@@ -29,23 +39,24 @@ public class BookDaoImpl implements BookDao {
     @Override
     public Book getById(long id) {
         try {
-            return jdbcTemplate.queryForObject("select * from books " +
+            return jdbcTemplate.queryForObject(("select * from books " +
                             "left join authors on books.author_id = authors.id " +
-                            "left join genres on books.genre_id = genres.id where books.id = :id",
+                            "left join genres on books.genre_id = genres.id where books.id = :id")
+                                    .replace("*", aliasSelectables),
                     Collections.singletonMap("id", id),
-                    new BookRowMapper("books", "authors", "genres"));
-        } catch (EmptyResultDataAccessException ignored) {
-            // todo: вынести в аспект
-            return null;
+                    new BookRowMapper("books", "authors", "genres", UNDERLINE));
+        } catch (EmptyResultDataAccessException e) {
+            throw new EntityNotFoundException();
         }
     }
 
     @Override
     public List<Book> getAll() {
-        return jdbcTemplate.getJdbcOperations().query("select * from books " +
+        return jdbcTemplate.getJdbcOperations().query(("select * from books " +
                 "join authors on books.author_id = authors.id " +
-                "join genres on books.genre_id = genres.id",
-                new BookRowMapper("books", "authors", "genres"));
+                "join genres on books.genre_id = genres.id")
+                        .replace("*", aliasSelectables),
+                new BookRowMapper("books", "authors", "genres", UNDERLINE));
     }
 
     @Override
@@ -66,7 +77,7 @@ public class BookDaoImpl implements BookDao {
     }
 
     @Override
-    public boolean update(Book book) {
+    public Book update(Book book) {
         // todo: author - NPE ?
         // todo: genre - NPE ?
         var params = new MapSqlParameterSource()
@@ -77,17 +88,26 @@ public class BookDaoImpl implements BookDao {
         int updated =
                 jdbcTemplate.update("update books set title = :title, author_id = :author, genre_id = :genre" +
                         " where id = :id", params);
-        return updated > 0;
+        if (updated == 0)
+            throw new EntityNotFoundException();
+        return book;
     }
 
     @Override
-    public boolean delete(Book book) {
-        return deleteById(book.getId());
+    public void delete(Book book) {
+        deleteById(book.getId());
     }
 
     @Override
-    public boolean deleteById(long id) {
+    public void deleteById(long id) {
         int affected = jdbcTemplate.update("delete from books where id = :id", Collections.singletonMap("id", id));
-        return affected > 0;
+        if (affected == 0)
+            throw new EntityNotFoundException();
+    }
+
+    private String toAliasString(List<String> selectables) {
+        return selectables.stream()
+                .map(s -> s + " as " + s.replace(DOT, UNDERLINE))
+                .collect(Collectors.joining(", "));
     }
 }

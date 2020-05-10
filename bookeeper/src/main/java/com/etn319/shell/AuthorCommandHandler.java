@@ -1,7 +1,9 @@
 package com.etn319.shell;
 
-import com.etn319.dao.author.AuthorDao;
 import com.etn319.model.Author;
+import com.etn319.service.EmptyCacheException;
+import com.etn319.service.UpdateException;
+import com.etn319.service.author.AuthorService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.shell.standard.ShellCommandGroup;
 import org.springframework.shell.standard.ShellComponent;
@@ -15,78 +17,63 @@ import java.util.stream.Collectors;
 @ShellCommandGroup("Special Author Commands")
 @RequiredArgsConstructor
 public class AuthorCommandHandler implements CommandHandler {
-    private final AuthorDao dao;
-    private final CacheHolder cache;
-    private boolean created;
+    private final AuthorService authorService;
 
     @Override
     public String count() {
-        return "Authors count: " + dao.count();
+        return "Authors count: " + authorService.count();
     }
 
     @Override
     public String get(long id) {
-        Author author = dao.getById(id);
+        var author = authorService.getById(id);
         if (author == null)
             return "No authors found";
-        cache.setAuthor(author);
         return author.toString();
     }
 
     @Override
     public String getAll() {
-        List<Author> authors = dao.getAll();
+        List<Author> authors = authorService.getAll();
+        if (authors.isEmpty())
+            return "Empty list";
         return authors.stream().map(Author::toString).collect(Collectors.joining("\n"));
     }
 
     @Override
     public String save() {
-        var author = cache.getAuthor();
-        if (author == null)
+        try {
+            var author = authorService.save();
+            return "Saved: " + author.toString();
+        } catch (UpdateException updateException) {
+            return "Failed to save";
+        } catch (EmptyCacheException cacheException) {
             return "Nothing to save: cache is empty";
-        if (created) {
-            Author inserted = dao.insert(author);
-            created = false;
-            cache.setAuthor(null);
-            return "Inserted: " + inserted.toString();
-        } else {
-            boolean isSaved = dao.update(author);
-            if (isSaved) {
-                cache.setAuthor(null);
-                return "Saved: " + author.toString();
-            } else
-                return "Not saved";
         }
     }
 
     @Override
     public String delete(long id) {
-        boolean isDeleted = dao.deleteById(id);
+        boolean isDeleted = authorService.deleteById(id);
         if (isDeleted)
             return "Deleted";
         else
-            return "Not deleted";
+            return "Failed to delete";
     }
 
     @ShellMethod(value = "Create an author object to store it in program cache", key = "create-author")
     public String create(@ShellOption({"--name", "-n"}) String name, @ShellOption({"--country", "-s"}) String country) {
-        var author = new Author();
-        author.setName(name);
-        author.setCountry(country);
-        cache.setAuthor(author);
-        created = true;
+        var author = authorService.create(name, country);
         return String.format("Created: %s\nTo save it in database use /authors/ 'save' command", author.toString());
     }
 
     @ShellMethod(value = "Update cached author object", key = "change-author")
     public String change(@ShellOption({"--name", "-n"}) String name, @ShellOption({"--country", "-s"}) String country) {
-        var author = cache.getAuthor();
-        if (author == null)
+        try {
+            var author = authorService.change(name, country);
+            return String.format("Changed: %s\nTo save it in database use /authors/ 'save' command", author.toString());
+        } catch (EmptyCacheException e) {
             return "Nothing to change: cache is empty";
-        if (name != null)
-            author.setName(name);
-        if (country != null)
-            author.setCountry(country);
-        return String.format("Changed: %s\nTo save it in database use /authors/ 'save' command", author.toString());
+        }
     }
 }

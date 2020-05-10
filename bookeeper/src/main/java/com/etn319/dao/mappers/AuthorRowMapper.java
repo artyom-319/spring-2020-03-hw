@@ -6,6 +6,7 @@ import org.springframework.jdbc.core.RowMapper;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.HashMap;
 import java.util.Map;
 
 @NoArgsConstructor
@@ -13,9 +14,8 @@ public class AuthorRowMapper implements RowMapper<Author> {
     private Map<String, String> columnLabels = Map.of(
             "id", "id", "name", "name", "country", "country");
 
-    public AuthorRowMapper(String alias) {
-        String prefix = alias + ".";
-        addPrefixToColumnLabels(prefix);
+    public AuthorRowMapper(String prefix, String delimiter) {
+        addPrefixToColumnLabels(prefix + delimiter);
     }
 
     @Override
@@ -27,9 +27,8 @@ public class AuthorRowMapper implements RowMapper<Author> {
     }
 
     private void addPrefixToColumnLabels(String prefix) {
-        for (var entry : columnLabels.entrySet()) {
-            String value = entry.getValue();
-            entry.setValue(prefix + value);
-        }
+        Map<String, String> columnLabelsWithPrefix = new HashMap<>();
+        columnLabels.forEach((k, v) -> columnLabelsWithPrefix.put(k, prefix + v));
+        columnLabels = columnLabelsWithPrefix;
     }
 }

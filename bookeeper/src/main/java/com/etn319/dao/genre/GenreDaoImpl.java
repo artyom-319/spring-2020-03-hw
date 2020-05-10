@@ -1,6 +1,6 @@
 package com.etn319.dao.genre;
 
-import com.etn319.dao.NoEntityFoundException;
+import com.etn319.dao.EntityNotFoundException;
 import com.etn319.dao.mappers.GenreRowMapper;
 import com.etn319.model.Genre;
 import lombok.RequiredArgsConstructor;
@@ -30,7 +30,7 @@ public class GenreDaoImpl implements GenreDao {
             return jdbcTemplate.queryForObject("select * from genres where id = :id",
                     Collections.singletonMap("id", id), new GenreRowMapper());
         } catch (EmptyResultDataAccessException e) {
-            throw new NoEntityFoundException();
+            throw new EntityNotFoundException();
         }
     }
 
@@ -55,7 +55,7 @@ public class GenreDaoImpl implements GenreDao {
                 .addValue("title", genre.getTitle());
         int updated = jdbcTemplate.update("update genres set title = :title where id = :id", params);
         if (updated == 0)
-            throw new NoEntityFoundException();
+            throw new EntityNotFoundException();
         return genre;
     }
 
@@ -68,6 +68,6 @@ public class GenreDaoImpl implements GenreDao {
     public void deleteById(long id) {
         int affected = jdbcTemplate.update("delete from genres where id = :id", Collections.singletonMap("id", id));
         if (affected == 0)
-            throw new NoEntityFoundException();
+            throw new EntityNotFoundException();
     }
 }

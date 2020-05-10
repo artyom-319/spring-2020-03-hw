@@ -13,9 +13,9 @@ public interface AuthorDao {
 
     Author insert(Author author);
 
-    boolean update(Author author);
+    Author update(Author author);
 
-    boolean delete(Author author);
+    void delete(Author author);
 
-    boolean deleteById(long id);
+    void deleteById(long id);
 }

@@ -1,7 +1,9 @@
 package com.etn319.shell;
 
-import com.etn319.dao.genre.GenreDao;
 import com.etn319.model.Genre;
+import com.etn319.service.EmptyCacheException;
+import com.etn319.service.genre.GenreService;
+import com.etn319.service.UpdateException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.shell.standard.ShellCommandGroup;
 import org.springframework.shell.standard.ShellComponent;
@@ -15,55 +17,44 @@ import java.util.stream.Collectors;
 @ShellCommandGroup("Special Genre Commands")
 @RequiredArgsConstructor
 public class GenreCommandHandler implements CommandHandler {
-    private final GenreDao dao;
-    private final CacheHolder cache;
-    private boolean created;
+    private final GenreService genreService;
 
     @Override
     public String count() {
-        return "Genres found: " + dao.count();
+        return "Genres found: " + genreService.count();
     }
 
     @Override
     public String get(long id) {
-        var genre = dao.getById(id);
+        var genre = genreService.getById(id);
         if (genre == null)
-            return "No genres found";
-        cache.setGenre(genre);
+            return String.format("No genres with id=%d were found", id);
         return genre.toString();
     }
 
     @Override
     public String getAll() {
-        List<Genre> genres = dao.getAll();
+        List<Genre> genres = genreService.getAll();
+        if (genres.isEmpty())
+            return "Empty list";
         return genres.stream().map(Genre::toString).collect(Collectors.joining("\n"));
     }
 
     @Override
     public String save() {
-        var genre = cache.getGenre();
-        if (genre == null)
+        try {
+            var genre = genreService.save();
+            return "Saved: " + genre.toString();
+        } catch (UpdateException updateException) {
+            return "Failed to save";
+        } catch (EmptyCacheException cacheException) {
             return "Nothing to save: cache is empty";
-        if (true) {//created) {
-            // todo: а если не заинсертится
-            Genre inserted = dao.insert(genre);
-            created = false;
-            cache.setGenre(null);
-            return "Inserted: " + inserted.toString();
-        } else {
-            // todo: saved -> updated
-            boolean isSaved = dao.update(genre);
-            if (isSaved) {
-                cache.setGenre(null);
-                return "Updated: " + genre.toString();
-            } else
-                return "Failed to update";
         }
     }
 
     @Override
     public String delete(long id) {
-        boolean isDeleted = dao.deleteById(id);
+        boolean isDeleted = genreService.deleteById(id);
         if (isDeleted)
             return "Deleted";
         else
@@ -72,19 +63,17 @@ public class GenreCommandHandler implements CommandHandler {
 
     @ShellMethod(value = "Create a genre object to store it in program cache", key = "create-genre")
     public String create(@ShellOption({"--title", "-t"}) String title) {
-        var genre = new Genre();
-        genre.setTitle(title);
-        created = true;
-        cache.setGenre(genre);
+        var genre = genreService.create(title);
         return String.format("Created: %s\nTo save it in database use /genres/ 'save' command", genre.toString());
     }
 
     @ShellMethod(value = "Update cached genre object", key = "change-genre")
     public String change(@ShellOption({"--title", "-t"}) String title) {
-        var genre = cache.getGenre();
-        if (genre == null)
+        try {
+            var genre = genreService.change(title);
+            return String.format("Changed: %s\nTo save it in database use /genres/ 'save' command", genre.toString());
+        } catch (EmptyCacheException e) {
             return "Nothing to change: cache is empty";
-        genre.setTitle(title);
-        return String.format("Changed: %s\nTo save it in database use /genres/ 'save' command", genre.toString());
+        }
     }
 }
