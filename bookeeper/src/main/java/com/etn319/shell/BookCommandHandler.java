@@ -61,6 +61,44 @@ public class BookCommandHandler implements CommandHandler {
             return "Failed to delete";
     }
 
+    @Override
+    public String clearCache() {
+        bookService.clearCache();
+        return "Cache cleared";
+    }
+
+    @ShellMethod(value = "Find books by genre using cached genre object", key = {"get-by-genre", "by-genre", "bg"})
+    public String getByGenre() {
+        try {
+            List<Book> books = bookService.getByCachedGenre();
+            return stringifyList(books);
+        } catch (EmptyCacheException e) {
+            return "There is no cached genre. Use /genres/ 'get' command first";
+        }
+    }
+
+    @ShellMethod(value = "Find books by genre id", key = {"get-by-genre-id", "by-genre-id", "bgi"})
+    public String getByGenreId(@ShellOption("-id") long genreId) {
+        List<Book> books = bookService.getByGenreId(genreId);
+        return stringifyList(books);
+    }
+
+    @ShellMethod(value = "Find books by author using cached author object", key = {"get-by-author", "by-author", "ba"})
+    public String getByAuthor() {
+        try {
+            List<Book> books = bookService.getByCachedAuthor();
+            return stringifyList(books);
+        } catch (EmptyCacheException e) {
+            return "There is no cached author. Use /authors/ 'get' command first";
+        }
+    }
+
+    @ShellMethod(value = "Find books by author id", key = {"get-by-author-id", "by-author-id", "bai"})
+    public String getByAuthorId(@ShellOption("-id") long authorId) {
+        List<Book> books = bookService.getByAuthorId(authorId);
+        return stringifyList(books);
+    }
+
     @ShellMethod(value = "Create a book object to store it in program cache", key = "create-book")
     public String create(@ShellOption({"--title", "-t"}) String title) {
         var book = bookService.create(title);
@@ -97,5 +135,11 @@ public class BookCommandHandler implements CommandHandler {
             String missed = e.getMissedEntity();
             return String.format("There is no cached %1$s. Use 'create-%1$s' or /%1$ss/ 'get' command first", missed);
         }
+    }
+
+    private static String stringifyList(List<?> list) {
+        if (list.isEmpty())
+            return "Empty list";
+        return list.stream().map(Object::toString).collect(Collectors.joining("\n"));
     }
 }

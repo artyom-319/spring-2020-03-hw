@@ -97,7 +97,8 @@ public class AuthorServiceImpl implements AuthorService {
         return author;
     }
 
-    private void clearCache() {
+    @Override
+    public void clearCache() {
         created = false;
         cache.clearAuthor();
     }

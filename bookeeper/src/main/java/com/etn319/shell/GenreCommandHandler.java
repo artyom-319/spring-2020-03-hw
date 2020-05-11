@@ -61,6 +61,12 @@ public class GenreCommandHandler implements CommandHandler {
             return "Failed to delete";
     }
 
+    @Override
+    public String clearCache() {
+        genreService.clearCache();
+        return "Cache cleared";
+    }
+
     @ShellMethod(value = "Create a genre object to store it in program cache", key = "create-genre")
     public String create(@ShellOption({"--title", "-t"}) String title) {
         var genre = genreService.create(title);

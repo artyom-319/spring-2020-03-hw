@@ -71,6 +71,28 @@ public class BookServiceImpl implements BookService {
     }
 
     @Override
+    public List<Book> getByCachedGenre() {
+        var genre = cache.getGenre();
+        return dao.getByGenre(genre);
+    }
+
+    @Override
+    public List<Book> getByGenreId(long id) {
+        return dao.getByGenreId(id);
+    }
+
+    @Override
+    public List<Book> getByCachedAuthor() {
+        var author = cache.getAuthor();
+        return dao.getByAuthor(author);
+    }
+
+    @Override
+    public List<Book> getByAuthorId(long id) {
+        return dao.getByAuthorId(id);
+    }
+
+    @Override
     public Book create(String title) {
         var book = new Book();
         book.setTitle(title);
@@ -102,7 +124,8 @@ public class BookServiceImpl implements BookService {
         return book;
     }
 
-    private void clearCache() {
+    @Override
+    public void clearCache() {
         created = false;
         cache.clearBook();
     }

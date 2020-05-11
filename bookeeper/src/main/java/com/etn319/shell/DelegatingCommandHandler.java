@@ -40,4 +40,10 @@ public class DelegatingCommandHandler implements CommandHandler {
     public String delete(long id) {
         return delegate.delete(id);
     }
+
+    @Override
+    @ShellMethod(value = "Clear cache of chosen type", key = "clear")
+    public String clearCache() {
+        return delegate.clearCache();
+    }
 }

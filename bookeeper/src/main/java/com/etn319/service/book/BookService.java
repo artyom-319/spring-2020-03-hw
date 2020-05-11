@@ -15,6 +15,14 @@ public interface BookService {
 
     boolean deleteById(long id);
 
+    List<Book> getByCachedGenre();
+
+    List<Book> getByGenreId(long id);
+
+    List<Book> getByCachedAuthor();
+
+    List<Book> getByAuthorId(long id);
+
     Book create(String title);
 
     Book change(String title);
@@ -22,4 +30,6 @@ public interface BookService {
     Book wireAuthor();
 
     Book wireGenre();
+
+    void clearCache();
 }

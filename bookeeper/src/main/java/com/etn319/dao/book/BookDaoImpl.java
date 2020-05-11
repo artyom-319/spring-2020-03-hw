@@ -46,15 +46,15 @@ public class BookDaoImpl implements BookDao {
                     Collections.singletonMap("id", id),
                     new BookRowMapper("books", "authors", "genres", UNDERLINE));
         } catch (EmptyResultDataAccessException e) {
-            throw new EntityNotFoundException();
+            throw new EntityNotFoundException(e);
         }
     }
 
     @Override
     public List<Book> getAll() {
         return jdbcTemplate.getJdbcOperations().query(("select * from books " +
-                "join authors on books.author_id = authors.id " +
-                "join genres on books.genre_id = genres.id")
+                "left join authors on books.author_id = authors.id " +
+                "left join genres on books.genre_id = genres.id")
                         .replace("*", aliasSelectables),
                 new BookRowMapper("books", "authors", "genres", UNDERLINE));
     }
@@ -103,6 +103,36 @@ public class BookDaoImpl implements BookDao {
         int affected = jdbcTemplate.update("delete from books where id = :id", Collections.singletonMap("id", id));
         if (affected == 0)
             throw new EntityNotFoundException();
+    }
+
+    @Override
+    public List<Book> getByGenre(Genre genre) {
+        return getByGenreId(genre.getId());
+    }
+
+    @Override
+    public List<Book> getByGenreId(long genreId) {
+        return jdbcTemplate.query(("select * from books " +
+                        "left join authors on books.author_id = authors.id " +
+                        "join genres on books.genre_id = genres.id where books.genre_id = :genreId")
+                        .replace("*", aliasSelectables),
+                Collections.singletonMap("genreId", genreId),
+                new BookRowMapper("books", "authors", "genres", UNDERLINE));
+    }
+
+    @Override
+    public List<Book> getByAuthor(Author author) {
+        return getByAuthorId(author.getId());
+    }
+
+    @Override
+    public List<Book> getByAuthorId(long authorId) {
+        return jdbcTemplate.query(("select * from books " +
+                        "join authors on books.author_id = authors.id " +
+                        "left join genres on books.genre_id = genres.id where books.author_id = :authorId")
+                        .replace("*", aliasSelectables),
+                Collections.singletonMap("authorId", authorId),
+                new BookRowMapper("books", "authors", "genres", UNDERLINE));
     }
 
     private String toAliasString(List<String> selectables) {

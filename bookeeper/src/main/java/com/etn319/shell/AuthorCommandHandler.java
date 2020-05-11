@@ -61,6 +61,12 @@ public class AuthorCommandHandler implements CommandHandler {
             return "Failed to delete";
     }
 
+    @Override
+    public String clearCache() {
+        authorService.clearCache();
+        return "Cache cleared";
+    }
+
     @ShellMethod(value = "Create an author object to store it in program cache", key = "create-author")
     public String create(@ShellOption({"--name", "-n"}) String name, @ShellOption({"--country", "-s"}) String country) {
         var author = authorService.create(name, country);

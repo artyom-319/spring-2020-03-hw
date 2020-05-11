@@ -18,4 +18,6 @@ public interface AuthorService {
     Author create(String name, String country);
 
     Author change(String name, String country);
+
+    void clearCache();
 }

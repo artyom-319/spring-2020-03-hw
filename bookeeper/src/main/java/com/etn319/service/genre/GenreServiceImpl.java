@@ -88,7 +88,8 @@ public class GenreServiceImpl implements GenreService {
         return genre;
     }
 
-    private void clearCache() {
+    @Override
+    public void clearCache() {
         created = false;
         cache.clearGenre();
     }
