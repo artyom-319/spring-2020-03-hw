@@ -67,6 +67,15 @@ public class GenreCommandHandler implements CommandHandler {
         return "Cache cleared";
     }
 
+    @Override
+    public String getCurrent() {
+        try {
+            return genreService.getCache().toString();
+        } catch (EmptyCacheException e) {
+            return "Empty cache";
+        }
+    }
+
     @ShellMethod(value = "Create a genre object to store it in program cache", key = "create-genre")
     public String create(@ShellOption({"--title", "-t"}) String title) {
         var genre = genreService.create(title);

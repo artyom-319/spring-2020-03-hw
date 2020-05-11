@@ -67,6 +67,15 @@ public class BookCommandHandler implements CommandHandler {
         return "Cache cleared";
     }
 
+    @Override
+    public String getCurrent() {
+        try {
+            return bookService.getCache().toString();
+        } catch (EmptyCacheException e) {
+            return "Empty cache";
+        }
+    }
+
     @ShellMethod(value = "Find books by genre using cached genre object", key = {"get-by-genre", "by-genre", "bg"})
     public String getByGenre() {
         try {

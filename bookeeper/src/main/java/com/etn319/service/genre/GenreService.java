@@ -20,4 +20,6 @@ public interface GenreService {
     Genre change(String title);
 
     void clearCache();
+
+    Genre getCache();
 }

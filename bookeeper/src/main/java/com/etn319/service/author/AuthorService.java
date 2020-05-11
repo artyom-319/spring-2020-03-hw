@@ -20,4 +20,6 @@ public interface AuthorService {
     Author change(String name, String country);
 
     void clearCache();
+
+    Author getCache();
 }

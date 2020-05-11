@@ -93,4 +93,9 @@ public class GenreServiceImpl implements GenreService {
         created = false;
         cache.clearGenre();
     }
+
+    @Override
+    public Genre getCache() {
+        return cache.getGenre();
+    }
 }

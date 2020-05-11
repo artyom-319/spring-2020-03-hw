@@ -7,4 +7,5 @@ public interface CommandHandler {
     String save();
     String delete(long id);
     String clearCache();
+    String getCurrent();
 }

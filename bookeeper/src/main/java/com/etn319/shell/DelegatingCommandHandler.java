@@ -42,8 +42,14 @@ public class DelegatingCommandHandler implements CommandHandler {
     }
 
     @Override
-    @ShellMethod(value = "Clear cache of chosen type", key = "clear")
+    @ShellMethod(value = "Clear cache of chosen type", key = {"clean", "cache-clean", "cc"})
     public String clearCache() {
         return delegate.clearCache();
+    }
+
+    @Override
+    @ShellMethod(value = "Get current cache object of chosen type", key = {"current", "cache", "c"})
+    public String getCurrent() {
+        return delegate.getCurrent();
     }
 }

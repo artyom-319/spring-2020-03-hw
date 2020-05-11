@@ -32,4 +32,6 @@ public interface BookService {
     Book wireGenre();
 
     void clearCache();
+
+    Book getCache();
 }

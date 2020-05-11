@@ -67,6 +67,15 @@ public class AuthorCommandHandler implements CommandHandler {
         return "Cache cleared";
     }
 
+    @Override
+    public String getCurrent() {
+        try {
+            return authorService.getCache().toString();
+        } catch (EmptyCacheException e) {
+            return "Empty cache";
+        }
+    }
+
     @ShellMethod(value = "Create an author object to store it in program cache", key = "create-author")
     public String create(@ShellOption({"--name", "-n"}) String name, @ShellOption({"--country", "-s"}) String country) {
         var author = authorService.create(name, country);

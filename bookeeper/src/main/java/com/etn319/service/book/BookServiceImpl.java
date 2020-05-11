@@ -129,4 +129,9 @@ public class BookServiceImpl implements BookService {
         created = false;
         cache.clearBook();
     }
+
+    @Override
+    public Book getCache() {
+        return cache.getBook();
+    }
 }
