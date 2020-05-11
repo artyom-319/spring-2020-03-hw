@@ -11,4 +11,9 @@ public class Author {
     private long id;
     private String name;
     private String country;
+
+    public Author(String name, String country) {
+        this.name = name;
+        this.country = country;
+    }
 }
