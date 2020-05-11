@@ -107,7 +107,7 @@ class GenreDaoImplTest {
     @Test
     @DisplayName("update по несуществующему жанру должен бросать исключение")
     void updateByNotExistingId() {
-        var genre = new Genre(0L, NEW_TITLE);
+        var genre = new Genre(INCORRECT_ID, NEW_TITLE);
         Throwable thrown = catchThrowable(() -> dao.update(genre));
         assertThat(thrown).isInstanceOf(EntityNotFoundException.class);
     }

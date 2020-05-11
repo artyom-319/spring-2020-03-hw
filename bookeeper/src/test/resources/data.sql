@@ -9,7 +9,7 @@ values ('Novel'),
 ;
 
 insert into books (title, author_id, genre_id)
-values ('Martin Iden', 1, 1),
-       ('Drei Komraden', 2, 1),
+values ('Martin Eden', 1, 1),
+       ('Three Comrades', 2, 1),
        ('Sea Wolf', 1, 1)
 ;

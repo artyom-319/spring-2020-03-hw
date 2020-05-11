@@ -111,7 +111,7 @@ class AuthorDaoImplTest {
     @Test
     @DisplayName("update по несуществующему автору должен бросать исключение")
     void updateByNotExistingId() {
-        var author = new Author(0L, NEW_NAME, NEW_COUNTRY);
+        var author = new Author(INCORRECT_ID, NEW_NAME, NEW_COUNTRY);
         Throwable thrown = catchThrowable(() -> dao.update(author));
         assertThat(thrown).isInstanceOf(EntityNotFoundException.class);
     }
