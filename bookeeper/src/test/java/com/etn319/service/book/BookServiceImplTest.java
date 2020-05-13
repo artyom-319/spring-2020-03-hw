@@ -282,7 +282,7 @@ class BookServiceImplTest {
         Throwable thrown = catchThrowable(() -> bookService.wireAuthor());
         assertThat(thrown)
                 .isInstanceOf(EmptyCacheException.class)
-                .hasMessage("Book");
+                .hasMessage("book");
     }
 
     @Test
@@ -306,6 +306,6 @@ class BookServiceImplTest {
         Throwable thrown = catchThrowable(() -> bookService.wireGenre());
         assertThat(thrown)
                 .isInstanceOf(EmptyCacheException.class)
-                .hasMessage("Genre");
+                .hasMessage("genre");
     }
 }

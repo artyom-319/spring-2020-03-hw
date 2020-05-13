@@ -15,19 +15,19 @@ public class CacheHolder {
 
     public Author getAuthor() {
         if (author == null)
-            throw new EmptyCacheException("Author");
+            throw new EmptyCacheException("author");
         return author;
     }
 
     public Genre getGenre() {
         if (genre == null)
-            throw new EmptyCacheException("Genre");
+            throw new EmptyCacheException("genre");
         return genre;
     }
 
     public Book getBook() {
         if (book == null)
-            throw new EmptyCacheException("Book");
+            throw new EmptyCacheException("book");
         return book;
     }
 
