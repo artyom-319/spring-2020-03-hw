@@ -45,7 +45,6 @@ public class GenreServiceImpl implements GenreService {
         var genre = cache.getGenre();
 
         if (created) {
-            // todo: а если не заинсертится
             Genre inserted = dao.insert(genre);
             created = false;
             clearCache();

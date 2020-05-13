@@ -133,6 +133,8 @@ class BookServiceImplTest {
             "и не должен вызывать dao.update")
     void saveNewObject() {
         var book = bookService.create(TITLE);
+        book.setGenre(new Genre());
+        book.setAuthor(new Author());
         bookService.save();
         var argumentCaptor = ArgumentCaptor.forClass(Book.class);
 

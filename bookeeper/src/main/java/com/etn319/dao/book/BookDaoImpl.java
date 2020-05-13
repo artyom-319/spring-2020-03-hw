@@ -1,11 +1,13 @@
 package com.etn319.dao.book;
 
+import com.etn319.dao.ConnectedEntityDoesNotExistException;
 import com.etn319.dao.EntityNotFoundException;
 import com.etn319.dao.mappers.BookRowMapper;
 import com.etn319.model.Author;
 import com.etn319.model.Book;
 import com.etn319.model.Genre;
 import lombok.RequiredArgsConstructor;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcOperations;
@@ -15,6 +17,7 @@ import org.springframework.stereotype.Repository;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @SuppressWarnings("ConstantConditions")
@@ -61,36 +64,48 @@ public class BookDaoImpl implements BookDao {
 
     @Override
     public Book insert(final Book book) {
-        Objects.requireNonNull(book);
-        Author author = Objects.requireNonNull(book.getAuthor(), "author");
-        Genre genre = Objects.requireNonNull(book.getGenre(), "genre");
-
-        var params = new MapSqlParameterSource()
-                .addValue("title", book.getTitle())
-                .addValue("author", author.getId())
-                .addValue("genre", genre.getId());
-        var keyHolder = new GeneratedKeyHolder();
-        jdbcTemplate.update("insert into books (title, author_id, genre_id) values (:title, :author, :genre)",
-                params, keyHolder, new String[]{"id"});
-        book.setId(keyHolder.getKey().longValue());
-        return book;
+        try {
+            checkForEmptyEntities(book);
+            var params = new MapSqlParameterSource()
+                    .addValue("title", book.getTitle())
+                    .addValue("author", book.getAuthor().getId())
+                    .addValue("genre", book.getGenre().getId());
+            var keyHolder = new GeneratedKeyHolder();
+            jdbcTemplate.update("insert into books (title, author_id, genre_id) values (:title, :author, :genre)",
+                    params, keyHolder, new String[]{"id"});
+            book.setId(keyHolder.getKey().longValue());
+            return book;
+        } catch (DataIntegrityViolationException e) {
+            throw new ConnectedEntityDoesNotExistException(e);
+        }
     }
 
     @Override
     public Book update(Book book) {
-        // todo: author - NPE ?
-        // todo: genre - NPE ?
-        var params = new MapSqlParameterSource()
-                .addValue("id", book.getId())
-                .addValue("title", book.getTitle())
-                .addValue("author", book.getAuthor().getId())
-                .addValue("genre", book.getGenre().getId());
-        int updated =
-                jdbcTemplate.update("update books set title = :title, author_id = :author, genre_id = :genre" +
-                        " where id = :id", params);
-        if (updated == 0)
-            throw new EntityNotFoundException();
-        return book;
+        try {
+            checkForEmptyEntities(book);
+            var params = new MapSqlParameterSource()
+                    .addValue("id", book.getId())
+                    .addValue("title", book.getTitle())
+                    .addValue("author", book.getAuthor().getId())
+                    .addValue("genre", book.getGenre().getId());
+            int updated =
+                    jdbcTemplate.update("update books set title = :title, author_id = :author, genre_id = :genre" +
+                            " where id = :id", params);
+            if (updated == 0)
+                throw new EntityNotFoundException();
+            return book;
+        } catch (DataIntegrityViolationException e) {
+            throw new ConnectedEntityDoesNotExistException(e);
+        }
+    }
+
+    private void checkForEmptyEntities(Book book) {
+        Objects.requireNonNull(book);
+        long authorId = Optional.ofNullable(book.getAuthor()).map(Author::getId).orElse(0L);
+        long genreId = Optional.ofNullable(book.getGenre()).map(Genre::getId).orElse(0L);
+        if (authorId == 0L || genreId == 0L)
+            throw new ConnectedEntityDoesNotExistException();
     }
 
     @Override

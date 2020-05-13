@@ -4,6 +4,7 @@ import com.etn319.dao.EntityNotFoundException;
 import com.etn319.dao.book.BookDao;
 import com.etn319.model.Book;
 import com.etn319.service.CacheHolder;
+import com.etn319.service.EmptyConnectedEntityException;
 import com.etn319.service.UpdateException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -43,6 +44,8 @@ public class BookServiceImpl implements BookService {
     @Override
     public Book save() {
         var book = cache.getBook();
+        if (book.getAuthor() == null || book.getGenre() == null)
+            throw new EmptyConnectedEntityException();
 
         if (created) {
             Book inserted = dao.insert(book);

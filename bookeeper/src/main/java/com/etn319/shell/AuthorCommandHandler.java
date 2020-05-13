@@ -77,13 +77,13 @@ public class AuthorCommandHandler implements CommandHandler {
     }
 
     @ShellMethod(value = "Create an author object to store it in program cache", key = "create-author")
-    public String create(@ShellOption({"--name", "-n"}) String name, @ShellOption({"--country", "-s"}) String country) {
+    public String create(@ShellOption({"--name", "-n"}) String name, @ShellOption({"--country", "-c"}) String country) {
         var author = authorService.create(name, country);
         return String.format("Created: %s\nTo save it in database use /authors/ 'save' command", author.toString());
     }
 
     @ShellMethod(value = "Update cached author object", key = "change-author")
-    public String change(@ShellOption({"--name", "-n"}) String name, @ShellOption({"--country", "-s"}) String country) {
+    public String change(@ShellOption({"--name", "-n"}) String name, @ShellOption({"--country", "-c"}) String country) {
         try {
             var author = authorService.change(name, country);
             return String.format("Changed: %s\nTo save it in database use /authors/ 'save' command", author.toString());
