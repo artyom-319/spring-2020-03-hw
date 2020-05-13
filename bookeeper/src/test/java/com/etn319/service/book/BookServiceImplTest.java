@@ -41,6 +41,10 @@ class BookServiceImplTest {
     private static final String NEW_TITLE = "10 Years Later";
     private static final Book BOOK = new Book(1L, TITLE, new Author(), new Genre());
 
+    private final List<Book> allBooks = Collections.nCopies(5, BOOK);
+    private final List<Book> booksByGenre = Collections.emptyList();
+    private final List<Book> booksByAuthor = Collections.singletonList(BOOK);
+
     @Configuration
     static class Config {
         @Bean
@@ -65,7 +69,9 @@ class BookServiceImplTest {
     public void setUp() {
         given(bookDao.count()).willReturn(COUNT);
         given(bookDao.getById(anyLong())).willReturn(BOOK);
-        given(bookDao.getAll()).willReturn(Collections.emptyList());
+        given(bookDao.getByAuthor(any(Author.class))).willReturn(booksByAuthor);
+        given(bookDao.getByGenreId(anyLong())).willReturn(booksByGenre);
+        given(bookDao.getAll()).willReturn(allBooks);
         doNothing().when(bookDao).deleteById(longThat(l -> l != INCORRECT_ID));
         doThrow(EntityNotFoundException.class).when(bookDao).deleteById(INCORRECT_ID);
 
@@ -108,11 +114,10 @@ class BookServiceImplTest {
     @Test
     @DisplayName("getAll должен вызывать dao.getAll и возвращать результат")
     void getAll() {
-        List<Book> expected = Collections.emptyList();
         List<Book> actual = bookService.getAll();
 
         verify(bookDao, only()).getAll();
-        assertThat(actual).isSameAs(expected);
+        assertThat(actual).isSameAs(allBooks);
     }
 
     @Test
@@ -173,6 +178,29 @@ class BookServiceImplTest {
         boolean wasDeleted = bookService.deleteById(INCORRECT_ID);
         assertThat(wasDeleted).isFalse();
     }
+
+    @Test
+    void getByGenreId() {
+        List<Book> booksByGenre = bookService.getByGenreId(1L);
+        var argumentCaptor = ArgumentCaptor.forClass(Long.class);
+
+        verify(bookDao, only()).getByGenreId(argumentCaptor.capture());
+        assertThat(argumentCaptor.getValue()).isEqualTo(1L);
+        assertThat(booksByGenre).isSameAs(booksByGenre);
+    }
+
+    @Test
+    void getByCachedAuthor() {
+        var author = new Author(2L, "name", "country");
+        cacheHolder.setAuthor(author);
+        List<Book> booksByAuthor = bookService.getByCachedAuthor();
+        var argumentCaptor = ArgumentCaptor.forClass(Author.class);
+
+        verify(bookDao, only()).getByAuthor(argumentCaptor.capture());
+        assertThat(argumentCaptor.getValue()).isEqualTo(author);
+        assertThat(booksByAuthor).isSameAs(booksByAuthor);
+    }
+
 
     @Test
     @DisplayName("create должен создавать объект книги с переданными параметрами")
