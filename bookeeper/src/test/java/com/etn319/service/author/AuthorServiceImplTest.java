@@ -110,7 +110,7 @@ class AuthorServiceImplTest {
     }
 
     @Test
-    @DisplayName("getAll должен вызывать dao.getAll и возвращать результат")
+    @DisplayName("getAll не должен сохранять объекты в кэше")
     void getAllDoesNotStoreCache() {
         authorService.getAll();
         Throwable thrown = catchThrowable(() -> authorService.getCache());

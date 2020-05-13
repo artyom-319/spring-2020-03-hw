@@ -108,7 +108,7 @@ class GenreServiceImplTest {
     }
 
     @Test
-    @DisplayName("getAll должен вызывать dao.getAll и возвращать результат")
+    @DisplayName("getAll не должен сохранять объекты в кэше")
     void getAllDoesNotStoreCache() {
         genreService.getAll();
         Throwable thrown = catchThrowable(() -> genreService.getCache());
