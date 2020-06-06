@@ -1,4 +1,4 @@
-package com.etn319.quiz;
+package com.etn319.domain;
 
 import java.util.List;
 import java.util.Objects;
@@ -48,6 +48,14 @@ public class Answer {
      */
     public boolean isCorrect() {
         return isCorrect;
+    }
+
+    /**
+     * Проверяет неправильность данного ответа
+     * @return true, если ответ неверен, false, если верен
+     */
+    public boolean isIncorrect() {
+        return !isCorrect();
     }
 
     private String parseAnswer(String answer) {

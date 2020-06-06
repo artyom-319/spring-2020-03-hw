@@ -8,4 +8,8 @@ locale:
   country: US
   language: en
 
-spring.messages.basename: i18n.bundle
+spring:
+  messages.basename: i18n.bundle
+  shell:
+    interactive:
+      enabled: true

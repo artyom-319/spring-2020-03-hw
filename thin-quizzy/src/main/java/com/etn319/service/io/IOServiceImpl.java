@@ -8,22 +8,34 @@ import java.util.Scanner;
 
 @Service
 public class IOServiceImpl implements IOService {
-    private final PrintStream out;
-    private final Scanner in;
+    private final IOContext context;
+    private PrintStream out;
+    private Scanner in;
 
-    public IOServiceImpl() {
-        this.out = System.out;
-        this.in = new Scanner(System.in);
+    public IOServiceImpl(IOContext context) {
+        this.context = context;
     }
 
     @Override
     public void print(String message) {
-        out.println(message);
+        getOut().println(message);
     }
 
     @Override
     public String read() {
-        return scanTillNotEmpty(in);
+        return scanTillNotEmpty(getIn());
+    }
+
+    private PrintStream getOut() {
+        if (out == null)
+            out = context.getOut();
+        return out;
+    }
+
+    private Scanner getIn() {
+        if (in == null)
+            in = new Scanner(context.getIn());
+        return in;
     }
 
     private String scanTillNotEmpty(Scanner scanner) {

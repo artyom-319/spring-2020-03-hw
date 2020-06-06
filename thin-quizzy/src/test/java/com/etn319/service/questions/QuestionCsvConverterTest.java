@@ -1,25 +1,41 @@
-package com.etn319.service;
+package com.etn319.service.questions;
 
-import com.etn319.quiz.Question;
-import org.junit.jupiter.api.BeforeEach;
+import com.etn319.domain.Question;
 import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.test.context.TestPropertySource;
 
 import java.util.Arrays;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertLinesMatch;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
+@SpringBootTest
+@TestPropertySource(properties = "delimiter=:")
 class QuestionCsvConverterTest {
     private static final String DELIMITER = ":";
     private static final String QUESTION = "question";
     private static final String CORRECT_ANSWER = "correct_answer";
     private static final String OPTION1 = "option1";
     private static final String OPTION2 = "option2";
-    private QuestionCsvConverter converter;
 
-    @BeforeEach
-    public void setUp() {
-        converter = new QuestionCsvConverter(DELIMITER);
+    @Configuration
+    static class Config {
+        @Bean
+        public QuestionConverter questionConverter(@Value("${delimiter}") String delimiter) {
+            return new QuestionCsvConverter(delimiter);
+        }
     }
+
+    @Autowired
+    private QuestionConverter converter;
 
     @Test
     public void convertLineWithoutOptions() {

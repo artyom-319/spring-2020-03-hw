@@ -2,10 +2,10 @@ package com.etn319.config;
 
 import com.etn319.resource.LocalizedResourceResolver;
 import com.etn319.resource.ResourceResolver;
-import com.etn319.service.QuestionConverter;
-import com.etn319.service.QuestionCsvConverter;
-import com.etn319.service.QuestionFileSource;
-import com.etn319.service.QuestionSource;
+import com.etn319.service.questions.QuestionConverter;
+import com.etn319.service.questions.QuestionCsvConverter;
+import com.etn319.service.questions.QuestionFileSource;
+import com.etn319.service.questions.QuestionSource;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
