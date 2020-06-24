@@ -1,9 +1,11 @@
 package com.etn319.dao.genre;
 
+import com.etn319.dao.DaoLayerException;
 import com.etn319.dao.EntityNotFoundException;
 import com.etn319.dao.mappers.GenreRowMapper;
 import com.etn319.model.Genre;
 import lombok.RequiredArgsConstructor;
+import org.springframework.dao.DataAccessException;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcOperations;
@@ -41,22 +43,30 @@ public class GenreDaoImpl implements GenreDao {
 
     @Override
     public Genre insert(final Genre genre) {
-        var params = new MapSqlParameterSource("title", genre.getTitle());
-        var keyHolder = new GeneratedKeyHolder();
-        jdbcTemplate.update("insert into genres (title) values (:title)", params, keyHolder, new String[]{"id"});
-        genre.setId(keyHolder.getKey().longValue());
-        return genre;
+        try {
+            var params = new MapSqlParameterSource("title", genre.getTitle());
+            var keyHolder = new GeneratedKeyHolder();
+            jdbcTemplate.update("insert into genres (title) values (:title)", params, keyHolder, new String[]{"id"});
+            genre.setId(keyHolder.getKey().longValue());
+            return genre;
+        } catch (DataAccessException e) {
+            throw new DaoLayerException(e);
+        }
     }
 
     @Override
     public Genre update(Genre genre) {
-        var params = new MapSqlParameterSource()
-                .addValue("id", genre.getId())
-                .addValue("title", genre.getTitle());
-        int updated = jdbcTemplate.update("update genres set title = :title where id = :id", params);
-        if (updated == 0)
-            throw new EntityNotFoundException();
-        return genre;
+        try {
+            var params = new MapSqlParameterSource()
+                    .addValue("id", genre.getId())
+                    .addValue("title", genre.getTitle());
+            int updated = jdbcTemplate.update("update genres set title = :title where id = :id", params);
+            if (updated == 0)
+                throw new EntityNotFoundException();
+            return genre;
+        } catch (DataAccessException e) {
+            throw new DaoLayerException(e);
+        }
     }
 
     @Override
@@ -66,8 +76,12 @@ public class GenreDaoImpl implements GenreDao {
 
     @Override
     public void deleteById(long id) {
-        int affected = jdbcTemplate.update("delete from genres where id = :id", Collections.singletonMap("id", id));
-        if (affected == 0)
-            throw new EntityNotFoundException();
+        try {
+            int affected = jdbcTemplate.update("delete from genres where id = :id", Collections.singletonMap("id", id));
+            if (affected == 0)
+                throw new EntityNotFoundException();
+        } catch (DataAccessException e) {
+            throw new DaoLayerException(e);
+        }
     }
 }

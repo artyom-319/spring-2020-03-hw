@@ -1,12 +1,14 @@
 package com.etn319.dao.book;
 
 import com.etn319.dao.ConnectedEntityDoesNotExistException;
+import com.etn319.dao.DaoLayerException;
 import com.etn319.dao.EntityNotFoundException;
 import com.etn319.dao.mappers.BookRowMapper;
 import com.etn319.model.Author;
 import com.etn319.model.Book;
 import com.etn319.model.Genre;
 import lombok.RequiredArgsConstructor;
+import org.springframework.dao.DataAccessException;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
@@ -77,6 +79,8 @@ public class BookDaoImpl implements BookDao {
             return book;
         } catch (DataIntegrityViolationException e) {
             throw new ConnectedEntityDoesNotExistException(e);
+        } catch (DataAccessException e) {
+            throw new DaoLayerException(e);
         }
     }
 
@@ -97,6 +101,8 @@ public class BookDaoImpl implements BookDao {
             return book;
         } catch (DataIntegrityViolationException e) {
             throw new ConnectedEntityDoesNotExistException(e);
+        } catch (DataAccessException e) {
+            throw new DaoLayerException(e);
         }
     }
 
@@ -115,9 +121,13 @@ public class BookDaoImpl implements BookDao {
 
     @Override
     public void deleteById(long id) {
-        int affected = jdbcTemplate.update("delete from books where id = :id", Collections.singletonMap("id", id));
-        if (affected == 0)
-            throw new EntityNotFoundException();
+        try {
+            int affected = jdbcTemplate.update("delete from books where id = :id", Collections.singletonMap("id", id));
+            if (affected == 0)
+                throw new EntityNotFoundException();
+        } catch (DataAccessException e) {
+            throw new DaoLayerException(e);
+        }
     }
 
     @Override

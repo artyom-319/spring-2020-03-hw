@@ -1,9 +1,11 @@
 package com.etn319.dao.author;
 
+import com.etn319.dao.DaoLayerException;
 import com.etn319.dao.EntityNotFoundException;
 import com.etn319.dao.mappers.AuthorRowMapper;
 import com.etn319.model.Author;
 import lombok.RequiredArgsConstructor;
+import org.springframework.dao.DataAccessException;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcOperations;
@@ -41,27 +43,35 @@ public class AuthorDaoImpl implements AuthorDao {
 
     @Override
     public Author insert(final Author author) {
-        var params = new MapSqlParameterSource()
-                .addValue("name", author.getName())
-                .addValue("country", author.getCountry());
-        var keyHolder = new GeneratedKeyHolder();
-        jdbcTemplate.update(
-                "insert into authors (name, country) values (:name, :country)", params, keyHolder, new String[]{"id"});
-        author.setId(keyHolder.getKey().longValue());
-        return author;
+        try {
+            var params = new MapSqlParameterSource()
+                    .addValue("name", author.getName())
+                    .addValue("country", author.getCountry());
+            var keyHolder = new GeneratedKeyHolder();
+            jdbcTemplate.update(
+                    "insert into authors (name, country) values (:name, :country)", params, keyHolder, new String[]{"id"});
+            author.setId(keyHolder.getKey().longValue());
+            return author;
+        } catch (DataAccessException e) {
+            throw new DaoLayerException(e);
+        }
     }
 
     @Override
     public Author update(Author author) {
-        var params = new MapSqlParameterSource()
-                .addValue("id", author.getId())
-                .addValue("name", author.getName())
-                .addValue("country", author.getCountry());
-        int updated =
-                jdbcTemplate.update("update authors set name = :name, country = :country where id = :id", params);
-        if (updated == 0)
-            throw new EntityNotFoundException();
-        return author;
+        try {
+            var params = new MapSqlParameterSource()
+                    .addValue("id", author.getId())
+                    .addValue("name", author.getName())
+                    .addValue("country", author.getCountry());
+            int updated =
+                    jdbcTemplate.update("update authors set name = :name, country = :country where id = :id", params);
+            if (updated == 0)
+                throw new EntityNotFoundException();
+            return author;
+        } catch (DataAccessException e) {
+            throw new DaoLayerException(e);
+        }
     }
 
     @Override
@@ -71,8 +81,12 @@ public class AuthorDaoImpl implements AuthorDao {
 
     @Override
     public void deleteById(long id) {
-        int affected = jdbcTemplate.update("delete from authors where id = :id", Collections.singletonMap("id", id));
-        if (affected == 0)
-            throw new EntityNotFoundException();
+        try {
+            int affected = jdbcTemplate.update("delete from authors where id = :id", Collections.singletonMap("id", id));
+            if (affected == 0)
+                throw new EntityNotFoundException();
+        } catch (DataAccessException e) {
+            throw new DaoLayerException(e);
+        }
     }
 }
