@@ -8,6 +8,11 @@ spring:
     initialization-mode : embedded
 #    schema: schema.sql
 #    data: data.sql
+  jpa:
+    generate-ddl: false
+    hibernate:
+      ddl-auto: validate
+    show-sql: true
 
   messages.basename: i18n.bundle
 
@@ -25,4 +30,4 @@ spring:
 ---
 spring:
   profiles:
-    active: h2
+    active: h2, jpa
