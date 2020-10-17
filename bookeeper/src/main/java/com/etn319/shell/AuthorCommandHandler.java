@@ -2,7 +2,7 @@ package com.etn319.shell;
 
 import com.etn319.model.Author;
 import com.etn319.service.EmptyCacheException;
-import com.etn319.service.UpdateException;
+import com.etn319.service.ServiceLayerException;
 import com.etn319.service.author.AuthorService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.shell.standard.ShellCommandGroup;
@@ -11,6 +11,7 @@ import org.springframework.shell.standard.ShellMethod;
 import org.springframework.shell.standard.ShellOption;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @ShellComponent
@@ -26,10 +27,10 @@ public class AuthorCommandHandler implements CommandHandler {
 
     @Override
     public String get(long id) {
-        var author = authorService.getById(id);
-        if (author == null)
+        Optional<Author> author = authorService.getById(id);
+        if (author.isEmpty())
             return "No authors found";
-        return author.toString();
+        return author.get().toString();
     }
 
     @Override
@@ -37,7 +38,9 @@ public class AuthorCommandHandler implements CommandHandler {
         List<Author> authors = authorService.getAll();
         if (authors.isEmpty())
             return "Empty list";
-        return authors.stream().map(Author::toString).collect(Collectors.joining("\n"));
+        return authors.stream()
+                .map(Author::toString)
+                .collect(Collectors.joining("\n"));
     }
 
     @Override
@@ -45,20 +48,21 @@ public class AuthorCommandHandler implements CommandHandler {
         try {
             var author = authorService.save();
             return "Saved: " + author.toString();
-        } catch (UpdateException updateException) {
-            return "Failed to save";
-        } catch (EmptyCacheException cacheException) {
+        } catch (EmptyCacheException e) {
             return "Nothing to save: cache is empty";
+        } catch (ServiceLayerException e) {
+            return "Failed to save";
         }
     }
 
     @Override
     public String delete(long id) {
-        boolean isDeleted = authorService.deleteById(id);
-        if (isDeleted)
+        try {
+            authorService.deleteById(id);
             return "Deleted";
-        else
+        } catch (ServiceLayerException e) {
             return "Failed to delete";
+        }
     }
 
     @Override

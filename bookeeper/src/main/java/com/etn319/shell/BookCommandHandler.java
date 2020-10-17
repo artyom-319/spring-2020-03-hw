@@ -3,8 +3,7 @@ package com.etn319.shell;
 import com.etn319.dao.ConnectedEntityDoesNotExistException;
 import com.etn319.model.Book;
 import com.etn319.service.EmptyCacheException;
-import com.etn319.service.EmptyConnectedEntityException;
-import com.etn319.service.UpdateException;
+import com.etn319.service.ServiceLayerException;
 import com.etn319.service.book.BookService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.shell.standard.ShellCommandGroup;
@@ -13,6 +12,7 @@ import org.springframework.shell.standard.ShellMethod;
 import org.springframework.shell.standard.ShellOption;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @ShellComponent
@@ -28,9 +28,9 @@ public class BookCommandHandler implements CommandHandler {
 
     @Override
     public String get(long id) {
-        var book = bookService.getById(id);
-        if (book == null)
-            return String.format("No books with id=%d were found", id);
+        Optional<Book> book = bookService.getById(id);
+        if (book.isEmpty())
+            return "No books found";
         return book.toString();
     }
 
@@ -47,24 +47,26 @@ public class BookCommandHandler implements CommandHandler {
         try {
             var book = bookService.save();
             return "Saved: " + book.toString();
-        } catch (EmptyConnectedEntityException emptyEntityException) {
-            return "One or more connected entities missing in cache. Use corresponding 'get' command(s)";
-        } catch (UpdateException updateException) {
-            return "Failed to update";
-        } catch (ConnectedEntityDoesNotExistException connectedEntityException) {
+//        } catch (EmptyConnectedEntityException e) {
+//            return "One or more connected entities missing in cache. Use corresponding 'get' command(s)";
+        } catch (ConnectedEntityDoesNotExistException e) {
+            // todo: нужен ли этот сценарий ?
             return "One or more connected entities were not found in data source. Save them or refresh and try again";
-        } catch (EmptyCacheException emptyCacheException) {
+        } catch (EmptyCacheException e) {
             return "Nothing to save: cache is empty";
+        } catch (ServiceLayerException e) {
+            return "Failed to update";
         }
     }
 
     @Override
     public String delete(long id) {
-        boolean isDeleted = bookService.deleteById(id);
-        if (isDeleted)
+        try {
+            bookService.deleteById(id);
             return "Deleted";
-        else
+        } catch (ServiceLayerException e) {
             return "Failed to delete";
+        }
     }
 
     @Override

@@ -2,8 +2,8 @@ package com.etn319.shell;
 
 import com.etn319.model.Genre;
 import com.etn319.service.EmptyCacheException;
+import com.etn319.service.ServiceLayerException;
 import com.etn319.service.genre.GenreService;
-import com.etn319.service.UpdateException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.shell.standard.ShellCommandGroup;
 import org.springframework.shell.standard.ShellComponent;
@@ -11,6 +11,7 @@ import org.springframework.shell.standard.ShellMethod;
 import org.springframework.shell.standard.ShellOption;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @ShellComponent
@@ -26,9 +27,9 @@ public class GenreCommandHandler implements CommandHandler {
 
     @Override
     public String get(long id) {
-        var genre = genreService.getById(id);
-        if (genre == null)
-            return String.format("No genres with id=%d were found", id);
+        Optional<Genre> genre = genreService.getById(id);
+        if (genre.isEmpty())
+            return "No genres found";
         return genre.toString();
     }
 
@@ -37,7 +38,9 @@ public class GenreCommandHandler implements CommandHandler {
         List<Genre> genres = genreService.getAll();
         if (genres.isEmpty())
             return "Empty list";
-        return genres.stream().map(Genre::toString).collect(Collectors.joining("\n"));
+        return genres.stream()
+                .map(Genre::toString)
+                .collect(Collectors.joining("\n"));
     }
 
     @Override
@@ -45,20 +48,21 @@ public class GenreCommandHandler implements CommandHandler {
         try {
             var genre = genreService.save();
             return "Saved: " + genre.toString();
-        } catch (UpdateException updateException) {
-            return "Failed to save";
-        } catch (EmptyCacheException cacheException) {
+        } catch (EmptyCacheException e) {
             return "Nothing to save: cache is empty";
+        } catch (ServiceLayerException e) {
+            return "Failed to save";
         }
     }
 
     @Override
     public String delete(long id) {
-        boolean isDeleted = genreService.deleteById(id);
-        if (isDeleted)
+        try {
+            genreService.deleteById(id);
             return "Deleted";
-        else
+        } catch (ServiceLayerException e) {
             return "Failed to delete";
+        }
     }
 
     @Override
