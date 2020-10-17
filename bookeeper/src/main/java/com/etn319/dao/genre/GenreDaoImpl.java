@@ -5,6 +5,7 @@ import com.etn319.dao.EntityNotFoundException;
 import com.etn319.dao.mappers.GenreRowMapper;
 import com.etn319.model.Genre;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.annotation.Profile;
 import org.springframework.dao.DataAccessException;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
@@ -14,25 +15,27 @@ import org.springframework.stereotype.Repository;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 
 @SuppressWarnings("ConstantConditions")
 @Repository
+@Profile("jdbc")
 @RequiredArgsConstructor
 public class GenreDaoImpl implements GenreDao {
     private final NamedParameterJdbcOperations jdbcTemplate;
 
     @Override
-    public int count() {
-        return jdbcTemplate.getJdbcOperations().queryForObject("select count(1) from genres", int.class);
+    public long count() {
+        return jdbcTemplate.getJdbcOperations().queryForObject("select count(1) from genres", long.class);
     }
 
     @Override
-    public Genre getById(long id) {
+    public Optional<Genre> getById(long id) {
         try {
-            return jdbcTemplate.queryForObject("select * from genres where id = :id",
-                    Collections.singletonMap("id", id), new GenreRowMapper());
+            return Optional.ofNullable(jdbcTemplate.queryForObject("select * from genres where id = :id",
+                    Collections.singletonMap("id", id), new GenreRowMapper()));
         } catch (EmptyResultDataAccessException e) {
-            throw new EntityNotFoundException();
+            return Optional.empty();
         }
     }
 
@@ -41,8 +44,7 @@ public class GenreDaoImpl implements GenreDao {
         return jdbcTemplate.getJdbcOperations().query("select * from genres", new GenreRowMapper());
     }
 
-    @Override
-    public Genre insert(final Genre genre) {
+    private Genre insert(final Genre genre) {
         try {
             var params = new MapSqlParameterSource("title", genre.getTitle());
             var keyHolder = new GeneratedKeyHolder();
@@ -54,8 +56,7 @@ public class GenreDaoImpl implements GenreDao {
         }
     }
 
-    @Override
-    public Genre update(Genre genre) {
+    private Genre update(Genre genre) {
         try {
             var params = new MapSqlParameterSource()
                     .addValue("id", genre.getId())
@@ -70,8 +71,17 @@ public class GenreDaoImpl implements GenreDao {
     }
 
     @Override
+    public Genre save(Genre genre) {
+        if (genre.getId() == 0L)
+            return insert(genre);
+        else
+            return update(genre);
+    }
+
+    @Override
     public void delete(Genre genre) {
-        deleteById(genre.getId());
+        if (genre.getId() != 0L)
+            deleteById(genre.getId());
     }
 
     @Override

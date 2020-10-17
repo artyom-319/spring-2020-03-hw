@@ -5,6 +5,7 @@ import com.etn319.dao.EntityNotFoundException;
 import com.etn319.dao.mappers.AuthorRowMapper;
 import com.etn319.model.Author;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.annotation.Profile;
 import org.springframework.dao.DataAccessException;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
@@ -14,25 +15,27 @@ import org.springframework.stereotype.Repository;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 
 @SuppressWarnings("ConstantConditions")
 @Repository
+@Profile("jdbc")
 @RequiredArgsConstructor
 public class AuthorDaoImpl implements AuthorDao {
     private final NamedParameterJdbcOperations jdbcTemplate;
 
     @Override
-    public int count() {
-        return jdbcTemplate.getJdbcOperations().queryForObject("select count(1) from authors", int.class);
+    public long count() {
+        return jdbcTemplate.getJdbcOperations().queryForObject("select count(1) from authors", long.class);
     }
 
     @Override
-    public Author getById(long id) {
+    public Optional<Author> getById(long id) {
         try {
-            return jdbcTemplate.queryForObject("select * from authors where id = :id",
-                    Collections.singletonMap("id", id), new AuthorRowMapper());
+            return Optional.ofNullable(jdbcTemplate.queryForObject("select * from authors where id = :id",
+                    Collections.singletonMap("id", id), new AuthorRowMapper()));
         } catch (EmptyResultDataAccessException e) {
-            throw new EntityNotFoundException();
+            return Optional.empty();
         }
     }
 
@@ -41,8 +44,7 @@ public class AuthorDaoImpl implements AuthorDao {
         return jdbcTemplate.getJdbcOperations().query("select * from authors", new AuthorRowMapper());
     }
 
-    @Override
-    public Author insert(final Author author) {
+    private Author insert(final Author author) {
         try {
             var params = new MapSqlParameterSource()
                     .addValue("name", author.getName())
@@ -57,8 +59,7 @@ public class AuthorDaoImpl implements AuthorDao {
         }
     }
 
-    @Override
-    public Author update(Author author) {
+    private Author update(Author author) {
         try {
             var params = new MapSqlParameterSource()
                     .addValue("id", author.getId())
@@ -75,8 +76,17 @@ public class AuthorDaoImpl implements AuthorDao {
     }
 
     @Override
+    public Author save(Author author) {
+        if (author.getId() == 0L)
+            return insert(author);
+        else
+            return update(author);
+    }
+
+    @Override
     public void delete(Author author) {
-        deleteById(author.getId());
+        if (author.getId() != 0L)
+            deleteById(author.getId());
     }
 
     @Override

@@ -8,6 +8,7 @@ import com.etn319.model.Author;
 import com.etn319.model.Book;
 import com.etn319.model.Genre;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.annotation.Profile;
 import org.springframework.dao.DataAccessException;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.dao.EmptyResultDataAccessException;
@@ -25,6 +26,7 @@ import java.util.stream.Collectors;
 @SuppressWarnings("ConstantConditions")
 @Repository
 @RequiredArgsConstructor
+@Profile("jdbc")
 public class BookDaoImpl implements BookDao {
     private static final String DOT = ".";
     private static final String UNDERLINE = "_";
@@ -37,21 +39,25 @@ public class BookDaoImpl implements BookDao {
     private String aliasSelectables = toAliasString(selectables);
 
     @Override
-    public int count() {
-        return jdbcTemplate.getJdbcOperations().queryForObject("select count(1) from books", int.class);
+    public long count() {
+        return jdbcTemplate.getJdbcOperations().queryForObject("select count(1) from books", long.class);
     }
 
     @Override
-    public Book getById(long id) {
+    public Optional<Book> getById(long id) {
         try {
-            return jdbcTemplate.queryForObject(("select * from books " +
-                            "left join authors on books.author_id = authors.id " +
-                            "left join genres on books.genre_id = genres.id where books.id = :id")
-                                    .replace("*", aliasSelectables),
-                    Collections.singletonMap("id", id),
-                    new BookRowMapper("books", "authors", "genres", UNDERLINE));
+            return Optional.ofNullable(
+                    jdbcTemplate.queryForObject(
+                            String.format("select %s from books " +
+                                            "left join authors on books.author_id = authors.id " +
+                                            "left join genres on books.genre_id = genres.id where books.id = :id",
+                                    aliasSelectables),
+                            Collections.singletonMap("id", id),
+                            new BookRowMapper("books", "authors", "genres", UNDERLINE)
+                    )
+            );
         } catch (EmptyResultDataAccessException e) {
-            throw new EntityNotFoundException(e);
+            return Optional.empty();
         }
     }
 
@@ -64,8 +70,7 @@ public class BookDaoImpl implements BookDao {
                 new BookRowMapper("books", "authors", "genres", UNDERLINE));
     }
 
-    @Override
-    public Book insert(final Book book) {
+    private Book insert(final Book book) {
         try {
             checkForEmptyEntities(book);
             var params = new MapSqlParameterSource()
@@ -84,8 +89,7 @@ public class BookDaoImpl implements BookDao {
         }
     }
 
-    @Override
-    public Book update(Book book) {
+    private Book update(Book book) {
         try {
             checkForEmptyEntities(book);
             var params = new MapSqlParameterSource()
@@ -106,6 +110,14 @@ public class BookDaoImpl implements BookDao {
         }
     }
 
+    @Override
+    public Book save(Book book) {
+        if (book.getId() == 0L)
+            return insert(book);
+        else
+            return update(book);
+    }
+
     private void checkForEmptyEntities(Book book) {
         Objects.requireNonNull(book);
         long authorId = Optional.ofNullable(book.getAuthor()).map(Author::getId).orElse(0L);
@@ -122,7 +134,8 @@ public class BookDaoImpl implements BookDao {
     @Override
     public void deleteById(long id) {
         try {
-            int affected = jdbcTemplate.update("delete from books where id = :id", Collections.singletonMap("id", id));
+            int affected = jdbcTemplate.update(
+                    "delete from books where id = :id", Collections.singletonMap("id", id));
             if (affected == 0)
                 throw new EntityNotFoundException();
         } catch (DataAccessException e) {
