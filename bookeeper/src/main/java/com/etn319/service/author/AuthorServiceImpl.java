@@ -1,16 +1,16 @@
 package com.etn319.service.author;
 
-import com.etn319.dao.EntityNotFoundException;
+import com.etn319.dao.DaoLayerException;
 import com.etn319.dao.author.AuthorDao;
 import com.etn319.model.Author;
 import com.etn319.service.CacheHolder;
-import com.etn319.service.EmptyCacheException;
-import com.etn319.service.UpdateException;
+import com.etn319.service.ServiceLayerException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -18,22 +18,17 @@ import java.util.List;
 public class AuthorServiceImpl implements AuthorService {
     private final AuthorDao dao;
     private final CacheHolder cache;
-    private boolean created;
 
     @Override
-    public int count() {
+    public long count() {
         return dao.count();
     }
 
     @Override
-    public Author getById(long id) {
-        try {
-            Author author = dao.getById(id);
-            cache.setAuthor(author);
-            return author;
-        } catch (EntityNotFoundException e) {
-            return null;
-        }
+    public Optional<Author> getById(long id) {
+        Optional<Author> author = dao.getById(id);
+        author.ifPresent(cache::setAuthor);
+        return author;
     }
 
     @Override
@@ -45,33 +40,21 @@ public class AuthorServiceImpl implements AuthorService {
     public Author save() {
         var author = cache.getAuthor();
 
-        if (author == null)
-            throw new EmptyCacheException("author");
-
-        if (created) {
-            Author inserted = dao.insert(author);
-            created = false;
+        try {
+            Author saved = dao.save(author);
             clearCache();
-            return inserted;
-        } else {
-            try {
-                Author updated = dao.update(author);
-                clearCache();
-                return updated;
-            } catch (EntityNotFoundException e) {
-                throw new UpdateException(e);
-            }
+            return saved;
+        } catch (DaoLayerException e) {
+            throw new ServiceLayerException(e);
         }
     }
 
     @Override
-    public boolean deleteById(long id) {
+    public void deleteById(long id) {
         try {
             dao.deleteById(id);
-            return true;
-        } catch (RuntimeException e) {
-            log.info(e.toString());
-            return false;
+        } catch (DaoLayerException e) {
+            throw new ServiceLayerException(e);
         }
     }
 
@@ -81,15 +64,12 @@ public class AuthorServiceImpl implements AuthorService {
         author.setName(name);
         author.setCountry(country);
         cache.setAuthor(author);
-        created = true;
         return author;
     }
 
     @Override
     public Author change(String name, String country) {
         var author = cache.getAuthor();
-        if (author == null)
-            throw new EmptyCacheException("Author");
         if (name != null)
             author.setName(name);
         if (country != null)
@@ -99,7 +79,6 @@ public class AuthorServiceImpl implements AuthorService {
 
     @Override
     public void clearCache() {
-        created = false;
         cache.clearAuthor();
     }
 

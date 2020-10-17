@@ -1,38 +1,34 @@
 package com.etn319.service.genre;
 
-import com.etn319.dao.EntityNotFoundException;
+import com.etn319.dao.DaoLayerException;
 import com.etn319.dao.genre.GenreDao;
 import com.etn319.model.Genre;
 import com.etn319.service.CacheHolder;
-import com.etn319.service.UpdateException;
+import com.etn319.service.ServiceLayerException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 
+@Service
 @Slf4j
 @RequiredArgsConstructor
-@Service
 public class GenreServiceImpl implements GenreService {
     private final GenreDao dao;
     private final CacheHolder cache;
-    private boolean created;
 
     @Override
-    public int count() {
+    public long count() {
         return dao.count();
     }
 
     @Override
-    public Genre getById(long id) {
-        try {
-            var genre = dao.getById(id);
-            cache.setGenre(genre);
-            return genre;
-        } catch (EntityNotFoundException e) {
-            return null;
-        }
+    public Optional<Genre> getById(long id) {
+        Optional<Genre> genre = dao.getById(id);
+        genre.ifPresent(cache::setGenre);
+        return genre;
     }
 
     @Override
@@ -43,31 +39,21 @@ public class GenreServiceImpl implements GenreService {
     @Override
     public Genre save() {
         var genre = cache.getGenre();
-
-        if (created) {
-            Genre inserted = dao.insert(genre);
-            created = false;
+        try {
+            Genre saved = dao.save(genre);
             clearCache();
-            return inserted;
-        } else {
-            try {
-                Genre updated = dao.update(genre);
-                clearCache();
-                return updated;
-            } catch (EntityNotFoundException e) {
-                throw new UpdateException(e);
-            }
+            return saved;
+        } catch (DaoLayerException e) {
+            throw new ServiceLayerException(e);
         }
     }
 
     @Override
-    public boolean deleteById(long id) {
+    public void deleteById(long id) {
         try {
             dao.deleteById(id);
-            return true;
-        } catch (RuntimeException e) {
-            log.debug(e.toString());
-            return false;
+        } catch (DaoLayerException e) {
+            throw new ServiceLayerException(e);
         }
     }
 
@@ -75,7 +61,6 @@ public class GenreServiceImpl implements GenreService {
     public Genre create(String title) {
         var genre = new Genre();
         genre.setTitle(title);
-        created = true;
         cache.setGenre(genre);
         return genre;
     }
@@ -89,7 +74,6 @@ public class GenreServiceImpl implements GenreService {
 
     @Override
     public void clearCache() {
-        created = false;
         cache.clearGenre();
     }
 

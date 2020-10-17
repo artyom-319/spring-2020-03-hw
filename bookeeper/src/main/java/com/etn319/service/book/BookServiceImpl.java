@@ -1,16 +1,16 @@
 package com.etn319.service.book;
 
-import com.etn319.dao.EntityNotFoundException;
+import com.etn319.dao.DaoLayerException;
 import com.etn319.dao.book.BookDao;
 import com.etn319.model.Book;
 import com.etn319.service.CacheHolder;
-import com.etn319.service.EmptyConnectedEntityException;
-import com.etn319.service.UpdateException;
+import com.etn319.service.ServiceLayerException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -18,22 +18,17 @@ import java.util.List;
 public class BookServiceImpl implements BookService {
     private final BookDao dao;
     private final CacheHolder cache;
-    private boolean created;
 
     @Override
-    public int count() {
+    public long count() {
         return dao.count();
     }
 
     @Override
-    public Book getById(long id) {
-        try {
-            var book = dao.getById(id);
-            cache.setBook(book);
-            return book;
-        } catch (EntityNotFoundException e) {
-            return null;
-        }
+    public Optional<Book> getById(long id) {
+        Optional<Book> book = dao.getById(id);
+        book.ifPresent(cache::setBook);
+        return book;
     }
 
     @Override
@@ -44,32 +39,21 @@ public class BookServiceImpl implements BookService {
     @Override
     public Book save() {
         var book = cache.getBook();
-        if (book.getAuthor() == null || book.getGenre() == null)
-            throw new EmptyConnectedEntityException();
-
-        if (created) {
-            Book inserted = dao.insert(book);
+        try {
+            Book saved = dao.save(book);
             clearCache();
-            return inserted;
-        } else {
-            try {
-                Book updated = dao.update(book);
-                clearCache();
-                return updated;
-            } catch (EntityNotFoundException e) {
-                throw new UpdateException(e);
-            }
+            return saved;
+        } catch (DaoLayerException e) {
+            throw new ServiceLayerException(e);
         }
     }
 
     @Override
-    public boolean deleteById(long id) {
+    public void deleteById(long id) {
         try {
             dao.deleteById(id);
-            return true;
-        } catch (RuntimeException e) {
-            log.debug(e.toString());
-            return false;
+        } catch (DaoLayerException e) {
+            throw new ServiceLayerException(e);
         }
     }
 
@@ -99,7 +83,6 @@ public class BookServiceImpl implements BookService {
     public Book create(String title) {
         var book = new Book();
         book.setTitle(title);
-        created = true;
         cache.setBook(book);
         return book;
     }
@@ -129,7 +112,6 @@ public class BookServiceImpl implements BookService {
 
     @Override
     public void clearCache() {
-        created = false;
         cache.clearBook();
     }
 
