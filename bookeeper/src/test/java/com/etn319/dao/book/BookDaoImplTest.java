@@ -17,6 +17,7 @@ import org.springframework.context.annotation.Import;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.catchThrowable;
@@ -32,7 +33,8 @@ class BookDaoImplTest {
     private static final String TITLE_1 = "Martin Eden";
     private static final String TITLE_2 = "Three Comrades";
     private static final String TITLE_3 = "Sea Wolf";
-    private static final long INCORRECT_ID = 0L;
+    private static final long ZERO_ID = 0L;
+    private static final long NOT_EXISTING_ID = 100L;
 
     private Author authorRemarque;
     private Author authorLondon;
@@ -48,35 +50,35 @@ class BookDaoImplTest {
 
     @BeforeEach
     public void setUp() {
-        authorLondon = authorDao.getById(1L);
-        authorRemarque = authorDao.getById(2L);
-        genreNovel = genreDao.getById(1L);
-        genreDrama = genreDao.getById(2L);
+        authorLondon = authorDao.getById(1L).orElseThrow();
+        authorRemarque = authorDao.getById(2L).orElseThrow();
+        genreNovel = genreDao.getById(1L).orElseThrow();
+        genreDrama = genreDao.getById(2L).orElseThrow();
     }
 
     @Test
     @DisplayName("count должен возвращать стартовое количество записей")
     void count() {
-        int cnt = dao.count();
+        long cnt = dao.count();
         assertThat(cnt).isEqualTo(INITIAL_COUNT);
     }
 
     @Test
-    @DisplayName("insert должен увеличивать число записей на 1")
-    void insertAffectsCount() {
-        int countBefore = dao.count();
+    @DisplayName("save новой книги должен увеличивать число записей на 1")
+    void saveForNewEntityAffectsCount() {
+        long countBefore = dao.count();
         Book book = new Book(NEW_TITLE, authorRemarque, genreNovel);
-        dao.insert(book);
-        int countAfter = dao.count();
+        dao.save(book);
+        long countAfter = dao.count();
 
         assertThat(countAfter).isEqualTo(countBefore + 1);
     }
 
     @Test
     @DisplayName("insert должен возвращать книгу с теми же данными")
-    void insertReturnValue() {
+    void saveNewEntityReturnValue() {
         var book = new Book(NEW_TITLE, authorRemarque, genreNovel);
-        var insertedBook = dao.insert(book);
+        var insertedBook = dao.save(book);
 
         assertThat(insertedBook)
                 .isNotNull()
@@ -86,9 +88,9 @@ class BookDaoImplTest {
 
     @Test
     @DisplayName("insert должен возвращать книгу с новым id")
-    void insertGeneratesId() {
+    void saveForNewEntityGeneratesId() {
         var book = new Book(NEW_TITLE, authorRemarque, genreNovel);
-        var insertedBook = dao.insert(book);
+        var insertedBook = dao.save(book);
 
         assertThat(insertedBook.getId()).isNotEqualTo(0L);
     }
@@ -96,18 +98,19 @@ class BookDaoImplTest {
     @Test
     @DisplayName("getById должен находить книгу по существующему id")
     void getById() {
-        Book book = dao.getById(1);
-        assertThat(book)
-                .isNotNull()
+        Optional<Book> book = dao.getById(1L);
+
+        assertThat(book).isPresent();
+        assertThat(book.orElseThrow())
                 .extracting(Book::getId, Book::getTitle, Book::getAuthor, Book::getGenre)
                 .containsExactly(1L, TITLE_1, authorLondon, genreNovel);
     }
 
     @Test
-    @DisplayName("getById по несуществующему id должен бросать исключение")
+    @DisplayName("getById по несуществующему id должен возвращать пустой Optional")
     void getByNotExistingId() {
-        Throwable thrown = catchThrowable(() -> dao.getById(INCORRECT_ID));
-        assertThat(thrown).isInstanceOf(EntityNotFoundException.class);
+        Optional<Book> book = dao.getById(ZERO_ID);
+        assertThat(book).isEmpty();
     }
 
     @Test
@@ -126,13 +129,13 @@ class BookDaoImplTest {
     }
 
     @Test
-    @DisplayName("update должен возвращать изменённую книгу с тем же id")
-    void update() {
-        Book book = dao.getById(2L);
+    @DisplayName("save для существующий книги должен возвращать изменённую книгу с тем же id")
+    void saveExisting() {
+        Book book = dao.getById(2L).orElseThrow();
         book.setTitle(NEW_TITLE);
         book.setAuthor(authorLondon);
         book.setGenre(genreDrama);
-        Book updated = dao.update(book);
+        Book updated = dao.save(book);
 
         assertThat(updated)
                 .extracting(Book::getId, Book::getTitle, Book::getAuthor, Book::getGenre)
@@ -142,53 +145,53 @@ class BookDaoImplTest {
     @Test
     @DisplayName("update по несуществующей книге должен бросать исключение")
     void updateByNotExistingId() {
-        var book = new Book(INCORRECT_ID, NEW_TITLE, authorRemarque, genreNovel);
-        Throwable thrown = catchThrowable(() -> dao.update(book));
+        var book = new Book(NOT_EXISTING_ID, NEW_TITLE, authorRemarque, genreNovel);
+        Throwable thrown = catchThrowable(() -> dao.save(book));
         assertThat(thrown).isInstanceOf(EntityNotFoundException.class);
     }
 
     @Test
     @DisplayName("getById после update должен возвращать обновлённую книгу")
     void getByIdUpdatedBook() {
-        var book = dao.getById(2L);
+        var book = dao.getById(2L).orElseThrow();
         book.setTitle(NEW_TITLE);
         book.setAuthor(authorLondon);
         book.setGenre(genreDrama);
-        var updatedGenre = dao.update(book);
-        var foundGenre = dao.getById(2L);
+        var updatedBook = dao.save(book);
+        var foundBook = dao.getById(2L).orElseThrow();
 
-        assertThat(foundGenre).isEqualToComparingFieldByField(updatedGenre);
+        assertThat(foundBook).isEqualToComparingFieldByField(updatedBook);
     }
 
     @Test
     @DisplayName("getById после insert должен возвращать новую книгу")
     void getByIdInsertedBook() {
         var book = new Book(NEW_TITLE, authorRemarque, genreNovel);
-        var insertedBook = dao.insert(book);
+        var insertedBook = dao.save(book);
         var foundBook = dao.getById(insertedBook.getId());
 
-        assertThat(foundBook)
-                .isNotNull()
+        assertThat(foundBook).isPresent();
+        assertThat(foundBook.orElseThrow())
                 .isEqualToComparingFieldByField(insertedBook);
     }
 
     @Test
     @DisplayName("delete должен уменьшать count на единицу")
     void deleteByIdAffectsCount() {
-        int countBefore = dao.count();
+        long countBefore = dao.count();
         dao.deleteById(1L);
-        int countAfter = dao.count();
+        long countAfter = dao.count();
 
         assertThat(countAfter).isEqualTo(countBefore - 1);
     }
 
     @Test
-    @DisplayName("getById после delete должен бросать исключение")
+    @DisplayName("getById после delete должен возвращать пустой Optional")
     void getByIdDeletedBook() {
         dao.deleteById(1L);
+        Optional<Book> deletedBook = dao.getById(1L);
 
-        Throwable thrown = catchThrowable(() -> dao.getById(1L));
-        assertThat(thrown).isInstanceOf(EntityNotFoundException.class);
+        assertThat(deletedBook).isEmpty();
     }
 
     @Test
@@ -204,7 +207,7 @@ class BookDaoImplTest {
     @Test
     @DisplayName("getByGenreId по несуществующему id должен вернуть пустой список")
     void getByIncorrectGenreId() {
-        List<Book> books = dao.getByGenreId(INCORRECT_ID);
+        List<Book> books = dao.getByGenreId(NOT_EXISTING_ID);
         assertThat(books).isEmpty();
     }
 
@@ -221,7 +224,7 @@ class BookDaoImplTest {
     @Test
     @DisplayName("getByAuthorId по несуществующему id должен вернуть пустой список")
     void getByIncorrectAuthorId() {
-        List<Book> books = dao.getByAuthorId(INCORRECT_ID);
+        List<Book> books = dao.getByAuthorId(NOT_EXISTING_ID);
         assertThat(books).isEmpty();
     }
 }

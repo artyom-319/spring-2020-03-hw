@@ -9,6 +9,7 @@ import org.springframework.boot.test.autoconfigure.jdbc.JdbcTest;
 import org.springframework.context.annotation.Import;
 
 import java.util.List;
+import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.catchThrowable;
@@ -24,7 +25,8 @@ class AuthorDaoImplTest {
     private static final String COUNTRY_1 = "USA";
     private static final String NAME_2 = "Erich Maria Remarque";
     private static final String COUNTRY_2 = "Germany";
-    private static final long INCORRECT_ID = 0L;
+    private static final long ZERO_ID = 0L;
+    private static final long NOT_EXISTING_ID = 100L;
 
     @Autowired
     private AuthorDao dao;
@@ -32,26 +34,26 @@ class AuthorDaoImplTest {
     @Test
     @DisplayName("count должен возвращать стартовое количество записей")
     void count() {
-        int cnt = dao.count();
+        long cnt = dao.count();
         assertThat(cnt).isEqualTo(INITIAL_COUNT);
     }
 
     @Test
     @DisplayName("insert должен увеличивать число записей на 1")
-    void insertAffectsCount() {
-        int countBefore = dao.count();
+    void saveNewEntityAffectsCount() {
+        long countBefore = dao.count();
         Author author = new Author(NEW_NAME, NEW_COUNTRY);
-        dao.insert(author);
-        int countAfter = dao.count();
+        dao.save(author);
+        long countAfter = dao.count();
 
         assertThat(countAfter).isEqualTo(countBefore + 1);
     }
 
     @Test
-    @DisplayName("insert должен возвращать автора с теми же данными")
-    void insertReturnValue() {
+    @DisplayName("save нового автора должен возвращать автора с теми же данными")
+    void saveNewEntityReturnValue() {
         var author = new Author(NEW_NAME, NEW_COUNTRY);
-        var insertedAuthor = dao.insert(author);
+        var insertedAuthor = dao.save(author);
 
         assertThat(insertedAuthor)
                 .isNotNull()
@@ -61,9 +63,9 @@ class AuthorDaoImplTest {
 
     @Test
     @DisplayName("insert должен возвращать автора с новым id")
-    void insertGeneratesId() {
+    void saveForNewEntityGeneratesId() {
         var author = new Author(NEW_NAME, NEW_COUNTRY);
-        var insertedAuthor = dao.insert(author);
+        var insertedAuthor = dao.save(author);
 
         assertThat(insertedAuthor.getId()).isNotEqualTo(0L);
     }
@@ -71,18 +73,18 @@ class AuthorDaoImplTest {
     @Test
     @DisplayName("getById должен находить автора по существующему id")
     void getById() {
-        Author author = dao.getById(1);
-        assertThat(author)
-                .isNotNull()
+        Optional<Author> author = dao.getById(1);
+        assertThat(author).isPresent();
+        assertThat(author.orElseThrow())
                 .extracting(Author::getId, Author::getName, Author::getCountry)
                 .containsExactly(1L, NAME_1, COUNTRY_1);
     }
 
     @Test
-    @DisplayName("getById по несуществующему id должен бросать исключение")
+    @DisplayName("getById по несуществующему id должен возвращать пустой Optional")
     void getByNotExistingId() {
-        Throwable thrown = catchThrowable(() -> dao.getById(INCORRECT_ID));
-        assertThat(thrown).isInstanceOf(EntityNotFoundException.class);
+        Optional<Author> author = dao.getById(ZERO_ID);
+        assertThat(author).isEmpty();
     }
 
     @Test
@@ -98,32 +100,33 @@ class AuthorDaoImplTest {
 
     @Test
     @DisplayName("update должен возвращать изменённого автора с тем же id")
-    void update() {
-        Author author = dao.getById(2L);
+    void updateReturnValue() {
+        Author author = dao.getById(2L).orElseThrow();
         author.setName(NEW_NAME);
         author.setCountry(NEW_COUNTRY);
-        Author updated = dao.update(author);
+        Author updated = dao.save(author);
 
-        assertThat(updated).extracting(Author::getId, Author::getName, Author::getCountry)
+        assertThat(updated)
+                .extracting(Author::getId, Author::getName, Author::getCountry)
                 .containsExactly(2L, NEW_NAME, NEW_COUNTRY);
     }
 
     @Test
     @DisplayName("update по несуществующему автору должен бросать исключение")
     void updateByNotExistingId() {
-        var author = new Author(INCORRECT_ID, NEW_NAME, NEW_COUNTRY);
-        Throwable thrown = catchThrowable(() -> dao.update(author));
+        var author = new Author(NOT_EXISTING_ID, NEW_NAME, NEW_COUNTRY);
+        Throwable thrown = catchThrowable(() -> dao.save(author));
         assertThat(thrown).isInstanceOf(EntityNotFoundException.class);
     }
 
     @Test
     @DisplayName("getById после update должен возвращать обновлённого автора")
     void getByIdUpdatedAuthor() {
-        var author = dao.getById(2L);
+        var author = dao.getById(2L).orElseThrow();
         author.setName(NEW_NAME);
         author.setCountry(NEW_COUNTRY);
-        var updatedAuthor = dao.update(author);
-        var foundAuthor = dao.getById(2L);
+        var updatedAuthor = dao.save(author);
+        var foundAuthor = dao.getById(2L).orElseThrow();
 
         assertThat(foundAuthor).isEqualToComparingFieldByField(updatedAuthor);
     }
@@ -132,30 +135,31 @@ class AuthorDaoImplTest {
     @DisplayName("getById после insert должен возвращать нового автора")
     void getByIdInsertedAuthor() {
         var author = new Author(NEW_NAME, NEW_COUNTRY);
-        var insertedAuthor = dao.insert(author);
+        var insertedAuthor = dao.save(author);
         var foundAuthor = dao.getById(insertedAuthor.getId());
 
         assertThat(foundAuthor)
-                .isNotNull()
+                .isPresent();
+        assertThat(foundAuthor.orElseThrow())
                 .isEqualToComparingFieldByField(insertedAuthor);
     }
 
     @Test
     @DisplayName("delete должен уменьшать count на единицу")
     void deleteByIdAffectsCount() {
-        int countBefore = dao.count();
+        long countBefore = dao.count();
         dao.deleteById(1L);
-        int countAfter = dao.count();
+        long countAfter = dao.count();
 
         assertThat(countAfter).isEqualTo(countBefore - 1);
     }
 
     @Test
-    @DisplayName("getById после delete должен бросать исключение")
+    @DisplayName("getById после delete должен возвращать пустой Optional")
     void getByIdDeletedAuthor() {
         dao.deleteById(1L);
 
-        Throwable thrown = catchThrowable(() -> dao.getById(1L));
-        assertThat(thrown).isInstanceOf(EntityNotFoundException.class);
+        Optional<Author> author = dao.getById(1L);
+        assertThat(author).isEmpty();
     }
 }

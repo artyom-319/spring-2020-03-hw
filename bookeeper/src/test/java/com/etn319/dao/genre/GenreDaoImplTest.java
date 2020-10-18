@@ -9,6 +9,7 @@ import org.springframework.boot.test.autoconfigure.jdbc.JdbcTest;
 import org.springframework.context.annotation.Import;
 
 import java.util.List;
+import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.catchThrowable;
@@ -21,7 +22,8 @@ class GenreDaoImplTest {
     private static final String NEW_TITLE = "Science Fiction";
     private static final String TITLE_1 = "Novel";
     private static final String TITLE_2 = "Drama";
-    private static final long INCORRECT_ID = 0L;
+    private static final long ZERO_ID = 0L;
+    private static final long NOT_EXISTING_ID = 1000L;
 
     @Autowired
     private GenreDao dao;
@@ -29,26 +31,26 @@ class GenreDaoImplTest {
     @Test
     @DisplayName("count должен возвращать стартовое количество записей")
     void count() {
-        int cnt = dao.count();
+        long cnt = dao.count();
         assertThat(cnt).isEqualTo(INITIAL_COUNT);
     }
 
     @Test
-    @DisplayName("insert должен увеличивать число записей на 1")
-    void insertAffectsCount() {
-        int countBefore = dao.count();
+    @DisplayName("save для нового жанра должен увеличивать число записей на 1")
+    void saveForNewEntityAffectsCount() {
+        long countBefore = dao.count();
         Genre genre = new Genre(NEW_TITLE);
-        dao.insert(genre);
-        int countAfter = dao.count();
+        dao.save(genre);
+        long countAfter = dao.count();
 
         assertThat(countAfter).isEqualTo(countBefore + 1);
     }
 
     @Test
-    @DisplayName("insert должен возвращать жанр с теми же данными")
-    void insertReturnValue() {
+    @DisplayName("save должен возвращать жанр с теми же данными")
+    void saveNewEntityReturnValue() {
         var genre = new Genre(NEW_TITLE);
-        var insertedGenre = dao.insert(genre);
+        var insertedGenre = dao.save(genre);
 
         assertThat(insertedGenre)
                 .isNotNull()
@@ -57,10 +59,10 @@ class GenreDaoImplTest {
     }
 
     @Test
-    @DisplayName("insert должен возвращать жанр с новым id")
+    @DisplayName("save нового жанра должен возвращать жанр со сгенерированным id != 0")
     void insertGeneratesId() {
         var genre = new Genre(NEW_TITLE);
-        var insertedGenre = dao.insert(genre);
+        var insertedGenre = dao.save(genre);
 
         assertThat(insertedGenre.getId()).isNotEqualTo(0L);
     }
@@ -68,18 +70,20 @@ class GenreDaoImplTest {
     @Test
     @DisplayName("getById должен находить жанр по существующему id")
     void getById() {
-        Genre genre = dao.getById(1);
+        Optional<Genre> genre = dao.getById(1);
+
         assertThat(genre)
-                .isNotNull()
+                .isPresent();
+        assertThat(genre.orElseThrow())
                 .extracting(Genre::getId, Genre::getTitle)
                 .containsExactly(1L, TITLE_1);
     }
 
     @Test
-    @DisplayName("getById по несуществующему id должен бросать исключение")
+    @DisplayName("getById по несуществующему id должен возвращать пустой Optional")
     void getByNotExistingId() {
-        Throwable thrown = catchThrowable(() -> dao.getById(INCORRECT_ID));
-        assertThat(thrown).isInstanceOf(EntityNotFoundException.class);
+        Optional<Genre> genre = dao.getById(ZERO_ID);
+        assertThat(genre).isEmpty();
     }
 
     @Test
@@ -94,11 +98,11 @@ class GenreDaoImplTest {
     }
 
     @Test
-    @DisplayName("update должен возвращать изменённый жанр с тем же id")
+    @DisplayName("save для существующего жанра должен возвращать изменённый жанр с тем же id")
     void update() {
-        Genre genre = dao.getById(2L);
+        Genre genre = dao.getById(2L).orElseThrow();
         genre.setTitle(NEW_TITLE);
-        Genre updated = dao.update(genre);
+        Genre updated = dao.save(genre);
 
         assertThat(updated).extracting(Genre::getId, Genre::getTitle)
                 .containsExactly(2L, NEW_TITLE);
@@ -107,18 +111,18 @@ class GenreDaoImplTest {
     @Test
     @DisplayName("update по несуществующему жанру должен бросать исключение")
     void updateByNotExistingId() {
-        var genre = new Genre(INCORRECT_ID, NEW_TITLE);
-        Throwable thrown = catchThrowable(() -> dao.update(genre));
+        var genre = new Genre(NOT_EXISTING_ID, NEW_TITLE);
+        Throwable thrown = catchThrowable(() -> dao.save(genre));
         assertThat(thrown).isInstanceOf(EntityNotFoundException.class);
     }
 
     @Test
     @DisplayName("getById после update должен возвращать обновлённый жанр")
     void getByIdUpdatedGenre() {
-        var genre = dao.getById(2L);
+        var genre = dao.getById(2L).orElseThrow();
         genre.setTitle(NEW_TITLE);
-        var updatedGenre = dao.update(genre);
-        var foundGenre = dao.getById(2L);
+        var updatedGenre = dao.save(genre);
+        var foundGenre = dao.getById(2L).orElseThrow();
 
         assertThat(foundGenre).isEqualToComparingFieldByField(updatedGenre);
     }
@@ -127,30 +131,30 @@ class GenreDaoImplTest {
     @DisplayName("getById после insert должен возвращать новый жанр")
     void getByIdInsertedGenre() {
         var genre = new Genre(NEW_TITLE);
-        var insertedGenre = dao.insert(genre);
+        var insertedGenre = dao.save(genre);
         var foundGenre = dao.getById(insertedGenre.getId());
 
-        assertThat(foundGenre)
-                .isNotNull()
+        assertThat(foundGenre).isPresent();
+        assertThat(foundGenre.orElseThrow())
                 .isEqualToComparingFieldByField(insertedGenre);
     }
 
     @Test
     @DisplayName("delete должен уменьшать count на единицу")
     void deleteByIdAffectsCount() {
-        int countBefore = dao.count();
+        long countBefore = dao.count();
         dao.deleteById(1L);
-        int countAfter = dao.count();
+        long countAfter = dao.count();
 
         assertThat(countAfter).isEqualTo(countBefore - 1);
     }
 
     @Test
-    @DisplayName("getById после delete должен бросать исключение")
+    @DisplayName("getById после delete должен возвращать пустой Optional")
     void getByIdDeletedGenre() {
         dao.deleteById(1L);
+        Optional<Genre> genre = dao.getById(1L);
 
-        Throwable thrown = catchThrowable(() -> dao.getById(1L));
-        assertThat(thrown).isInstanceOf(EntityNotFoundException.class);
+        assertThat(genre).isEmpty();
     }
 }
