@@ -5,6 +5,7 @@ import com.etn319.dao.genre.GenreDao;
 import com.etn319.model.Genre;
 import com.etn319.service.CacheHolder;
 import com.etn319.service.EmptyCacheException;
+import com.etn319.service.ServiceLayerException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -17,25 +18,23 @@ import org.springframework.context.annotation.Configuration;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.catchThrowable;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.longThat;
 import static org.mockito.BDDMockito.given;
-import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doThrow;
-import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.only;
 import static org.mockito.Mockito.verify;
 
 @SpringBootTest
 @DisplayName("Genre Service")
 class GenreServiceImplTest {
-    private static final int COUNT = -100;
-    private static final long INCORRECT_ID = 0L;
+    private static final long COUNT = -100;
+    private static final long NOT_EXISTING_ID = 100L;
     private static final String TITLE = "Comedy";
     private static final String NEW_TITLE = "Tragedy";
     private static final Genre GENRE = new Genre(1L, TITLE);
@@ -56,10 +55,10 @@ class GenreServiceImplTest {
     @BeforeEach
     public void setUp() {
         given(genreDao.count()).willReturn(COUNT);
-        given(genreDao.getById(anyLong())).willReturn(GENRE);
+        given(genreDao.getById(anyLong())).willReturn(Optional.of(GENRE));
         given(genreDao.getAll()).willReturn(Collections.emptyList());
-        doNothing().when(genreDao).deleteById(longThat(l -> l != INCORRECT_ID));
-        doThrow(EntityNotFoundException.class).when(genreDao).deleteById(INCORRECT_ID);
+        doNothing().when(genreDao).deleteById(longThat(l -> l != NOT_EXISTING_ID));
+        doThrow(EntityNotFoundException.class).when(genreDao).deleteById(NOT_EXISTING_ID);
 
         genreService.clearCache();
     }
@@ -67,7 +66,7 @@ class GenreServiceImplTest {
     @Test
     @DisplayName("count должен вызывать метод dao.count и возвращать его результат")
     void count() {
-        int cnt = genreService.count();
+        long cnt = genreService.count();
         verify(genreDao, only()).count();
         assertThat(cnt).isEqualTo(COUNT);
     }
@@ -76,25 +75,27 @@ class GenreServiceImplTest {
     @DisplayName("getById должен вызывать метод dao.getById, возвращать его результат")
     void getByIdDelegatesCallToDao() {
         var id = 1L;
-        var genre = genreService.getById(id);
+        Optional<Genre> genre = genreService.getById(id);
         ArgumentCaptor<Long> captor = ArgumentCaptor.forClass(Long.class);
 
         verify(genreDao, only()).getById(captor.capture());
         assertThat(captor.getValue()).isEqualTo(id);
 
-        assertThat(genre).isEqualToComparingFieldByField(GENRE);
+        assertThat(genre).isPresent();
+        assertThat(genre.orElseThrow()).isEqualToComparingFieldByField(GENRE);
     }
 
     @Test
     @DisplayName("getById должен кэшировать результат")
     void getByIdStoresResultInCache() {
         var id = 1L;
-        var genre = genreService.getById(id);
+        Optional<Genre> genre = genreService.getById(id);
 
+        assertThat(genre).isPresent();
         assertThat(genreService)
                 .extracting(GenreService::getCache)
                 .isNotNull()
-                .isEqualTo(genre);
+                .isEqualTo(genre.orElseThrow());
     }
 
     @Test
@@ -116,27 +117,13 @@ class GenreServiceImplTest {
     }
 
     @Test
-    @DisplayName("save нового объекта должен вызывать dao.insert, передавать ему значение из кэша " +
-            "и не должен вызывать dao.update")
+    @DisplayName("save должен вызывать dao.save, передавать ему значение из кэша")
     void saveNewObject() {
         var genre = genreService.create(TITLE);
         genreService.save();
         var argumentCaptor = ArgumentCaptor.forClass(Genre.class);
 
-        verify(genreDao, only()).insert(argumentCaptor.capture());
-        assertThat(argumentCaptor.getValue()).isSameAs(genre);
-    }
-
-    @Test
-    @DisplayName("save нового объекта должен вызывать dao.update, передавать ему значение из кэша " +
-            "и не должен вызывать dao.insert")
-    void saveExistingObject() {
-        var genre = genreService.getById(1L);
-        genreService.save();
-        var argumentCaptor = ArgumentCaptor.forClass(Genre.class);
-
-        verify(genreDao, atLeastOnce()).update(argumentCaptor.capture());
-        verify(genreDao, never()).insert(any());
+        verify(genreDao, only()).save(argumentCaptor.capture());
         assertThat(argumentCaptor.getValue()).isSameAs(genre);
     }
 
@@ -148,22 +135,23 @@ class GenreServiceImplTest {
     }
 
     @Test
-    @DisplayName("deleteById должен вызывать dao.deleteById с тем же аргументом и возвращать true при корректном id")
+    @DisplayName("deleteById должен вызывать dao.deleteById с тем же аргументом")
     void deleteById() {
-        var correctId = 1L;
-        boolean wasDeleted = genreService.deleteById(correctId);
+        var idToDelete = 1L;
+        genreService.deleteById(idToDelete);
         var argumentCaptor = ArgumentCaptor.forClass(Long.class);
 
         verify(genreDao, only()).deleteById(argumentCaptor.capture());
-        assertThat(argumentCaptor.getValue()).isEqualTo(correctId);
-        assertThat(wasDeleted).isTrue();
+        assertThat(argumentCaptor.getValue()).isEqualTo(idToDelete);
     }
 
     @Test
-    @DisplayName("deleteById должен вызывать dao.deleteById с тем же аргументом и возвращать true при корректном id")
+    @DisplayName("deleteById по несуществующему id должен вызывать dao.deleteById с тем же аргументом и кидать исключение")
     void deleteByIncorrectId() {
-        boolean wasDeleted = genreService.deleteById(INCORRECT_ID);
-        assertThat(wasDeleted).isFalse();
+        Throwable thrown = catchThrowable(() -> genreService.deleteById(NOT_EXISTING_ID));
+        ArgumentCaptor<Long> argumentCaptor = ArgumentCaptor.forClass(Long.class);
+        verify(genreDao, only()).deleteById(argumentCaptor.capture());
+        assertThat(thrown).isInstanceOf(ServiceLayerException.class);
     }
 
     @Test

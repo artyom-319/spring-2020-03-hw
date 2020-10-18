@@ -7,6 +7,7 @@ import com.etn319.model.Book;
 import com.etn319.model.Genre;
 import com.etn319.service.CacheHolder;
 import com.etn319.service.EmptyCacheException;
+import com.etn319.service.ServiceLayerException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -19,6 +20,7 @@ import org.springframework.context.annotation.Configuration;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.catchThrowable;
@@ -26,17 +28,15 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.longThat;
 import static org.mockito.BDDMockito.given;
-import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doThrow;
-import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.only;
 import static org.mockito.Mockito.verify;
 
 @SpringBootTest
 class BookServiceImplTest {
-    private static final int COUNT = -100;
-    private static final long INCORRECT_ID = 0L;
+    private static final long COUNT = -100;
+    private static final long NOT_EXISTING_ID = 100L;
     private static final String TITLE = "20 Years Later";
     private static final String NEW_TITLE = "10 Years Later";
     private static final Book BOOK = new Book(1L, TITLE, new Author(), new Genre());
@@ -68,12 +68,12 @@ class BookServiceImplTest {
     @BeforeEach
     public void setUp() {
         given(bookDao.count()).willReturn(COUNT);
-        given(bookDao.getById(anyLong())).willReturn(BOOK);
+        given(bookDao.getById(anyLong())).willReturn(Optional.of(BOOK));
         given(bookDao.getByAuthor(any(Author.class))).willReturn(booksByAuthor);
         given(bookDao.getByGenreId(anyLong())).willReturn(booksByGenre);
         given(bookDao.getAll()).willReturn(allBooks);
-        doNothing().when(bookDao).deleteById(longThat(l -> l != INCORRECT_ID));
-        doThrow(EntityNotFoundException.class).when(bookDao).deleteById(INCORRECT_ID);
+        doNothing().when(bookDao).deleteById(longThat(l -> l != NOT_EXISTING_ID));
+        doThrow(EntityNotFoundException.class).when(bookDao).deleteById(NOT_EXISTING_ID);
 
         bookService.clearCache();
     }
@@ -81,7 +81,7 @@ class BookServiceImplTest {
     @Test
     @DisplayName("count должен вызывать метод dao.count и возвращать его результат")
     void count() {
-        int cnt = bookService.count();
+        long cnt = bookService.count();
         verify(bookDao, only()).count();
         assertThat(cnt).isEqualTo(COUNT);
     }
@@ -90,25 +90,27 @@ class BookServiceImplTest {
     @DisplayName("getById должен вызывать метод dao.getById, возвращать его результат")
     void getByIdDelegatesCallToDao() {
         var id = 1L;
-        var book = bookService.getById(id);
+        Optional<Book> book = bookService.getById(id);
         ArgumentCaptor<Long> captor = ArgumentCaptor.forClass(Long.class);
 
         verify(bookDao, only()).getById(captor.capture());
         assertThat(captor.getValue()).isEqualTo(id);
 
-        assertThat(book).isEqualToComparingFieldByField(BOOK);
+        assertThat(book).isPresent();
+        assertThat(book.orElseThrow()).isEqualToComparingFieldByField(BOOK);
     }
 
     @Test
     @DisplayName("getById должен кэшировать результат")
     void getByIdStoresResultInCache() {
         var id = 1L;
-        var book = bookService.getById(id);
+        Optional<Book> book = bookService.getById(id);
 
+        assertThat(book).isPresent();
         assertThat(bookService)
                 .extracting(BookService::getCache)
                 .isNotNull()
-                .isEqualTo(book);
+                .isEqualTo(book.orElseThrow());
     }
 
     @Test
@@ -129,8 +131,7 @@ class BookServiceImplTest {
     }
 
     @Test
-    @DisplayName("save нового объекта должен вызывать dao.insert, передавать ему значение из кэша " +
-            "и не должен вызывать dao.update")
+    @DisplayName("save должен вызывать dao.save, передавать ему значение из кэша")
     void saveNewObject() {
         var book = bookService.create(TITLE);
         book.setGenre(new Genre());
@@ -138,20 +139,7 @@ class BookServiceImplTest {
         bookService.save();
         var argumentCaptor = ArgumentCaptor.forClass(Book.class);
 
-        verify(bookDao, only()).insert(argumentCaptor.capture());
-        assertThat(argumentCaptor.getValue()).isSameAs(book);
-    }
-
-    @Test
-    @DisplayName("save нового объекта должен вызывать dao.update, передавать ему значение из кэша " +
-            "и не должен вызывать dao.insert")
-    void saveExistingObject() {
-        var book = bookService.getById(1L);
-        bookService.save();
-        var argumentCaptor = ArgumentCaptor.forClass(Book.class);
-
-        verify(bookDao, atLeastOnce()).update(argumentCaptor.capture());
-        verify(bookDao, never()).insert(any());
+        verify(bookDao, only()).save(argumentCaptor.capture());
         assertThat(argumentCaptor.getValue()).isSameAs(book);
     }
 
@@ -163,22 +151,23 @@ class BookServiceImplTest {
     }
 
     @Test
-    @DisplayName("deleteById должен вызывать dao.deleteById с тем же аргументом и возвращать true при корректном id")
+    @DisplayName("deleteById должен вызывать dao.deleteById с тем же аргументом")
     void deleteById() {
-        var correctId = 1L;
-        boolean wasDeleted = bookService.deleteById(correctId);
+        var idToDelete = 1L;
+        bookService.deleteById(idToDelete);
         var argumentCaptor = ArgumentCaptor.forClass(Long.class);
 
         verify(bookDao, only()).deleteById(argumentCaptor.capture());
-        assertThat(argumentCaptor.getValue()).isEqualTo(correctId);
-        assertThat(wasDeleted).isTrue();
+        assertThat(argumentCaptor.getValue()).isEqualTo(idToDelete);
     }
 
     @Test
-    @DisplayName("deleteById должен вызывать dao.deleteById с тем же аргументом и возвращать true при корректном id")
+    @DisplayName("deleteById по несуществующему id должен вызывать dao.deleteById с тем же аргументом и кидать исключение")
     void deleteByIncorrectId() {
-        boolean wasDeleted = bookService.deleteById(INCORRECT_ID);
-        assertThat(wasDeleted).isFalse();
+        Throwable thrown = catchThrowable(() -> bookService.deleteById(NOT_EXISTING_ID));
+        ArgumentCaptor<Long> argumentCaptor = ArgumentCaptor.forClass(Long.class);
+        verify(bookDao, only()).deleteById(argumentCaptor.capture());
+        assertThat(thrown).isInstanceOf(ServiceLayerException.class);
     }
 
     @Test

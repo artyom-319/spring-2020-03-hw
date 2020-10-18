@@ -5,6 +5,7 @@ import com.etn319.dao.author.AuthorDao;
 import com.etn319.model.Author;
 import com.etn319.service.CacheHolder;
 import com.etn319.service.EmptyCacheException;
+import com.etn319.service.ServiceLayerException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -17,25 +18,23 @@ import org.springframework.context.annotation.Configuration;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.catchThrowable;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.longThat;
 import static org.mockito.BDDMockito.given;
-import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doThrow;
-import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.only;
 import static org.mockito.Mockito.verify;
 
 @SpringBootTest
 @DisplayName("Author Service")
 class AuthorServiceImplTest {
-    private static final int COUNT = -100;
-    private static final long INCORRECT_ID = 0L;
+    private static final long COUNT = -100;
+    private static final long NOT_EXISTING_ID = 100L;
     private static final String NAME = "Pyotr";
     private static final String COUNTRY = "Russia";
     private static final String NEW_NAME = "Peter";
@@ -58,10 +57,10 @@ class AuthorServiceImplTest {
     @BeforeEach
     public void setUp() {
         given(authorDao.count()).willReturn(COUNT);
-        given(authorDao.getById(anyLong())).willReturn(AUTHOR);
+        given(authorDao.getById(anyLong())).willReturn(Optional.of(AUTHOR));
         given(authorDao.getAll()).willReturn(Collections.emptyList());
-        doNothing().when(authorDao).deleteById(longThat(l -> l != INCORRECT_ID));
-        doThrow(EntityNotFoundException.class).when(authorDao).deleteById(INCORRECT_ID);
+        doNothing().when(authorDao).deleteById(longThat(l -> l != NOT_EXISTING_ID));
+        doThrow(EntityNotFoundException.class).when(authorDao).deleteById(NOT_EXISTING_ID);
 
         authorService.clearCache();
     }
@@ -69,7 +68,7 @@ class AuthorServiceImplTest {
     @Test
     @DisplayName("count должен вызывать метод dao.count и возвращать его результат")
     void count() {
-        int cnt = authorService.count();
+        long cnt = authorService.count();
         verify(authorDao, only()).count();
         assertThat(cnt).isEqualTo(COUNT);
     }
@@ -78,25 +77,27 @@ class AuthorServiceImplTest {
     @DisplayName("getById должен вызывать метод dao.getById, возвращать его результат")
     void getByIdDelegatesCallToDao() {
         var id = 1L;
-        var author = authorService.getById(id);
+        Optional<Author> author = authorService.getById(id);
         ArgumentCaptor<Long> captor = ArgumentCaptor.forClass(Long.class);
 
         verify(authorDao, only()).getById(captor.capture());
         assertThat(captor.getValue()).isEqualTo(id);
 
-        assertThat(author).isEqualToComparingFieldByField(AUTHOR);
+        assertThat(author).isPresent();
+        assertThat(author.orElseThrow()).isEqualToComparingFieldByField(AUTHOR);
     }
 
     @Test
     @DisplayName("getById должен кэшировать результат")
     void getByIdStoresResultInCache() {
         var id = 1L;
-        var author = authorService.getById(id);
+        Optional<Author> author = authorService.getById(id);
 
+        assertThat(author).isPresent();
         assertThat(authorService)
                 .extracting(AuthorService::getCache)
                 .isNotNull()
-                .isEqualTo(author);
+                .isEqualTo(author.orElseThrow());
     }
 
     @Test
@@ -118,27 +119,13 @@ class AuthorServiceImplTest {
     }
 
     @Test
-    @DisplayName("save нового объекта должен вызывать dao.insert, передавать ему значение из кэша " +
-            "и не должен вызывать dao.update")
+    @DisplayName("save должен вызывать dao.save, передавать ему значение из кэша")
     void saveNewObject() {
         var author = authorService.create(NAME, COUNTRY);
         authorService.save();
         var argumentCaptor = ArgumentCaptor.forClass(Author.class);
 
-        verify(authorDao, only()).insert(argumentCaptor.capture());
-        assertThat(argumentCaptor.getValue()).isSameAs(author);
-    }
-
-    @Test
-    @DisplayName("save нового объекта должен вызывать dao.update, передавать ему значение из кэша " +
-            "и не должен вызывать dao.insert")
-    void saveExistingObject() {
-        var author = authorService.getById(1L);
-        authorService.save();
-        var argumentCaptor = ArgumentCaptor.forClass(Author.class);
-
-        verify(authorDao, atLeastOnce()).update(argumentCaptor.capture());
-        verify(authorDao, never()).insert(any());
+        verify(authorDao, only()).save(argumentCaptor.capture());
         assertThat(argumentCaptor.getValue()).isSameAs(author);
     }
 
@@ -150,22 +137,23 @@ class AuthorServiceImplTest {
     }
 
     @Test
-    @DisplayName("deleteById должен вызывать dao.deleteById с тем же аргументом и возвращать true при корректном id")
+    @DisplayName("deleteById должен вызывать dao.deleteById с тем же аргументом")
     void deleteById() {
-        var correctId = 1L;
-        boolean wasDeleted = authorService.deleteById(correctId);
+        var idToDelete = 1L;
+        authorService.deleteById(idToDelete);
         var argumentCaptor = ArgumentCaptor.forClass(Long.class);
 
         verify(authorDao, only()).deleteById(argumentCaptor.capture());
-        assertThat(argumentCaptor.getValue()).isEqualTo(correctId);
-        assertThat(wasDeleted).isTrue();
+        assertThat(argumentCaptor.getValue()).isEqualTo(idToDelete);
     }
 
     @Test
-    @DisplayName("deleteById должен вызывать dao.deleteById с тем же аргументом и возвращать true при корректном id")
+    @DisplayName("deleteById по несуществующему id должен вызывать dao.deleteById с тем же аргументом и кидать исключение")
     void deleteByIncorrectId() {
-        boolean wasDeleted = authorService.deleteById(INCORRECT_ID);
-        assertThat(wasDeleted).isFalse();
+        Throwable thrown = catchThrowable(() -> authorService.deleteById(NOT_EXISTING_ID));
+        ArgumentCaptor<Long> argumentCaptor = ArgumentCaptor.forClass(Long.class);
+        verify(authorDao, only()).deleteById(argumentCaptor.capture());
+        assertThat(thrown).isInstanceOf(ServiceLayerException.class);
     }
 
     @Test
