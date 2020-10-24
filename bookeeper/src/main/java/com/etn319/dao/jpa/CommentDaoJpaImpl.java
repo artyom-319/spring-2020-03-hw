@@ -18,7 +18,7 @@ public class CommentDaoJpaImpl implements CommentDao {
     @Override
     public List<Comment> getCommentsByBook(Book book) {
         TypedQuery<Comment> query = em.createQuery(
-                "select c from Comment c where c.book = :book", Comment.class);
+                "select c from Comment c join fetch c.book b join fetch b.author join fetch b.genre where c.book = :book", Comment.class);
         query.setParameter("book", book);
         return query.getResultList();
     }
@@ -26,7 +26,7 @@ public class CommentDaoJpaImpl implements CommentDao {
     @Override
     public List<Comment> getCommentsByCommenterName(String name) {
         TypedQuery<Comment> query = em.createQuery(
-                "select c from Comment c where c.commenter = :commenter", Comment.class);
+                "select c from Comment c join fetch c.book b join fetch b.author join fetch b.genre where c.commenter = :commenter", Comment.class);
         query.setParameter("commenter", name);
         return query.getResultList();
     }

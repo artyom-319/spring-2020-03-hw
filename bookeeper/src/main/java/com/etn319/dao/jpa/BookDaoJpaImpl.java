@@ -35,7 +35,8 @@ public class BookDaoJpaImpl implements BookDao {
 
     @Override
     public List<Book> getAll() {
-        TypedQuery<Book> query = entityManager.createQuery("select book from Book book", Book.class);
+        TypedQuery<Book> query = entityManager.createQuery(
+                "select b from Book b join fetch b.author join fetch b.genre", Book.class);
         return query.getResultList();
     }
 
@@ -73,32 +74,32 @@ public class BookDaoJpaImpl implements BookDao {
 
     @Override
     public List<Book> getByGenre(Genre genre) {
-        TypedQuery<Book> query = entityManager.createQuery("select book from Book book " +
-                "where book.genre = :genre", Book.class);
+        TypedQuery<Book> query = entityManager.createQuery("select b from Book b join fetch b.author join fetch b.genre " +
+                "where b.genre = :genre", Book.class);
         query.setParameter("genre", genre);
         return query.getResultList();
     }
 
     @Override
     public List<Book> getByGenreId(long genreId) {
-        TypedQuery<Book> query = entityManager.createQuery("select book from Book book " +
-                "where book.genre.id = :genreId", Book.class);
+        TypedQuery<Book> query = entityManager.createQuery("select b from Book b join fetch b.author join fetch b.genre " +
+                "where b.genre.id = :genreId", Book.class);
         query.setParameter("genreId", genreId);
         return query.getResultList();
     }
 
     @Override
     public List<Book> getByAuthor(Author author) {
-        TypedQuery<Book> query = entityManager.createQuery("select book from Book book " +
-                "where book.author = :author", Book.class);
+        TypedQuery<Book> query = entityManager.createQuery("select b from Book b join fetch b.author join fetch b.genre " +
+                "where b.author = :author", Book.class);
         query.setParameter("author", author);
         return query.getResultList();
     }
 
     @Override
     public List<Book> getByAuthorId(long authorId) {
-        TypedQuery<Book> query = entityManager.createQuery("select book from Book book " +
-                "where book.author.id = :authorId", Book.class);
+        TypedQuery<Book> query = entityManager.createQuery("select b from Book b join fetch b.author join fetch b.genre " +
+                "where b.author.id = :authorId", Book.class);
         query.setParameter("authorId", authorId);
         return query.getResultList();
     }
