@@ -8,7 +8,6 @@ import com.etn319.model.Book;
 import com.etn319.model.Genre;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Repository;
-import org.springframework.transaction.annotation.Transactional;
 
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
@@ -18,27 +17,23 @@ import java.util.List;
 import java.util.Optional;
 
 @Repository
-@Transactional
 @Profile("jpa")
 public class BookDaoJpaImpl implements BookDao {
     @PersistenceContext
     private EntityManager entityManager;
 
     @Override
-    @Transactional(readOnly = true)
     public long count() {
         TypedQuery<Long> query = entityManager.createQuery("select count(book) from Book book", long.class);
         return query.getSingleResult();
     }
 
     @Override
-    @Transactional(readOnly = true)
     public Optional<Book> getById(long id) {
         return Optional.ofNullable(entityManager.find(Book.class, id));
     }
 
     @Override
-    @Transactional(readOnly = true)
     public List<Book> getAll() {
         TypedQuery<Book> query = entityManager.createQuery("select book from Book book", Book.class);
         return query.getResultList();
@@ -79,7 +74,6 @@ public class BookDaoJpaImpl implements BookDao {
     }
 
     @Override
-    @Transactional(readOnly = true)
     public List<Book> getByGenre(Genre genre) {
         TypedQuery<Book> query = entityManager.createQuery("select book from Book book " +
                 "where book.genre = :genre", Book.class);
@@ -88,7 +82,6 @@ public class BookDaoJpaImpl implements BookDao {
     }
 
     @Override
-    @Transactional(readOnly = true)
     public List<Book> getByGenreId(long genreId) {
         TypedQuery<Book> query = entityManager.createQuery("select book from Book book " +
                 "where book.genre.id = :genreId", Book.class);
@@ -97,7 +90,6 @@ public class BookDaoJpaImpl implements BookDao {
     }
 
     @Override
-    @Transactional(readOnly = true)
     public List<Book> getByAuthor(Author author) {
         TypedQuery<Book> query = entityManager.createQuery("select book from Book book " +
                 "where book.author = :author", Book.class);
@@ -106,7 +98,6 @@ public class BookDaoJpaImpl implements BookDao {
     }
 
     @Override
-    @Transactional(readOnly = true)
     public List<Book> getByAuthorId(long authorId) {
         TypedQuery<Book> query = entityManager.createQuery("select book from Book book " +
                 "where book.author.id = :authorId", Book.class);

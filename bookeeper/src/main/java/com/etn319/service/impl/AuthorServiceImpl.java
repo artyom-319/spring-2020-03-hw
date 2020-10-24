@@ -9,6 +9,7 @@ import com.etn319.service.api.AuthorService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
@@ -21,11 +22,13 @@ public class AuthorServiceImpl implements AuthorService {
     private final CacheHolder cache;
 
     @Override
+    @Transactional(readOnly = true)
     public long count() {
         return dao.count();
     }
 
     @Override
+    @Transactional(readOnly = true)
     public Optional<Author> getById(long id) {
         Optional<Author> author = dao.getById(id);
         author.ifPresent(cache::setAuthor);
@@ -33,11 +36,13 @@ public class AuthorServiceImpl implements AuthorService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<Author> getAll() {
         return dao.getAll();
     }
 
     @Override
+    @Transactional
     public Author save() {
         var author = cache.getAuthor();
 
@@ -51,6 +56,7 @@ public class AuthorServiceImpl implements AuthorService {
     }
 
     @Override
+    @Transactional
     public void deleteById(long id) {
         try {
             dao.deleteById(id);

@@ -5,7 +5,6 @@ import com.etn319.dao.api.AuthorDao;
 import com.etn319.model.Author;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Repository;
-import org.springframework.transaction.annotation.Transactional;
 
 import javax.persistence.EntityManager;
 import javax.persistence.EntityNotFoundException;
@@ -16,27 +15,23 @@ import java.util.List;
 import java.util.Optional;
 
 @Repository
-@Transactional
 @Profile("jpa")
 public class AuthorDaoJpaImpl implements AuthorDao {
     @PersistenceContext
     private EntityManager entityManager;
 
     @Override
-    @Transactional(readOnly = true)
     public long count() {
         TypedQuery<Long> query = entityManager.createQuery("select count(a) from Author a", Long.class);
         return query.getSingleResult();
     }
 
     @Override
-    @Transactional(readOnly = true)
     public Optional<Author> getById(long id) {
         return Optional.ofNullable(entityManager.find(Author.class, id));
     }
 
     @Override
-    @Transactional(readOnly = true)
     public List<Author> getAll() {
         TypedQuery<Author> query = entityManager.createQuery("select a from Author a", Author.class);
         return query.getResultList();

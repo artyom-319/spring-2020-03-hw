@@ -9,6 +9,7 @@ import com.etn319.service.api.GenreService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
@@ -21,11 +22,13 @@ public class GenreServiceImpl implements GenreService {
     private final CacheHolder cache;
 
     @Override
+    @Transactional(readOnly = true)
     public long count() {
         return dao.count();
     }
 
     @Override
+    @Transactional(readOnly = true)
     public Optional<Genre> getById(long id) {
         Optional<Genre> genre = dao.getById(id);
         genre.ifPresent(cache::setGenre);
@@ -33,11 +36,13 @@ public class GenreServiceImpl implements GenreService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<Genre> getAll() {
         return dao.getAll();
     }
 
     @Override
+    @Transactional
     public Genre save() {
         var genre = cache.getGenre();
         try {
@@ -50,6 +55,7 @@ public class GenreServiceImpl implements GenreService {
     }
 
     @Override
+    @Transactional
     public void deleteById(long id) {
         try {
             dao.deleteById(id);

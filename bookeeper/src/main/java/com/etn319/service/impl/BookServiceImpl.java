@@ -9,6 +9,7 @@ import com.etn319.service.api.BookService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
@@ -21,11 +22,13 @@ public class BookServiceImpl implements BookService {
     private final CacheHolder cache;
 
     @Override
+    @Transactional(readOnly = true)
     public long count() {
         return dao.count();
     }
 
     @Override
+    @Transactional(readOnly = true)
     public Optional<Book> getById(long id) {
         Optional<Book> book = dao.getById(id);
         book.ifPresent(cache::setBook);
@@ -33,11 +36,13 @@ public class BookServiceImpl implements BookService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<Book> getAll() {
         return dao.getAll();
     }
 
     @Override
+    @Transactional
     public Book save() {
         var book = cache.getBook();
         try {
@@ -50,6 +55,7 @@ public class BookServiceImpl implements BookService {
     }
 
     @Override
+    @Transactional
     public void deleteById(long id) {
         try {
             dao.deleteById(id);
@@ -59,23 +65,27 @@ public class BookServiceImpl implements BookService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<Book> getByCachedGenre() {
         var genre = cache.getGenre();
         return dao.getByGenre(genre);
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<Book> getByGenreId(long id) {
         return dao.getByGenreId(id);
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<Book> getByCachedAuthor() {
         var author = cache.getAuthor();
         return dao.getByAuthor(author);
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<Book> getByAuthorId(long id) {
         return dao.getByAuthorId(id);
     }
