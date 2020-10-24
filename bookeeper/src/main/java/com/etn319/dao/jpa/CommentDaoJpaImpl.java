@@ -31,6 +31,12 @@ public class CommentDaoJpaImpl implements CommentDao {
     }
 
     @Override
+    public List<Comment> getAll() {
+        TypedQuery<Comment> query = em.createQuery("select c from Comment c", Comment.class);
+        return query.getResultList();
+    }
+
+    @Override
     public Comment save(Comment comment) {
         if (comment.getId() == 0L) {
             em.persist(comment);
@@ -64,7 +70,7 @@ public class CommentDaoJpaImpl implements CommentDao {
     }
 
     @Override
-    public List<Comment> getCommentsByBook(Book book) {
+    public List<Comment> getByBook(Book book) {
         TypedQuery<Comment> query = em.createQuery(
                 "select c from Comment c join fetch c.book b join fetch b.author join fetch b.genre where c.book = :book", Comment.class);
         query.setParameter("book", book);
@@ -72,7 +78,7 @@ public class CommentDaoJpaImpl implements CommentDao {
     }
 
     @Override
-    public List<Comment> getCommentsByCommenterName(String name) {
+    public List<Comment> getByCommenterName(String name) {
         TypedQuery<Comment> query = em.createQuery(
                 "select c from Comment c join fetch c.book b join fetch b.author join fetch b.genre where c.commenter = :commenter", Comment.class);
         query.setParameter("commenter", name);

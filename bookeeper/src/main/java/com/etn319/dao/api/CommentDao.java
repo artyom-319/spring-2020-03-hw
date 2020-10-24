@@ -23,6 +23,12 @@ public interface CommentDao {
     Optional<Comment> getById(long id);
 
     /**
+     * Получить все комментарии из базы
+     * @return список комментариев
+     */
+    List<Comment> getAll();
+
+    /**
      * Сохраняет комментарий в базе. Если задан ненулевой ID, произойдёт вставка в таблицу, в противном случае - обновление
      * @param comment объект комментария
      * @return сохранённый в базе объект комментария
@@ -51,12 +57,12 @@ public interface CommentDao {
      * @param book книга
      * @return список комментариев
      */
-    List<Comment> getCommentsByBook(Book book);
+    List<Comment> getByBook(Book book);
 
     /**
      * Получить комментарии от автора по его имени
      * @param name имя комментатора
      * @return список комментариев
      */
-    List<Comment> getCommentsByCommenterName(String name);
+    List<Comment> getByCommenterName(String name);
 }
