@@ -48,7 +48,6 @@ public class BookCommandHandler implements CommandHandler {
             var book = bookService.save();
             return "Saved: " + book.toString();
         } catch (ConnectedEntityDoesNotExistException e) {
-            // todo: нужен ли этот сценарий ?
             return "One or more connected entities were not found in data source. Save them or refresh and try again";
         } catch (EmptyCacheException e) {
             return "Nothing to save: cache is empty";

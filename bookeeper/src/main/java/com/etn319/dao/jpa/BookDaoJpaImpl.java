@@ -50,7 +50,6 @@ public class BookDaoJpaImpl implements BookDao {
 
     @Override
     public void delete(Book book) {
-        // todo: onDelete ??
         try {
             entityManager.remove(book);
         } catch (RuntimeException e) {
@@ -60,7 +59,6 @@ public class BookDaoJpaImpl implements BookDao {
 
     @Override
     public void deleteById(long id) {
-        // todo: onDelete ??
         int deleted;
         try {
             Query query = entityManager.createQuery("delete from Book book where book.id = :id");
