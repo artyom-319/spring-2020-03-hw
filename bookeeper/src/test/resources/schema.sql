@@ -22,7 +22,7 @@ create table books (
 );
 
 create table comments (
-    id          bigserial not null constraint books_pkey primary key,
+    id          bigserial not null constraint comments_pkey primary key,
     text        varchar(1024),
     commenter   varchar(256),
     book_id     bigint
