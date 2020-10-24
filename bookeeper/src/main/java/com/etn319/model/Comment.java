@@ -39,7 +39,7 @@ public class Comment {
                 "id=" + id +
                 ", commenter='" + commenter + '\'' +
                 ", text='" + text + '\'' +
-                ", book name='" + book.getTitle() + '\'' +
+                ", book name='" + (book == null ? null : book.getTitle()) + '\'' +
                 '}';
     }
 }
