@@ -2,6 +2,7 @@ package com.etn319.service;
 
 import com.etn319.model.Author;
 import com.etn319.model.Book;
+import com.etn319.model.Comment;
 import com.etn319.model.Genre;
 import lombok.Setter;
 import org.springframework.stereotype.Component;
@@ -12,6 +13,7 @@ public class CacheHolder {
     private Author author;
     private Genre genre;
     private Book book;
+    private Comment comment;
 
     public Author getAuthor() {
         if (author == null)
@@ -31,6 +33,12 @@ public class CacheHolder {
         return book;
     }
 
+    public Comment getComment() {
+        if (comment == null)
+            throw new EmptyCacheException("comment");
+        return comment;
+    }
+
     public void clearAuthor() {
         this.author = null;
     }
@@ -41,5 +49,9 @@ public class CacheHolder {
 
     public void clearBook() {
         this.book = null;
+    }
+
+    public void clearComment() {
+        this.comment = null;
     }
 }
