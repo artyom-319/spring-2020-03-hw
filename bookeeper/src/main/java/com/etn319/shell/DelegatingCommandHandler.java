@@ -64,7 +64,7 @@ public class DelegatingCommandHandler implements CommandHandler {
 
     private Availability activeHandlerIsSet() {
         return delegate == null
-                ? Availability.unavailable("You should first type 'books', 'authors' or 'genres' to switch to entity")
+                ? Availability.unavailable("You should first type 'books', 'authors', 'comments' or 'genres' to switch to entity")
                 : Availability.available();
     }
 }

@@ -80,6 +80,22 @@ public class CommentCommandHandler implements CommandHandler {
         }
     }
 
+    @ShellMethod(value = "Find comments for a book using cached book object", key = {"comments-for-book", "cfb"})
+    public String getForBook() {
+        try {
+            List<Comment> comments = service.getByBook();
+            return stringifyList(comments);
+        } catch (EmptyCacheException e) {
+            return "There is no cached author. Use /authors/ 'get' command first";
+        }
+    }
+
+    @ShellMethod(value = "Find comments by commenter name", key = {"comments-by-commenter", "cbc"})
+    public String getByCommenterName(@ShellOption({"--commenter", "-c"}) String commenter) {
+        List<Comment> comments = service.getByCommenterName(commenter);
+        return stringifyList(comments);
+    }
+
     @ShellMethod(value = "Create a comment object to store it in program cache", key = "create-comment")
     public String create(@ShellOption({"--text", "-t"}) String text, @ShellOption({"--commenter", "-c"}) String commenter) {
         var comment = service.create(text, commenter);
@@ -94,5 +110,11 @@ public class CommentCommandHandler implements CommandHandler {
         } catch (EmptyCacheException e) {
             return "Nothing to change: cache is empty";
         }
+    }
+
+    private static String stringifyList(List<?> list) {
+        if (list.isEmpty())
+            return "Empty list";
+        return list.stream().map(Object::toString).collect(Collectors.joining("\n"));
     }
 }

@@ -12,6 +12,7 @@ public class HandlerDispatcher {
     private final AuthorCommandHandler authorCommandHandler;
     private final GenreCommandHandler genreCommandHandler;
     private final BookCommandHandler bookCommandHandler;
+    private final CommentCommandHandler commentCommandHandler;
     private final DelegatingCommandHandler activeCommandHandler;
 
     @ShellMethod(value = "Switch to /authors/ data access interface", key = {"author", "authors"})
@@ -30,5 +31,11 @@ public class HandlerDispatcher {
     public String enableBooks() {
         activeCommandHandler.setDelegate(bookCommandHandler);
         return "Switched to /books/";
+    }
+
+    @ShellMethod(value = "Switch to /comments/ data access interface", key = {"comment", "comments"})
+    public String enableComments() {
+        activeCommandHandler.setDelegate(commentCommandHandler);
+        return "Switched to /comments/";
     }
 }
