@@ -9,6 +9,7 @@ import com.etn319.service.api.CommentService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
@@ -21,11 +22,13 @@ public class CommentServiceImpl implements CommentService {
     private final CacheHolder cache;
 
     @Override
+    @Transactional(readOnly = true)
     public long count() {
         return dao.count();
     }
 
     @Override
+    @Transactional(readOnly = true)
     public Optional<Comment> getById(long id) {
         Optional<Comment> comment = dao.getById(id);
         comment.ifPresent(cache::setComment);
@@ -33,11 +36,13 @@ public class CommentServiceImpl implements CommentService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<Comment> getAll() {
         return dao.getAll();
     }
 
     @Override
+    @Transactional
     public Comment save() {
         var comment = cache.getComment();
 
@@ -51,6 +56,7 @@ public class CommentServiceImpl implements CommentService {
     }
 
     @Override
+    @Transactional
     public void deleteById(long id) {
         try {
             dao.deleteById(id);
@@ -60,11 +66,13 @@ public class CommentServiceImpl implements CommentService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<Comment> getByBook() {
         return dao.getByBook(cache.getBook());
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<Comment> getByCommenterName(String name) {
         return dao.getByCommenterName(name);
     }
