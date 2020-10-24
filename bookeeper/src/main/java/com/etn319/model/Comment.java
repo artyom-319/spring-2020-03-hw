@@ -32,4 +32,14 @@ public class Comment {
     @ManyToOne
     @JoinColumn(name = "book_id")
     private Book book;
+
+    @Override
+    public String toString() {
+        return "Comment{" +
+                "id=" + id +
+                ", commenter='" + commenter + '\'' +
+                ", text='" + text + '\'' +
+                ", book name='" + book.getTitle() + '\'' +
+                '}';
+    }
 }
