@@ -3,7 +3,7 @@ package com.etn319.shell;
 import com.etn319.model.Genre;
 import com.etn319.service.EmptyCacheException;
 import com.etn319.service.ServiceLayerException;
-import com.etn319.service.genre.GenreService;
+import com.etn319.service.api.GenreService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.shell.standard.ShellCommandGroup;
 import org.springframework.shell.standard.ShellComponent;

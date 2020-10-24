@@ -4,7 +4,7 @@ import com.etn319.dao.ConnectedEntityDoesNotExistException;
 import com.etn319.model.Book;
 import com.etn319.service.EmptyCacheException;
 import com.etn319.service.ServiceLayerException;
-import com.etn319.service.book.BookService;
+import com.etn319.service.api.BookService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.shell.standard.ShellCommandGroup;
 import org.springframework.shell.standard.ShellComponent;
@@ -47,8 +47,6 @@ public class BookCommandHandler implements CommandHandler {
         try {
             var book = bookService.save();
             return "Saved: " + book.toString();
-//        } catch (EmptyConnectedEntityException e) {
-//            return "One or more connected entities missing in cache. Use corresponding 'get' command(s)";
         } catch (ConnectedEntityDoesNotExistException e) {
             // todo: нужен ли этот сценарий ?
             return "One or more connected entities were not found in data source. Save them or refresh and try again";
