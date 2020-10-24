@@ -20,3 +20,4 @@ values ('10/10, pishi esche', 'Commenter 1', 1),
        ('Good', 'Commenter 3', 3),
        ('Super', 'Commenter 3', 2),
        ('Very nice', 'Commenter 3', 1)
+;

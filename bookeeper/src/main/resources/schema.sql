@@ -20,3 +20,11 @@ create table books (
     genre_id  bigint
         constraint books_genre_fkey references genres on delete cascade
 );
+
+create table comments (
+    id          bigserial not null constraint comments_pkey primary key,
+    text        varchar(1024),
+    commenter   varchar(256),
+    book_id     bigint
+        constraint comments_book_fkey references books
+);
