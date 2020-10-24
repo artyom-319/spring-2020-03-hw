@@ -28,9 +28,7 @@ public class GenreCommandHandler implements CommandHandler {
     @Override
     public String get(long id) {
         Optional<Genre> genre = genreService.getById(id);
-        if (genre.isEmpty())
-            return "No genres found";
-        return genre.toString();
+        return genre.map(Genre::toString).orElse("No genres found");
     }
 
     @Override

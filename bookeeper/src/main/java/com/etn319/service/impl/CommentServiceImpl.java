@@ -2,7 +2,6 @@ package com.etn319.service.impl;
 
 import com.etn319.dao.DaoLayerException;
 import com.etn319.dao.api.CommentDao;
-import com.etn319.model.Book;
 import com.etn319.model.Comment;
 import com.etn319.service.CacheHolder;
 import com.etn319.service.ServiceLayerException;

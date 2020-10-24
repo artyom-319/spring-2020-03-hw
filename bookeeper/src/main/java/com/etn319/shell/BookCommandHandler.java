@@ -29,9 +29,7 @@ public class BookCommandHandler implements CommandHandler {
     @Override
     public String get(long id) {
         Optional<Book> book = bookService.getById(id);
-        if (book.isEmpty())
-            return "No books found";
-        return book.toString();
+        return book.map(Book::toString).orElse("No books found");
     }
 
     @Override

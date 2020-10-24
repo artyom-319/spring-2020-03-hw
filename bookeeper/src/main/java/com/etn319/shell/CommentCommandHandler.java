@@ -28,19 +28,13 @@ public class CommentCommandHandler implements CommandHandler {
     @Override
     public String get(long id) {
         Optional<Comment> comment = service.getById(id);
-        if (comment.isEmpty())
-            return "No comments found";
-        return comment.toString();
+        return comment.map(Comment::toString).orElse("No comments found");
     }
 
     @Override
     public String getAll() {
         List<Comment> comments = service.getAll();
-        if (comments.isEmpty())
-            return "Empty list";
-        return comments.stream()
-                .map(Comment::toString)
-                .collect(Collectors.joining("\n"));
+        return stringifyList(comments);
     }
 
     @Override
@@ -86,7 +80,7 @@ public class CommentCommandHandler implements CommandHandler {
             List<Comment> comments = service.getByBook();
             return stringifyList(comments);
         } catch (EmptyCacheException e) {
-            return "There is no cached author. Use /authors/ 'get' command first";
+            return "There is no cached book. Use /books/ 'get' command first";
         }
     }
 
