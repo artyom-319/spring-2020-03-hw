@@ -61,8 +61,8 @@ public class CommentServiceImpl implements CommentService {
     }
 
     @Override
-    public List<Comment> getByBook(Book book) {
-        return dao.getByBook(book);
+    public List<Comment> getByBook() {
+        return dao.getByBook(cache.getBook());
     }
 
     @Override

@@ -1,6 +1,5 @@
 package com.etn319.service.api;
 
-import com.etn319.model.Book;
 import com.etn319.model.Comment;
 
 import java.util.List;
@@ -43,11 +42,10 @@ public interface CommentService {
     void deleteById(long id);
 
     /**
-     * Получить комментарии к книге
-     * @param book книга
+     * Получить комментарии к кэшированной книге
      * @return список комментариев
      */
-    List<Comment> getByBook(Book book);
+    List<Comment> getByBook();
 
     /**
      * Получить комментарии от автора по его имени
