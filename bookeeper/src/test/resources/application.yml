@@ -5,4 +5,12 @@ spring:
     schema: schema.sql
     data: data.sql
 
-  shell.interactive.enabled: false
+  jpa:
+    hibernate:
+      ddl-auto: none
+    generate-ddl: false
+    show-sql: true
+
+  shell:
+    interactive:
+      enabled: false
