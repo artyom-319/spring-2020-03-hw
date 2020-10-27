@@ -9,6 +9,7 @@ import com.etn319.model.Genre;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Repository;
 
+import javax.persistence.EntityGraph;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
@@ -19,6 +20,8 @@ import java.util.Optional;
 @Repository
 @Profile("jpa")
 public class BookDaoJpaImpl implements BookDao {
+    private static final String FETCH_GRAPH_HINT = "javax.persistence.fetchgraph";
+
     @PersistenceContext
     private EntityManager entityManager;
 
@@ -35,8 +38,9 @@ public class BookDaoJpaImpl implements BookDao {
 
     @Override
     public List<Book> getAll() {
-        TypedQuery<Book> query = entityManager.createQuery(
-                "select b from Book b join fetch b.author join fetch b.genre", Book.class);
+        EntityGraph entityGraph = entityManager.getEntityGraph(Book.FETCH_GRAPH_NAME);
+        TypedQuery<Book> query = entityManager.createQuery("select b from Book b ", Book.class);
+        query.setHint(FETCH_GRAPH_HINT, entityGraph);
         return query.getResultList();
     }
 
