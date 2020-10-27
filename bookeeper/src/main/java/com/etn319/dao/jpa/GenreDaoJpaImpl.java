@@ -9,7 +9,6 @@ import org.springframework.stereotype.Repository;
 
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
-import javax.persistence.Query;
 import javax.persistence.TypedQuery;
 import java.util.List;
 import java.util.Optional;
@@ -57,15 +56,11 @@ public class GenreDaoJpaImpl implements GenreDao {
 
     @Override
     public void deleteById(long id) {
-        int deleted;
+        var genre = getById(id).orElseThrow(EntityNotFoundException::new);
         try {
-            Query query = entityManager.createQuery("delete from Genre genre where genre.id = :id");
-            query.setParameter("id", id);
-            deleted = query.executeUpdate();
+            entityManager.remove(genre);
         } catch (RuntimeException e) {
             throw new DaoLayerException(e);
         }
-        if (deleted == 0)
-            throw new EntityNotFoundException();
     }
 }

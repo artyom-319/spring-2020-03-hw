@@ -9,7 +9,6 @@ import org.springframework.stereotype.Repository;
 
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
-import javax.persistence.Query;
 import javax.persistence.TypedQuery;
 import java.util.List;
 import java.util.Optional;
@@ -58,16 +57,12 @@ public class CommentDaoJpaImpl implements CommentDao {
 
     @Override
     public void deleteById(long id) {
-        int deleted;
+        var comment = getById(id).orElseThrow(EntityNotFoundException::new);
         try {
-            Query query = em.createQuery("delete from Comment c where c.id = :id");
-            query.setParameter("id", id);
-            deleted = query.executeUpdate();
+            em.remove(comment);
         } catch (RuntimeException e) {
             throw new DaoLayerException(e);
         }
-        if (deleted == 0)
-            throw new EntityNotFoundException();
     }
 
     @Override

@@ -1,15 +1,14 @@
 package com.etn319.dao.jpa;
 
 import com.etn319.dao.DaoLayerException;
+import com.etn319.dao.EntityNotFoundException;
 import com.etn319.dao.api.AuthorDao;
 import com.etn319.model.Author;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Repository;
 
 import javax.persistence.EntityManager;
-import javax.persistence.EntityNotFoundException;
 import javax.persistence.PersistenceContext;
-import javax.persistence.Query;
 import javax.persistence.TypedQuery;
 import java.util.List;
 import java.util.Optional;
@@ -57,15 +56,11 @@ public class AuthorDaoJpaImpl implements AuthorDao {
 
     @Override
     public void deleteById(long id) {
-        int deleted;
+        var author = getById(id).orElseThrow(EntityNotFoundException::new);
         try {
-            Query query = entityManager.createQuery("delete from Author a where a.id = :id");
-            query.setParameter("id", id);
-            deleted = query.executeUpdate();
+            entityManager.remove(author);
         } catch (RuntimeException e) {
             throw new DaoLayerException(e);
         }
-        if (deleted == 0)
-            throw new EntityNotFoundException();
     }
 }

@@ -12,7 +12,6 @@ import org.springframework.stereotype.Repository;
 import javax.persistence.EntityGraph;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
-import javax.persistence.Query;
 import javax.persistence.TypedQuery;
 import java.util.List;
 import java.util.Optional;
@@ -64,16 +63,12 @@ public class BookDaoJpaImpl implements BookDao {
 
     @Override
     public void deleteById(long id) {
-        int deleted;
+        var book = getById(id).orElseThrow(EntityNotFoundException::new);
         try {
-            Query query = entityManager.createQuery("delete from Book book where book.id = :id");
-            query.setParameter("id", id);
-            deleted = query.executeUpdate();
+            entityManager.remove(book);
         } catch (RuntimeException e) {
             throw new DaoLayerException(e);
         }
-        if (deleted == 0)
-            throw new EntityNotFoundException();
     }
 
     @Override
