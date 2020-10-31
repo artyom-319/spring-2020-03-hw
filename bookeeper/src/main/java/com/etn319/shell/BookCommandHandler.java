@@ -86,13 +86,19 @@ public class BookCommandHandler implements CommandHandler {
             return stringifyList(books);
         } catch (EmptyCacheException e) {
             return "There is no cached genre. Use /genres/ 'get' command first";
+        } catch (ServiceLayerException e) {
+            return e.getMessage();
         }
     }
 
     @ShellMethod(value = "Find books by genre id", key = {"get-by-genre-id", "by-genre-id", "bgi"})
     public String getByGenreId(@ShellOption("-id") long genreId) {
-        List<Book> books = bookService.getByGenreId(genreId);
-        return stringifyList(books);
+        try {
+            List<Book> books = bookService.getByGenreId(genreId);
+            return stringifyList(books);
+        } catch (ServiceLayerException e) {
+            return e.getMessage();
+        }
     }
 
     @ShellMethod(value = "Find books by author using cached author object", key = {"get-by-author", "by-author", "ba"})
@@ -102,13 +108,20 @@ public class BookCommandHandler implements CommandHandler {
             return stringifyList(books);
         } catch (EmptyCacheException e) {
             return "There is no cached author. Use /authors/ 'get' command first";
+        } catch (ServiceLayerException e) {
+            return e.getMessage();
         }
     }
 
     @ShellMethod(value = "Find books by author id", key = {"get-by-author-id", "by-author-id", "bai"})
     public String getByAuthorId(@ShellOption("-id") long authorId) {
-        List<Book> books = bookService.getByAuthorId(authorId);
-        return stringifyList(books);
+        try {
+
+            List<Book> books = bookService.getByAuthorId(authorId);
+            return stringifyList(books);
+        } catch (ServiceLayerException e) {
+            return e.getMessage();
+        }
     }
 
     @ShellMethod(value = "Create a book object to store it in program cache", key = "create-book")

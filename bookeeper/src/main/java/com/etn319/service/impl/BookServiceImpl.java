@@ -94,7 +94,8 @@ public class BookServiceImpl implements BookService {
     @Override
     @Transactional(readOnly = true)
     public List<Book> getByAuthorId(long id) {
-        var author = authorDao.getById(id).orElseThrow(() -> new ServiceLayerException("Author does not exist"));
+        var author = authorDao.getById(id)
+                .orElseThrow(() -> new ServiceLayerException("Author does not exist"));
         return new ArrayList<>(author.getBooks());
     }
 
