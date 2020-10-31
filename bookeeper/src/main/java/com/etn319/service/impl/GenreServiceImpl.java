@@ -22,13 +22,11 @@ public class GenreServiceImpl implements GenreService {
     private final CacheHolder cache;
 
     @Override
-    @Transactional(readOnly = true)
     public long count() {
         return dao.count();
     }
 
     @Override
-    @Transactional(readOnly = true)
     public Optional<Genre> getById(long id) {
         Optional<Genre> genre = dao.getById(id);
         genre.ifPresent(cache::setGenre);
@@ -36,7 +34,6 @@ public class GenreServiceImpl implements GenreService {
     }
 
     @Override
-    @Transactional(readOnly = true)
     public List<Genre> getAll() {
         return dao.getAll();
     }

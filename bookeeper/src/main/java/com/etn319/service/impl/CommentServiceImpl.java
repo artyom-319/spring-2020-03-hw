@@ -25,13 +25,11 @@ public class CommentServiceImpl implements CommentService {
     private final CacheHolder cache;
 
     @Override
-    @Transactional(readOnly = true)
     public long count() {
         return dao.count();
     }
 
     @Override
-    @Transactional(readOnly = true)
     public Optional<Comment> getById(long id) {
         Optional<Comment> comment = dao.getById(id);
         comment.ifPresent(cache::setComment);
@@ -39,7 +37,6 @@ public class CommentServiceImpl implements CommentService {
     }
 
     @Override
-    @Transactional(readOnly = true)
     public List<Comment> getAll() {
         return dao.getAll();
     }
@@ -78,7 +75,6 @@ public class CommentServiceImpl implements CommentService {
     }
 
     @Override
-    @Transactional(readOnly = true)
     public List<Comment> getByCommenterName(String name) {
         return dao.getByCommenterName(name);
     }

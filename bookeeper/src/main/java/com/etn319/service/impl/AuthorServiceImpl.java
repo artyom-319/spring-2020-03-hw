@@ -22,13 +22,11 @@ public class AuthorServiceImpl implements AuthorService {
     private final CacheHolder cache;
 
     @Override
-    @Transactional(readOnly = true)
     public long count() {
         return dao.count();
     }
 
     @Override
-    @Transactional(readOnly = true)
     public Optional<Author> getById(long id) {
         Optional<Author> author = dao.getById(id);
         author.ifPresent(cache::setAuthor);
@@ -36,7 +34,6 @@ public class AuthorServiceImpl implements AuthorService {
     }
 
     @Override
-    @Transactional(readOnly = true)
     public List<Author> getAll() {
         return dao.getAll();
     }

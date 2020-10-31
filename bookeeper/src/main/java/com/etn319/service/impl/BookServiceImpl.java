@@ -27,13 +27,11 @@ public class BookServiceImpl implements BookService {
     private final CacheHolder cache;
 
     @Override
-    @Transactional(readOnly = true)
     public long count() {
         return dao.count();
     }
 
     @Override
-    @Transactional(readOnly = true)
     public Optional<Book> getById(long id) {
         Optional<Book> book = dao.getById(id);
         book.ifPresent(cache::setBook);
@@ -41,7 +39,6 @@ public class BookServiceImpl implements BookService {
     }
 
     @Override
-    @Transactional(readOnly = true)
     public List<Book> getAll() {
         return dao.getAll();
     }
