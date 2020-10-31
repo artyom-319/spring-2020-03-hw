@@ -6,30 +6,27 @@ import com.etn319.dao.api.BookDao;
 import com.etn319.dao.api.GenreDao;
 import com.etn319.model.Author;
 import com.etn319.model.Book;
+import com.etn319.model.Comment;
 import com.etn319.model.Genre;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.jdbc.JdbcTest;
+import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
+import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
 import org.springframework.context.annotation.Import;
-import org.springframework.test.context.ActiveProfiles;
 
-import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.catchThrowable;
 
-@JdbcTest
+@DataJpaTest
 @DisplayName("Book DAO")
 @Import({BookDaoJpaImpl.class, GenreDaoJpaImpl.class, AuthorDaoJpaImpl.class})
-@ActiveProfiles("jpa")
 class BookDaoImplTest {
     private static final int INITIAL_COUNT = 3;
-    private static final int NOVELS_COUNT = 3;
-    private static final int LONDON_BOOKS_COUNT = 2;
     private static final String NEW_TITLE = "The Night in Lisbon";
     private static final String TITLE_1 = "Martin Eden";
     private static final String TITLE_2 = "Three Comrades";
@@ -48,6 +45,8 @@ class BookDaoImplTest {
     private AuthorDao authorDao;
     @Autowired
     private GenreDao genreDao;
+    @Autowired
+    private TestEntityManager em;
 
     @BeforeEach
     public void setUp() {
@@ -100,9 +99,11 @@ class BookDaoImplTest {
     @DisplayName("getById должен находить книгу по существующему id")
     void getById() {
         Optional<Book> book = dao.getById(1L);
+        Book emBook = em.find(Book.class, 1L);
 
         assertThat(book).isPresent();
         assertThat(book.orElseThrow())
+                .isEqualToComparingOnlyGivenFields(emBook, "id", "title", "author", "genre")
                 .extracting(Book::getId, Book::getTitle, Book::getAuthor, Book::getGenre)
                 .containsExactly(1L, TITLE_1, authorLondon, genreNovel);
     }
@@ -132,7 +133,7 @@ class BookDaoImplTest {
     @Test
     @DisplayName("save для существующий книги должен возвращать изменённую книгу с тем же id")
     void saveExisting() {
-        Book book = dao.getById(2L).orElseThrow();
+        Book book = em.find(Book.class, 2L);
         book.setTitle(NEW_TITLE);
         book.setAuthor(authorLondon);
         book.setGenre(genreDrama);
@@ -152,16 +153,18 @@ class BookDaoImplTest {
     }
 
     @Test
-    @DisplayName("getById после update должен возвращать обновлённую книгу")
+    @DisplayName("После update из базы по этому же id возвращается обновлённая книга")
     void getByIdUpdatedBook() {
-        var book = dao.getById(2L).orElseThrow();
+        var book = em.find(Book.class, 2L);
+        em.detach(book);
         book.setTitle(NEW_TITLE);
         book.setAuthor(authorLondon);
         book.setGenre(genreDrama);
         var updatedBook = dao.save(book);
-        var foundBook = dao.getById(2L).orElseThrow();
+        var foundBook = em.find(Book.class, 2L);
 
-        assertThat(foundBook).isEqualToComparingFieldByField(updatedBook);
+        assertThat(foundBook)
+                .isEqualToComparingOnlyGivenFields(updatedBook, "id", "title", "author", "genre");
     }
 
     @Test
@@ -196,36 +199,15 @@ class BookDaoImplTest {
     }
 
     @Test
-    @DisplayName("getByGenre должен вернуть книги только одного жанра")
-    void getByGenre() {
-        List<Book> novels = dao.getByGenre(genreNovel);
-        assertThat(novels).hasSize(NOVELS_COUNT);
-        assertThat(novels)
-                .flatExtracting(Book::getGenre)
-                .hasSameElementsAs(Collections.nCopies(NOVELS_COUNT, genreNovel));
-    }
+    void deleteConnectedComments() {
+        var book = em.find(Book.class, 1L);
+        List<Comment> comments = book.getComments();
+        assertThat(comments).isNotEmpty();
 
-    @Test
-    @DisplayName("getByGenreId по несуществующему id должен вернуть пустой список")
-    void getByIncorrectGenreId() {
-        List<Book> books = dao.getByGenreId(NOT_EXISTING_ID);
-        assertThat(books).isEmpty();
-    }
-
-    @Test
-    @DisplayName("getByAuthor должен вернуть книги только одного автора")
-    void getByAuthor() {
-        List<Book> booksOfLondon = dao.getByAuthor(authorLondon);
-        assertThat(booksOfLondon).hasSize(LONDON_BOOKS_COUNT);
-        assertThat(booksOfLondon)
-                .flatExtracting(Book::getAuthor)
-                .hasSameElementsAs(Collections.nCopies(LONDON_BOOKS_COUNT, authorLondon));
-    }
-
-    @Test
-    @DisplayName("getByAuthorId по несуществующему id должен вернуть пустой список")
-    void getByIncorrectAuthorId() {
-        List<Book> books = dao.getByAuthorId(NOT_EXISTING_ID);
-        assertThat(books).isEmpty();
+        var commentToBeDeleted = comments.get(0);
+        dao.delete(book);
+        em.flush();
+        Comment deletedComment = em.find(Comment.class, commentToBeDeleted.getId());
+        assertThat(deletedComment).isNull();
     }
 }
