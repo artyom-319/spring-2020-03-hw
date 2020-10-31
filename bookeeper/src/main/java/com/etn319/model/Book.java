@@ -13,13 +13,14 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.NamedAttributeNode;
 import javax.persistence.NamedEntityGraph;
+import javax.persistence.OneToMany;
 import javax.persistence.Table;
+import java.util.List;
 
 @Entity
 @Table(name = "books")
 @Data
 @NoArgsConstructor
-@AllArgsConstructor
 @NamedEntityGraph(
         name = Book.FETCH_GRAPH_NAME,
         attributeNodes = {
@@ -45,7 +46,17 @@ public class Book {
     @JoinColumn(name = "genre_id")
     private Genre genre;
 
+    @OneToMany(mappedBy = "book")
+    private List<Comment> comments;
+
     public Book(String title, Author author, Genre genre) {
+        this.title = title;
+        this.author = author;
+        this.genre = genre;
+    }
+
+    public Book(long id, String title, Author author, Genre genre) {
+        this.id = id;
         this.title = title;
         this.author = author;
         this.genre = genre;
