@@ -1,6 +1,5 @@
 package com.etn319.dao.api;
 
-import com.etn319.model.Book;
 import com.etn319.model.Comment;
 
 import java.util.List;
@@ -51,13 +50,6 @@ public interface CommentDao {
      * @throws com.etn319.dao.EntityNotFoundException, если по id не найдено записей
      */
     void deleteById(long id);
-
-    /**
-     * Получить комментарии к книге
-     * @param book книга
-     * @return список комментариев
-     */
-    List<Comment> getByBook(Book book);
 
     /**
      * Получить комментарии от автора по его имени

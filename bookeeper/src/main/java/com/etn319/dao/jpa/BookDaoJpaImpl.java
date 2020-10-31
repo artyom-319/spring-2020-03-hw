@@ -3,9 +3,7 @@ package com.etn319.dao.jpa;
 import com.etn319.dao.DaoLayerException;
 import com.etn319.dao.EntityNotFoundException;
 import com.etn319.dao.api.BookDao;
-import com.etn319.model.Author;
 import com.etn319.model.Book;
-import com.etn319.model.Genre;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Repository;
 
@@ -69,37 +67,5 @@ public class BookDaoJpaImpl implements BookDao {
         } catch (RuntimeException e) {
             throw new DaoLayerException(e);
         }
-    }
-
-    @Override
-    public List<Book> getByGenre(Genre genre) {
-        TypedQuery<Book> query = entityManager.createQuery("select b from Book b join fetch b.author join fetch b.genre " +
-                "where b.genre = :genre", Book.class);
-        query.setParameter("genre", genre);
-        return query.getResultList();
-    }
-
-    @Override
-    public List<Book> getByGenreId(long genreId) {
-        TypedQuery<Book> query = entityManager.createQuery("select b from Book b join fetch b.author join fetch b.genre " +
-                "where b.genre.id = :genreId", Book.class);
-        query.setParameter("genreId", genreId);
-        return query.getResultList();
-    }
-
-    @Override
-    public List<Book> getByAuthor(Author author) {
-        TypedQuery<Book> query = entityManager.createQuery("select b from Book b join fetch b.author join fetch b.genre " +
-                "where b.author = :author", Book.class);
-        query.setParameter("author", author);
-        return query.getResultList();
-    }
-
-    @Override
-    public List<Book> getByAuthorId(long authorId) {
-        TypedQuery<Book> query = entityManager.createQuery("select b from Book b join fetch b.author join fetch b.genre " +
-                "where b.author.id = :authorId", Book.class);
-        query.setParameter("authorId", authorId);
-        return query.getResultList();
     }
 }

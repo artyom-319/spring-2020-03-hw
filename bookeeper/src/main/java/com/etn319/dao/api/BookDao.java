@@ -1,8 +1,6 @@
 package com.etn319.dao.api;
 
-import com.etn319.model.Author;
 import com.etn319.model.Book;
-import com.etn319.model.Genre;
 
 import java.util.List;
 import java.util.Optional;
@@ -51,32 +49,4 @@ public interface BookDao {
      * @throws com.etn319.dao.EntityNotFoundException, если по id не найдено записей
      */
     void deleteById(long id);
-
-    /**
-     * Поиск книг по жанру
-     * @param genre жанр, в котором ищем книги
-     * @return список книг в данном жанре
-     */
-    List<Book> getByGenre(Genre genre);
-
-    /**
-     * Поиск книг по id жанра
-     * @param genreId id жанра, в котором ищем книги
-     * @return список книг в данном жанре
-     */
-    List<Book> getByGenreId(long genreId);
-
-    /**
-     * Поиск книг по автору
-     * @param author автор, у которого ищем книги
-     * @return список книг данного автора
-     */
-    List<Book> getByAuthor(Author author);
-
-    /**
-     * Поиск книг по id автора
-     * @param authorId id автора, у которого ищем книги
-     * @return список книг данного автора
-     */
-    List<Book> getByAuthorId(long authorId);
 }

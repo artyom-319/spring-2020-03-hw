@@ -3,7 +3,6 @@ package com.etn319.dao.jpa;
 import com.etn319.dao.DaoLayerException;
 import com.etn319.dao.EntityNotFoundException;
 import com.etn319.dao.api.CommentDao;
-import com.etn319.model.Book;
 import com.etn319.model.Comment;
 import org.springframework.stereotype.Repository;
 
@@ -63,14 +62,6 @@ public class CommentDaoJpaImpl implements CommentDao {
         } catch (RuntimeException e) {
             throw new DaoLayerException(e);
         }
-    }
-
-    @Override
-    public List<Comment> getByBook(Book book) {
-        TypedQuery<Comment> query = em.createQuery(
-                "select c from Comment c join fetch c.book b join fetch b.author join fetch b.genre where c.book = :book", Comment.class);
-        query.setParameter("book", book);
-        return query.getResultList();
     }
 
     @Override
