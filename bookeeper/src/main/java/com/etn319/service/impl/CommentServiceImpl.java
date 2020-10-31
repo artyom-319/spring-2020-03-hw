@@ -1,7 +1,7 @@
 package com.etn319.service.impl;
 
-import com.etn319.dao.datajpa.BookRepository;
-import com.etn319.dao.datajpa.CommentRepository;
+import com.etn319.dao.BookRepository;
+import com.etn319.dao.CommentRepository;
 import com.etn319.model.Comment;
 import com.etn319.service.CacheHolder;
 import com.etn319.service.ServiceLayerException;

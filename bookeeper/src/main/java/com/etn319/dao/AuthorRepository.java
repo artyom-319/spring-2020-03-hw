@@ -1,4 +1,4 @@
-package com.etn319.dao.datajpa;
+package com.etn319.dao;
 
 import com.etn319.model.Author;
 import org.springframework.data.jpa.repository.JpaRepository;

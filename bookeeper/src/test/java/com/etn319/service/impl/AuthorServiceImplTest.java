@@ -1,7 +1,7 @@
 package com.etn319.service.impl;
 
-import com.etn319.dao.EntityNotFoundException;
-import com.etn319.dao.datajpa.AuthorRepository;
+import com.etn319.service.EntityNotFoundException;
+import com.etn319.dao.AuthorRepository;
 import com.etn319.model.Author;
 import com.etn319.service.CacheHolder;
 import com.etn319.service.EmptyCacheException;

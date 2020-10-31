@@ -1,8 +1,8 @@
 package com.etn319.service.impl;
 
-import com.etn319.dao.datajpa.AuthorRepository;
-import com.etn319.dao.datajpa.BookRepository;
-import com.etn319.dao.datajpa.GenreRepository;
+import com.etn319.dao.AuthorRepository;
+import com.etn319.dao.BookRepository;
+import com.etn319.dao.GenreRepository;
 import com.etn319.model.Book;
 import com.etn319.service.CacheHolder;
 import com.etn319.service.ServiceLayerException;

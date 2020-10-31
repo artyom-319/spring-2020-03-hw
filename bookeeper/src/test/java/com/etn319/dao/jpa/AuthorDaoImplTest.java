@@ -1,7 +1,7 @@
 package com.etn319.dao.jpa;
 
-import com.etn319.dao.EntityNotFoundException;
-import com.etn319.dao.datajpa.AuthorRepository;
+import com.etn319.service.EntityNotFoundException;
+import com.etn319.dao.AuthorRepository;
 import com.etn319.model.Author;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;

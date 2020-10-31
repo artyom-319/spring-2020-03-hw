@@ -1,6 +1,6 @@
 package com.etn319.dao.jpa;
 
-import com.etn319.dao.datajpa.CommentRepository;
+import com.etn319.dao.CommentRepository;
 import com.etn319.model.Book;
 import com.etn319.model.Comment;
 import org.junit.jupiter.api.DisplayName;

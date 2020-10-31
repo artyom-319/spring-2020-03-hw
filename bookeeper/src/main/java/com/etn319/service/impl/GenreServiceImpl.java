@@ -1,6 +1,6 @@
 package com.etn319.service.impl;
 
-import com.etn319.dao.datajpa.GenreRepository;
+import com.etn319.dao.GenreRepository;
 import com.etn319.model.Genre;
 import com.etn319.service.CacheHolder;
 import com.etn319.service.ServiceLayerException;
