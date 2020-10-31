@@ -4,7 +4,6 @@ import com.etn319.dao.DaoLayerException;
 import com.etn319.dao.EntityNotFoundException;
 import com.etn319.dao.api.AuthorDao;
 import com.etn319.model.Author;
-import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Repository;
 
 import javax.persistence.EntityManager;
@@ -14,7 +13,6 @@ import java.util.List;
 import java.util.Optional;
 
 @Repository
-@Profile("jpa")
 public class AuthorDaoJpaImpl implements AuthorDao {
     @PersistenceContext
     private EntityManager entityManager;

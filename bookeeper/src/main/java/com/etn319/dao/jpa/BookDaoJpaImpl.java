@@ -4,7 +4,6 @@ import com.etn319.dao.DaoLayerException;
 import com.etn319.dao.EntityNotFoundException;
 import com.etn319.dao.api.BookDao;
 import com.etn319.model.Book;
-import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Repository;
 
 import javax.persistence.EntityGraph;
@@ -15,7 +14,6 @@ import java.util.List;
 import java.util.Optional;
 
 @Repository
-@Profile("jpa")
 public class BookDaoJpaImpl implements BookDao {
     private static final String FETCH_GRAPH_HINT = "javax.persistence.fetchgraph";
 
