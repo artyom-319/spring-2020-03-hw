@@ -1,9 +1,9 @@
 package com.etn319.dao.jpa;
 
 import com.etn319.dao.EntityNotFoundException;
-import com.etn319.dao.api.AuthorDao;
-import com.etn319.dao.api.BookDao;
-import com.etn319.dao.api.GenreDao;
+import com.etn319.dao.datajpa.AuthorRepository;
+import com.etn319.dao.datajpa.BookRepository;
+import com.etn319.dao.datajpa.GenreRepository;
 import com.etn319.model.Author;
 import com.etn319.model.Book;
 import com.etn319.model.Comment;
@@ -14,7 +14,6 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
-import org.springframework.context.annotation.Import;
 
 import java.util.List;
 import java.util.Optional;
@@ -24,7 +23,6 @@ import static org.assertj.core.api.Assertions.catchThrowable;
 
 @DataJpaTest
 @DisplayName("Book DAO")
-@Import({BookDaoJpaImpl.class, GenreDaoJpaImpl.class, AuthorDaoJpaImpl.class})
 class BookDaoImplTest {
     private static final int INITIAL_COUNT = 3;
     private static final String NEW_TITLE = "The Night in Lisbon";
@@ -40,11 +38,11 @@ class BookDaoImplTest {
     private Genre genreDrama;
 
     @Autowired
-    private BookDao dao;
+    private BookRepository dao;
     @Autowired
-    private AuthorDao authorDao;
+    private AuthorRepository authorDao;
     @Autowired
-    private GenreDao genreDao;
+    private GenreRepository genreDao;
     @Autowired
     private TestEntityManager em;
 

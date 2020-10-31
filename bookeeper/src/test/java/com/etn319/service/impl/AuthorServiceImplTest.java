@@ -1,7 +1,6 @@
 package com.etn319.service.impl;
 
 import com.etn319.dao.EntityNotFoundException;
-import com.etn319.dao.api.AuthorDao;
 import com.etn319.dao.datajpa.AuthorRepository;
 import com.etn319.model.Author;
 import com.etn319.service.CacheHolder;
@@ -52,7 +51,7 @@ class AuthorServiceImplTest {
     }
 
     @MockBean
-    private AuthorDao authorDao;
+    private AuthorRepository authorDao;
     @Autowired
     AuthorService authorService;
 
@@ -141,6 +140,7 @@ class AuthorServiceImplTest {
     @Test
     @DisplayName("deleteById должен вызывать dao.deleteById с тем же аргументом")
     void deleteById() {
+        // todo: выпрямить тест или код
         var idToDelete = 1L;
         authorService.deleteById(idToDelete);
         var argumentCaptor = ArgumentCaptor.forClass(Long.class);
@@ -152,6 +152,7 @@ class AuthorServiceImplTest {
     @Test
     @DisplayName("deleteById по несуществующему id должен вызывать dao.deleteById с тем же аргументом и кидать исключение")
     void deleteByIncorrectId() {
+        // todo: выпрямить этот тест во всех тестах
         Throwable thrown = catchThrowable(() -> authorService.deleteById(NOT_EXISTING_ID));
         ArgumentCaptor<Long> argumentCaptor = ArgumentCaptor.forClass(Long.class);
         verify(authorDao, only()).deleteById(argumentCaptor.capture());

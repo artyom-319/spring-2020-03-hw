@@ -1,6 +1,6 @@
 package com.etn319.service.impl;
 
-import com.etn319.dao.api.BookDao;
+import com.etn319.dao.datajpa.BookRepository;
 import com.etn319.dao.datajpa.CommentRepository;
 import com.etn319.model.Comment;
 import com.etn319.service.CacheHolder;
@@ -21,7 +21,7 @@ import java.util.Optional;
 @Service
 public class CommentServiceImpl implements CommentService {
     private final CommentRepository dao;
-    private final BookDao bookDao;
+    private final BookRepository bookDao;
     private final CacheHolder cache;
 
     @Override

@@ -1,14 +1,13 @@
 package com.etn319.dao.jpa;
 
 import com.etn319.dao.EntityNotFoundException;
-import com.etn319.dao.api.AuthorDao;
+import com.etn319.dao.datajpa.AuthorRepository;
 import com.etn319.model.Author;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
-import org.springframework.context.annotation.Import;
 
 import java.util.List;
 import java.util.Optional;
@@ -18,7 +17,6 @@ import static org.assertj.core.api.Assertions.catchThrowable;
 
 @DataJpaTest
 @DisplayName("Author DAO")
-@Import(AuthorDaoJpaImpl.class)
 class AuthorDaoImplTest {
     private static final int INITIAL_COUNT = 2;
     private static final String NEW_NAME = "Joseph Heller";
@@ -31,7 +29,7 @@ class AuthorDaoImplTest {
     private static final long NOT_EXISTING_ID = 100L;
 
     @Autowired
-    private AuthorDao dao;
+    private AuthorRepository dao;
 
     @Autowired
     private TestEntityManager em;
@@ -78,7 +76,7 @@ class AuthorDaoImplTest {
     @Test
     @DisplayName("findById должен находить автора по существующему id")
     void getById() {
-        Optional<Author> author = dao.findById(1);
+        Optional<Author> author = dao.findById(1L);
         assertThat(author).isPresent();
         assertThat(author.orElseThrow())
                 .extracting(Author::getId, Author::getName, Author::getCountry)

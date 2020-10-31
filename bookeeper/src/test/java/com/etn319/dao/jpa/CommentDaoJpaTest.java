@@ -1,6 +1,6 @@
 package com.etn319.dao.jpa;
 
-import com.etn319.dao.api.CommentDao;
+import com.etn319.dao.datajpa.CommentRepository;
 import com.etn319.model.Book;
 import com.etn319.model.Comment;
 import org.junit.jupiter.api.DisplayName;
@@ -8,7 +8,6 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
-import org.springframework.context.annotation.Import;
 
 import java.util.List;
 
@@ -16,7 +15,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 @DataJpaTest
 @DisplayName("Comment DAO JPA")
-@Import(CommentDaoJpaImpl.class)
 class CommentDaoJpaTest {
     private static final int EXPECTED_NUMBER_OF_COMMENTS_BY_COMMENTER = 3;
     private static final String COMMENTER = "Commenter 3";
@@ -24,7 +22,7 @@ class CommentDaoJpaTest {
     private static final Book BOOK = new Book(1L, "Martin Eden", null, null);
 
     @Autowired
-    private CommentDao dao;
+    private CommentRepository dao;
 
     @Autowired
     private TestEntityManager em;

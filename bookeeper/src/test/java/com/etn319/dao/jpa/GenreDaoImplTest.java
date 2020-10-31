@@ -1,14 +1,13 @@
 package com.etn319.dao.jpa;
 
 import com.etn319.dao.EntityNotFoundException;
-import com.etn319.dao.api.GenreDao;
+import com.etn319.dao.datajpa.GenreRepository;
 import com.etn319.model.Genre;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
-import org.springframework.context.annotation.Import;
 
 import java.util.List;
 import java.util.Optional;
@@ -18,7 +17,6 @@ import static org.assertj.core.api.Assertions.catchThrowable;
 
 @DataJpaTest
 @DisplayName("Genre DAO")
-@Import(GenreDaoJpaImpl.class)
 class GenreDaoImplTest {
     private static final int INITIAL_COUNT = 2;
     private static final String NEW_TITLE = "Science Fiction";
@@ -28,7 +26,7 @@ class GenreDaoImplTest {
     private static final long NOT_EXISTING_ID = 1000L;
 
     @Autowired
-    private GenreDao dao;
+    private GenreRepository dao;
 
     @Autowired
     private TestEntityManager em;
@@ -75,7 +73,7 @@ class GenreDaoImplTest {
     @Test
     @DisplayName("findById должен находить жанр по существующему id")
     void getById() {
-        Optional<Genre> genre = dao.findById(1);
+        Optional<Genre> genre = dao.findById(1L);
 
         assertThat(genre)
                 .isPresent();

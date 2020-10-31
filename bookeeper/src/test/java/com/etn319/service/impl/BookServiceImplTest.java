@@ -1,9 +1,6 @@
 package com.etn319.service.impl;
 
 import com.etn319.dao.EntityNotFoundException;
-import com.etn319.dao.api.AuthorDao;
-import com.etn319.dao.api.BookDao;
-import com.etn319.dao.api.GenreDao;
 import com.etn319.dao.datajpa.AuthorRepository;
 import com.etn319.dao.datajpa.BookRepository;
 import com.etn319.dao.datajpa.GenreRepository;
@@ -68,11 +65,11 @@ class BookServiceImplTest {
     }
 
     @MockBean
-    private BookDao bookDao;
+    private BookRepository bookDao;
     @MockBean
-    private AuthorDao authorDao;
+    private AuthorRepository authorDao;
     @MockBean
-    private GenreDao genreDao;
+    private GenreRepository genreDao;
     @Autowired
     private CacheHolder cacheHolder;
     @Autowired
