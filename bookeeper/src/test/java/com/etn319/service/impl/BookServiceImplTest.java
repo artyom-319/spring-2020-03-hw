@@ -79,13 +79,13 @@ class BookServiceImplTest {
         genre.setBooks(booksByGenre);
 
         given(bookDao.count()).willReturn(COUNT);
-        given(bookDao.getById(anyLong())).willReturn(Optional.of(BOOK));
-        given(bookDao.getAll()).willReturn(allBooks);
+        given(bookDao.findById(anyLong())).willReturn(Optional.of(BOOK));
+        given(bookDao.findAll()).willReturn(allBooks);
         doNothing().when(bookDao).deleteById(longThat(l -> l != NOT_EXISTING_ID));
         doThrow(EntityNotFoundException.class).when(bookDao).deleteById(NOT_EXISTING_ID);
 
-        given(authorDao.getById(anyLong())).willReturn(Optional.of(author));
-        given(genreDao.getById(anyLong())).willReturn(Optional.of(genre));
+        given(authorDao.findById(anyLong())).willReturn(Optional.of(author));
+        given(genreDao.findById(anyLong())).willReturn(Optional.of(genre));
 
         bookService.clearCache();
     }
@@ -99,13 +99,13 @@ class BookServiceImplTest {
     }
 
     @Test
-    @DisplayName("getById должен вызывать метод dao.getById, возвращать его результат")
+    @DisplayName("findById должен вызывать метод dao.findById, возвращать его результат")
     void getByIdDelegatesCallToDao() {
         var id = 1L;
         Optional<Book> book = bookService.getById(id);
         ArgumentCaptor<Long> captor = ArgumentCaptor.forClass(Long.class);
 
-        verify(bookDao, only()).getById(captor.capture());
+        verify(bookDao, only()).findById(captor.capture());
         assertThat(captor.getValue()).isEqualTo(id);
 
         assertThat(book).isPresent();
@@ -113,7 +113,7 @@ class BookServiceImplTest {
     }
 
     @Test
-    @DisplayName("getById должен кэшировать результат")
+    @DisplayName("findById должен кэшировать результат")
     void getByIdStoresResultInCache() {
         var id = 1L;
         Optional<Book> book = bookService.getById(id);
@@ -126,16 +126,16 @@ class BookServiceImplTest {
     }
 
     @Test
-    @DisplayName("getAll должен вызывать dao.getAll и возвращать результат")
+    @DisplayName("findAll должен вызывать dao.findAll и возвращать результат")
     void getAll() {
         List<Book> actual = bookService.getAll();
 
-        verify(bookDao, only()).getAll();
+        verify(bookDao, only()).findAll();
         assertThat(actual).isSameAs(allBooks);
     }
 
     @Test
-    @DisplayName("getAll не должен сохранять объекты в кэше")
+    @DisplayName("findAll не должен сохранять объекты в кэше")
     void getAllDoesNotStoreCache() {
         bookService.getAll();
         Throwable thrown = catchThrowable(() -> bookService.getCache());
@@ -187,7 +187,7 @@ class BookServiceImplTest {
         List<Book> booksByGenre = bookService.getByGenreId(1L);
         var argumentCaptor = ArgumentCaptor.forClass(Long.class);
 
-        verify(genreDao, only()).getById(argumentCaptor.capture());
+        verify(genreDao, only()).findById(argumentCaptor.capture());
         assertThat(argumentCaptor.getValue()).isEqualTo(1L);
         assertThat(booksByGenre).isSameAs(booksByGenre);
     }
@@ -199,7 +199,7 @@ class BookServiceImplTest {
         List<Book> booksByAuthor = bookService.getByCachedAuthor();
         var argumentCaptor = ArgumentCaptor.forClass(Long.class);
 
-        verify(authorDao, only()).getById(argumentCaptor.capture());
+        verify(authorDao, only()).findById(argumentCaptor.capture());
         assertThat(argumentCaptor.getValue()).isEqualTo(author.getId());
         assertThat(booksByAuthor).isSameAs(booksByAuthor);
     }

@@ -24,12 +24,12 @@ public class GenreDaoJpaImpl implements GenreDao {
     }
 
     @Override
-    public Optional<Genre> getById(long id) {
+    public Optional<Genre> findById(long id) {
         return Optional.ofNullable(entityManager.find(Genre.class, id));
     }
 
     @Override
-    public List<Genre> getAll() {
+    public List<Genre> findAll() {
         TypedQuery<Genre> query = entityManager.createQuery("select genre from Genre genre", Genre.class);
         return query.getResultList();
     }
@@ -58,7 +58,7 @@ public class GenreDaoJpaImpl implements GenreDao {
 
     @Override
     public void deleteById(long id) {
-        var genre = getById(id).orElseThrow(EntityNotFoundException::new);
+        var genre = findById(id).orElseThrow(EntityNotFoundException::new);
         try {
             entityManager.remove(genre);
         } catch (RuntimeException e) {

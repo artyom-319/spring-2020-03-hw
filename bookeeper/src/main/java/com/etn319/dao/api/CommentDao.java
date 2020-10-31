@@ -19,13 +19,13 @@ public interface CommentDao {
      * @return объект комментария, упакованный в <code>Optional</code>
      * <code>Optional.empty()</code>, если не найден
      */
-    Optional<Comment> getById(long id);
+    Optional<Comment> findById(long id);
 
     /**
      * Получить все комментарии из базы
      * @return список комментариев
      */
-    List<Comment> getAll();
+    List<Comment> findAll();
 
     /**
      * Сохраняет комментарий в базе. Если задан ненулевой ID, произойдёт вставка в таблицу, в противном случае - обновление
@@ -56,5 +56,5 @@ public interface CommentDao {
      * @param name имя комментатора
      * @return список комментариев
      */
-    List<Comment> getByCommenterName(String name);
+    List<Comment> findByCommenter(String name);
 }

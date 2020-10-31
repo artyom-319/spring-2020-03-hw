@@ -56,8 +56,8 @@ class GenreServiceImplTest {
     @BeforeEach
     public void setUp() {
         given(genreDao.count()).willReturn(COUNT);
-        given(genreDao.getById(anyLong())).willReturn(Optional.of(GENRE));
-        given(genreDao.getAll()).willReturn(Collections.emptyList());
+        given(genreDao.findById(anyLong())).willReturn(Optional.of(GENRE));
+        given(genreDao.findAll()).willReturn(Collections.emptyList());
         doNothing().when(genreDao).deleteById(longThat(l -> l != NOT_EXISTING_ID));
         doThrow(EntityNotFoundException.class).when(genreDao).deleteById(NOT_EXISTING_ID);
 
@@ -73,13 +73,13 @@ class GenreServiceImplTest {
     }
 
     @Test
-    @DisplayName("getById должен вызывать метод dao.getById, возвращать его результат")
+    @DisplayName("findById должен вызывать метод dao.findById, возвращать его результат")
     void getByIdDelegatesCallToDao() {
         var id = 1L;
         Optional<Genre> genre = genreService.getById(id);
         ArgumentCaptor<Long> captor = ArgumentCaptor.forClass(Long.class);
 
-        verify(genreDao, only()).getById(captor.capture());
+        verify(genreDao, only()).findById(captor.capture());
         assertThat(captor.getValue()).isEqualTo(id);
 
         assertThat(genre).isPresent();
@@ -87,7 +87,7 @@ class GenreServiceImplTest {
     }
 
     @Test
-    @DisplayName("getById должен кэшировать результат")
+    @DisplayName("findById должен кэшировать результат")
     void getByIdStoresResultInCache() {
         var id = 1L;
         Optional<Genre> genre = genreService.getById(id);
@@ -100,17 +100,17 @@ class GenreServiceImplTest {
     }
 
     @Test
-    @DisplayName("getAll должен вызывать dao.getAll и возвращать результат")
+    @DisplayName("findAll должен вызывать dao.findAll и возвращать результат")
     void getAll() {
         List<Genre> expected = Collections.emptyList();
         List<Genre> actual = genreService.getAll();
 
-        verify(genreDao, only()).getAll();
+        verify(genreDao, only()).findAll();
         assertThat(actual).isSameAs(expected);
     }
 
     @Test
-    @DisplayName("getAll не должен сохранять объекты в кэше")
+    @DisplayName("findAll не должен сохранять объекты в кэше")
     void getAllDoesNotStoreCache() {
         genreService.getAll();
         Throwable thrown = catchThrowable(() -> genreService.getCache());

@@ -76,9 +76,9 @@ class AuthorDaoImplTest {
     }
 
     @Test
-    @DisplayName("getById должен находить автора по существующему id")
+    @DisplayName("findById должен находить автора по существующему id")
     void getById() {
-        Optional<Author> author = dao.getById(1);
+        Optional<Author> author = dao.findById(1);
         assertThat(author).isPresent();
         assertThat(author.orElseThrow())
                 .extracting(Author::getId, Author::getName, Author::getCountry)
@@ -86,16 +86,16 @@ class AuthorDaoImplTest {
     }
 
     @Test
-    @DisplayName("getById по несуществующему id должен возвращать пустой Optional")
+    @DisplayName("findById по несуществующему id должен возвращать пустой Optional")
     void getByNotExistingId() {
-        Optional<Author> author = dao.getById(ZERO_ID);
+        Optional<Author> author = dao.findById(ZERO_ID);
         assertThat(author).isEmpty();
     }
 
     @Test
-    @DisplayName("getAll должен возвращать все объекты в таблице")
+    @DisplayName("findAll должен возвращать все объекты в таблице")
     void getAll() {
-        List<Author> authors = dao.getAll();
+        List<Author> authors = dao.findAll();
 
         assertThat(authors)
                 .hasSize(INITIAL_COUNT)
@@ -125,7 +125,7 @@ class AuthorDaoImplTest {
     }
 
     @Test
-    @DisplayName("getById после update должен возвращать обновлённого автора")
+    @DisplayName("findById после update должен возвращать обновлённого автора")
     void getByIdUpdatedAuthor() {
         var author = em.find(Author.class, 2L);
         author.setName(NEW_NAME);
@@ -137,7 +137,7 @@ class AuthorDaoImplTest {
     }
 
     @Test
-    @DisplayName("getById после insert должен возвращать нового автора")
+    @DisplayName("findById после insert должен возвращать нового автора")
     void getByIdInsertedAuthor() {
         var author = new Author(NEW_NAME, NEW_COUNTRY);
         var insertedAuthor = dao.save(author);
@@ -159,7 +159,7 @@ class AuthorDaoImplTest {
     }
 
     @Test
-    @DisplayName("getById после delete должен возвращать пустой Optional")
+    @DisplayName("findById после delete должен возвращать пустой Optional")
     void getByIdDeletedAuthor() {
         dao.deleteById(1L);
 

@@ -27,12 +27,12 @@ public class CommentDaoJpaImpl implements CommentDao {
     }
 
     @Override
-    public Optional<Comment> getById(long id) {
+    public Optional<Comment> findById(long id) {
         return Optional.ofNullable(em.find(Comment.class, id));
     }
 
     @Override
-    public List<Comment> getAll() {
+    public List<Comment> findAll() {
         EntityGraph entityGraph = em.getEntityGraph(Comment.FETCH_GRAPH_NAME);
         TypedQuery<Comment> query = em.createQuery(
                 "select c from Comment c", Comment.class);
@@ -64,7 +64,7 @@ public class CommentDaoJpaImpl implements CommentDao {
 
     @Override
     public void deleteById(long id) {
-        var comment = getById(id).orElseThrow(EntityNotFoundException::new);
+        var comment = findById(id).orElseThrow(EntityNotFoundException::new);
         try {
             em.remove(comment);
         } catch (RuntimeException e) {
@@ -73,7 +73,7 @@ public class CommentDaoJpaImpl implements CommentDao {
     }
 
     @Override
-    public List<Comment> getByCommenterName(String name) {
+    public List<Comment> findByCommenter(String name) {
         EntityGraph entityGraph = em.getEntityGraph(Comment.FETCH_GRAPH_NAME);
         TypedQuery<Comment> query = em.createQuery(
                 "select c from Comment c where c.commenter = :commenter", Comment.class);

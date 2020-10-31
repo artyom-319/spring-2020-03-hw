@@ -28,14 +28,14 @@ public class GenreServiceImpl implements GenreService {
 
     @Override
     public Optional<Genre> getById(long id) {
-        Optional<Genre> genre = dao.getById(id);
+        Optional<Genre> genre = dao.findById(id);
         genre.ifPresent(cache::setGenre);
         return genre;
     }
 
     @Override
     public List<Genre> getAll() {
-        return dao.getAll();
+        return dao.findAll();
     }
 
     @Override

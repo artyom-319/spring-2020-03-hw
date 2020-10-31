@@ -31,14 +31,14 @@ public class CommentServiceImpl implements CommentService {
 
     @Override
     public Optional<Comment> getById(long id) {
-        Optional<Comment> comment = dao.getById(id);
+        Optional<Comment> comment = dao.findById(id);
         comment.ifPresent(cache::setComment);
         return comment;
     }
 
     @Override
     public List<Comment> getAll() {
-        return dao.getAll();
+        return dao.findAll();
     }
 
     @Override
@@ -69,14 +69,14 @@ public class CommentServiceImpl implements CommentService {
     @Transactional(readOnly = true)
     public List<Comment> getByBook() {
         var cachedBook = cache.getBook();
-        var foundBook = bookDao.getById(cachedBook.getId())
+        var foundBook = bookDao.findById(cachedBook.getId())
                 .orElseThrow(() -> new ServiceLayerException("Book does not exist"));
         return new ArrayList<>(foundBook.getComments());
     }
 
     @Override
     public List<Comment> getByCommenterName(String name) {
-        return dao.getByCommenterName(name);
+        return dao.findByCommenter(name);
     }
 
     @Override

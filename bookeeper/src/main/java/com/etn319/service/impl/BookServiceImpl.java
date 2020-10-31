@@ -33,14 +33,14 @@ public class BookServiceImpl implements BookService {
 
     @Override
     public Optional<Book> getById(long id) {
-        Optional<Book> book = dao.getById(id);
+        Optional<Book> book = dao.findById(id);
         book.ifPresent(cache::setBook);
         return book;
     }
 
     @Override
     public List<Book> getAll() {
-        return dao.getAll();
+        return dao.findAll();
     }
 
     @Override
@@ -76,7 +76,7 @@ public class BookServiceImpl implements BookService {
     @Override
     @Transactional(readOnly = true)
     public List<Book> getByGenreId(long id) {
-        var genre = genreDao.getById(id)
+        var genre = genreDao.findById(id)
                 .orElseThrow(() -> new ServiceLayerException("Genre does not exist"));
         return new ArrayList<>(genre.getBooks());
     }
@@ -91,7 +91,7 @@ public class BookServiceImpl implements BookService {
     @Override
     @Transactional(readOnly = true)
     public List<Book> getByAuthorId(long id) {
-        var author = authorDao.getById(id)
+        var author = authorDao.findById(id)
                 .orElseThrow(() -> new ServiceLayerException("Author does not exist"));
         return new ArrayList<>(author.getBooks());
     }

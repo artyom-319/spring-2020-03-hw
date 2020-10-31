@@ -18,13 +18,13 @@ public interface BookDao {
      * @return объект книги, упакованный в <code>Optional</code>
      * <code>Optional.empty()</code>, если не найден
      */
-    Optional<Book> getById(long id);
+    Optional<Book> findById(long id);
 
     /**
      * Получить все книги из базы
      * @return список книг
      */
-    List<Book> getAll();
+    List<Book> findAll();
 
     /**
      * Сохраняет книгу в базе. Если задан ненулевой ID, произойдёт вставка в таблицу, в противном случае - обновление

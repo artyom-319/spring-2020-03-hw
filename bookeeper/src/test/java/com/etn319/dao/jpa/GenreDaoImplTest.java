@@ -73,9 +73,9 @@ class GenreDaoImplTest {
     }
 
     @Test
-    @DisplayName("getById должен находить жанр по существующему id")
+    @DisplayName("findById должен находить жанр по существующему id")
     void getById() {
-        Optional<Genre> genre = dao.getById(1);
+        Optional<Genre> genre = dao.findById(1);
 
         assertThat(genre)
                 .isPresent();
@@ -85,16 +85,16 @@ class GenreDaoImplTest {
     }
 
     @Test
-    @DisplayName("getById по несуществующему id должен возвращать пустой Optional")
+    @DisplayName("findById по несуществующему id должен возвращать пустой Optional")
     void getByNotExistingId() {
-        Optional<Genre> genre = dao.getById(ZERO_ID);
+        Optional<Genre> genre = dao.findById(ZERO_ID);
         assertThat(genre).isEmpty();
     }
 
     @Test
-    @DisplayName("getAll должен возвращать все объекты в таблице")
+    @DisplayName("findAll должен возвращать все объекты в таблице")
     void getAll() {
-        List<Genre> genres = dao.getAll();
+        List<Genre> genres = dao.findAll();
 
         assertThat(genres)
                 .hasSize(INITIAL_COUNT)
@@ -155,10 +155,10 @@ class GenreDaoImplTest {
     }
 
     @Test
-    @DisplayName("getById после delete должен возвращать пустой Optional")
+    @DisplayName("findById после delete должен возвращать пустой Optional")
     void getByIdDeletedGenre() {
         dao.deleteById(1L);
-        Optional<Genre> genre = dao.getById(1L);
+        Optional<Genre> genre = dao.findById(1L);
 
         assertThat(genre).isEmpty();
     }

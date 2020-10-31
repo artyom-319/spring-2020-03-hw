@@ -50,10 +50,10 @@ class BookDaoImplTest {
 
     @BeforeEach
     public void setUp() {
-        authorLondon = authorDao.getById(1L).orElseThrow();
-        authorRemarque = authorDao.getById(2L).orElseThrow();
-        genreNovel = genreDao.getById(1L).orElseThrow();
-        genreDrama = genreDao.getById(2L).orElseThrow();
+        authorLondon = authorDao.findById(1L).orElseThrow();
+        authorRemarque = authorDao.findById(2L).orElseThrow();
+        genreNovel = genreDao.findById(1L).orElseThrow();
+        genreDrama = genreDao.findById(2L).orElseThrow();
     }
 
     @Test
@@ -96,9 +96,9 @@ class BookDaoImplTest {
     }
 
     @Test
-    @DisplayName("getById должен находить книгу по существующему id")
+    @DisplayName("findById должен находить книгу по существующему id")
     void getById() {
-        Optional<Book> book = dao.getById(1L);
+        Optional<Book> book = dao.findById(1L);
         Book emBook = em.find(Book.class, 1L);
 
         assertThat(book).isPresent();
@@ -109,16 +109,16 @@ class BookDaoImplTest {
     }
 
     @Test
-    @DisplayName("getById по несуществующему id должен возвращать пустой Optional")
+    @DisplayName("findById по несуществующему id должен возвращать пустой Optional")
     void getByNotExistingId() {
-        Optional<Book> book = dao.getById(ZERO_ID);
+        Optional<Book> book = dao.findById(ZERO_ID);
         assertThat(book).isEmpty();
     }
 
     @Test
-    @DisplayName("getAll должен возвращать все объекты в таблице")
+    @DisplayName("findAll должен возвращать все объекты в таблице")
     void getAll() {
-        List<Book> books = dao.getAll();
+        List<Book> books = dao.findAll();
 
         assertThat(books)
                 .hasSize(INITIAL_COUNT)
@@ -168,11 +168,11 @@ class BookDaoImplTest {
     }
 
     @Test
-    @DisplayName("getById после insert должен возвращать новую книгу")
+    @DisplayName("findById после insert должен возвращать новую книгу")
     void getByIdInsertedBook() {
         var book = new Book(NEW_TITLE, authorRemarque, genreNovel);
         var insertedBook = dao.save(book);
-        var foundBook = dao.getById(insertedBook.getId());
+        var foundBook = dao.findById(insertedBook.getId());
 
         assertThat(foundBook).isPresent();
         assertThat(foundBook.orElseThrow())
@@ -190,10 +190,10 @@ class BookDaoImplTest {
     }
 
     @Test
-    @DisplayName("getById после delete должен возвращать пустой Optional")
+    @DisplayName("findById после delete должен возвращать пустой Optional")
     void getByIdDeletedBook() {
         dao.deleteById(1L);
-        Optional<Book> deletedBook = dao.getById(1L);
+        Optional<Book> deletedBook = dao.findById(1L);
 
         assertThat(deletedBook).isEmpty();
     }

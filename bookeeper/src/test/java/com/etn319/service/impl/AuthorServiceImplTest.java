@@ -58,8 +58,8 @@ class AuthorServiceImplTest {
     @BeforeEach
     public void setUp() {
         given(authorDao.count()).willReturn(COUNT);
-        given(authorDao.getById(anyLong())).willReturn(Optional.of(AUTHOR));
-        given(authorDao.getAll()).willReturn(Collections.emptyList());
+        given(authorDao.findById(anyLong())).willReturn(Optional.of(AUTHOR));
+        given(authorDao.findAll()).willReturn(Collections.emptyList());
         doNothing().when(authorDao).deleteById(longThat(l -> l != NOT_EXISTING_ID));
         doThrow(EntityNotFoundException.class).when(authorDao).deleteById(NOT_EXISTING_ID);
 
@@ -75,13 +75,13 @@ class AuthorServiceImplTest {
     }
 
     @Test
-    @DisplayName("getById должен вызывать метод dao.getById, возвращать его результат")
+    @DisplayName("findById должен вызывать метод dao.findById, возвращать его результат")
     void getByIdDelegatesCallToDao() {
         var id = 1L;
         Optional<Author> author = authorService.getById(id);
         ArgumentCaptor<Long> captor = ArgumentCaptor.forClass(Long.class);
 
-        verify(authorDao, only()).getById(captor.capture());
+        verify(authorDao, only()).findById(captor.capture());
         assertThat(captor.getValue()).isEqualTo(id);
 
         assertThat(author).isPresent();
@@ -89,7 +89,7 @@ class AuthorServiceImplTest {
     }
 
     @Test
-    @DisplayName("getById должен кэшировать результат")
+    @DisplayName("findById должен кэшировать результат")
     void getByIdStoresResultInCache() {
         var id = 1L;
         Optional<Author> author = authorService.getById(id);
@@ -102,17 +102,17 @@ class AuthorServiceImplTest {
     }
 
     @Test
-    @DisplayName("getAll должен вызывать dao.getAll и возвращать результат")
+    @DisplayName("findAll должен вызывать dao.findAll и возвращать результат")
     void getAll() {
         List<Author> expected = Collections.emptyList();
         List<Author> actual = authorService.getAll();
 
-        verify(authorDao, only()).getAll();
+        verify(authorDao, only()).findAll();
         assertThat(actual).isSameAs(expected);
     }
 
     @Test
-    @DisplayName("getAll не должен сохранять объекты в кэше")
+    @DisplayName("findAll не должен сохранять объекты в кэше")
     void getAllDoesNotStoreCache() {
         authorService.getAll();
         Throwable thrown = catchThrowable(() -> authorService.getCache());

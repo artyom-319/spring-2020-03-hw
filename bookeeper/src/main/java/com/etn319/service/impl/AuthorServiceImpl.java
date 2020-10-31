@@ -28,14 +28,14 @@ public class AuthorServiceImpl implements AuthorService {
 
     @Override
     public Optional<Author> getById(long id) {
-        Optional<Author> author = dao.getById(id);
+        Optional<Author> author = dao.findById(id);
         author.ifPresent(cache::setAuthor);
         return author;
     }
 
     @Override
     public List<Author> getAll() {
-        return dao.getAll();
+        return dao.findAll();
     }
 
     @Override

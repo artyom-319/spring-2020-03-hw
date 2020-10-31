@@ -27,12 +27,12 @@ public class BookDaoJpaImpl implements BookDao {
     }
 
     @Override
-    public Optional<Book> getById(long id) {
+    public Optional<Book> findById(long id) {
         return Optional.ofNullable(entityManager.find(Book.class, id));
     }
 
     @Override
-    public List<Book> getAll() {
+    public List<Book> findAll() {
         EntityGraph entityGraph = entityManager.getEntityGraph(Book.FETCH_GRAPH_NAME);
         TypedQuery<Book> query = entityManager.createQuery("select b from Book b ", Book.class);
         query.setHint(FETCH_GRAPH_HINT, entityGraph);
@@ -63,7 +63,7 @@ public class BookDaoJpaImpl implements BookDao {
 
     @Override
     public void deleteById(long id) {
-        var book = getById(id).orElseThrow(EntityNotFoundException::new);
+        var book = findById(id).orElseThrow(EntityNotFoundException::new);
         try {
             entityManager.remove(book);
         } catch (RuntimeException e) {

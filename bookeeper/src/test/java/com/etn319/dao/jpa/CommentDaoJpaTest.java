@@ -32,7 +32,7 @@ class CommentDaoJpaTest {
     @Test
     void getCommentsByCommenterName() {
         List<String> expectedComments = List.of("Good", "Super", "Very nice");
-        List<Comment> comments = dao.getByCommenterName(COMMENTER);
+        List<Comment> comments = dao.findByCommenter(COMMENTER);
         assertThat(comments)
                 .hasSize(EXPECTED_NUMBER_OF_COMMENTS_BY_COMMENTER)
                 .extracting(Comment::getText)
@@ -64,7 +64,7 @@ class CommentDaoJpaTest {
 
     @Test
     void getById() {
-        var commentFromDao = dao.getById(1L);
+        var commentFromDao = dao.findById(1L);
         var commentFromEm = em.find(Comment.class, 1L);
 
         assertThat(commentFromDao)

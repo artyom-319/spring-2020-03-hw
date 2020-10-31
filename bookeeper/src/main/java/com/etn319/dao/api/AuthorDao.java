@@ -18,13 +18,13 @@ public interface AuthorDao {
      * @return объект автора, упакованный в <code>Optional</code>
      * <code>Optional.empty()</code>, если не найден
      */
-    Optional<Author> getById(long id);
+    Optional<Author> findById(long id);
 
     /**
      * Получить всех авторов из базы
      * @return список авторов
      */
-    List<Author> getAll();
+    List<Author> findAll();
 
     /**
      * Сохраняет автора в базе. Если задан ненулевой ID, произойдёт вставка в таблицу, в противном случае - обновление

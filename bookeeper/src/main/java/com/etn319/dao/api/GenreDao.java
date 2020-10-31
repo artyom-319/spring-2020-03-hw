@@ -18,13 +18,13 @@ public interface GenreDao {
      * @return объект жанра, упакованный в <code>Optional</code>
      * <code>Optional.empty()</code>, если не найден
      */
-    Optional<Genre> getById(long id);
+    Optional<Genre> findById(long id);
 
     /**
      * Получить все жанры из базы
      * @return список жанров
      */
-    List<Genre> getAll();
+    List<Genre> findAll();
 
     /**
      * Сохраняет жанр в базе. Если задан ненулевой ID, произойдёт вставка в таблицу, в противном случае - обновление

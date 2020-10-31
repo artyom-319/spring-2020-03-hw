@@ -24,12 +24,12 @@ public class AuthorDaoJpaImpl implements AuthorDao {
     }
 
     @Override
-    public Optional<Author> getById(long id) {
+    public Optional<Author> findById(long id) {
         return Optional.ofNullable(entityManager.find(Author.class, id));
     }
 
     @Override
-    public List<Author> getAll() {
+    public List<Author> findAll() {
         TypedQuery<Author> query = entityManager.createQuery("select a from Author a", Author.class);
         return query.getResultList();
     }
@@ -58,7 +58,7 @@ public class AuthorDaoJpaImpl implements AuthorDao {
 
     @Override
     public void deleteById(long id) {
-        var author = getById(id).orElseThrow(EntityNotFoundException::new);
+        var author = findById(id).orElseThrow(EntityNotFoundException::new);
         try {
             entityManager.remove(author);
         } catch (RuntimeException e) {
