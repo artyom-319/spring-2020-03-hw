@@ -1,7 +1,9 @@
 package com.etn319.service.impl;
 
 import com.etn319.dao.DaoLayerException;
+import com.etn319.dao.api.AuthorDao;
 import com.etn319.dao.api.BookDao;
+import com.etn319.dao.api.GenreDao;
 import com.etn319.model.Book;
 import com.etn319.service.CacheHolder;
 import com.etn319.service.ServiceLayerException;
@@ -11,6 +13,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -19,6 +22,8 @@ import java.util.Optional;
 @Service
 public class BookServiceImpl implements BookService {
     private final BookDao dao;
+    private final AuthorDao authorDao;
+    private final GenreDao genreDao;
     private final CacheHolder cache;
 
     @Override
@@ -67,27 +72,30 @@ public class BookServiceImpl implements BookService {
     @Override
     @Transactional(readOnly = true)
     public List<Book> getByCachedGenre() {
-        var genre = cache.getGenre();
-        return dao.getByGenre(genre);
+        var cachedGenre = cache.getGenre();
+        return getByGenreId(cachedGenre.getId());
     }
 
     @Override
     @Transactional(readOnly = true)
     public List<Book> getByGenreId(long id) {
-        return dao.getByGenreId(id);
+        var genre = genreDao.getById(id)
+                .orElseThrow(() -> new ServiceLayerException("Genre does not exist"));
+        return new ArrayList<>(genre.getBooks());
     }
 
     @Override
     @Transactional(readOnly = true)
     public List<Book> getByCachedAuthor() {
-        var author = cache.getAuthor();
-        return dao.getByAuthor(author);
+        var cachedAuthor = cache.getAuthor();
+        return getByAuthorId(cachedAuthor.getId());
     }
 
     @Override
     @Transactional(readOnly = true)
     public List<Book> getByAuthorId(long id) {
-        return dao.getByAuthorId(id);
+        var author = authorDao.getById(id).orElseThrow(() -> new ServiceLayerException("Author does not exist"));
+        return new ArrayList<>(author.getBooks());
     }
 
     @Override

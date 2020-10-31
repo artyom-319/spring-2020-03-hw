@@ -1,6 +1,7 @@
 package com.etn319.service.impl;
 
 import com.etn319.dao.DaoLayerException;
+import com.etn319.dao.api.BookDao;
 import com.etn319.dao.api.CommentDao;
 import com.etn319.model.Comment;
 import com.etn319.service.CacheHolder;
@@ -11,6 +12,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -19,6 +21,7 @@ import java.util.Optional;
 @Service
 public class CommentServiceImpl implements CommentService {
     private final CommentDao dao;
+    private final BookDao bookDao;
     private final CacheHolder cache;
 
     @Override
@@ -68,7 +71,10 @@ public class CommentServiceImpl implements CommentService {
     @Override
     @Transactional(readOnly = true)
     public List<Comment> getByBook() {
-        return dao.getByBook(cache.getBook());
+        var cachedBook = cache.getBook();
+        var foundBook = bookDao.getById(cachedBook.getId())
+                .orElseThrow(() -> new ServiceLayerException("Book does not exist"));
+        return new ArrayList<>(foundBook.getComments());
     }
 
     @Override
