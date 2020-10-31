@@ -1,6 +1,5 @@
 package com.etn319.shell;
 
-import com.etn319.dao.ConnectedEntityDoesNotExistException;
 import com.etn319.model.Book;
 import com.etn319.service.EmptyCacheException;
 import com.etn319.service.ServiceLayerException;
@@ -45,8 +44,6 @@ public class BookCommandHandler implements CommandHandler {
         try {
             var book = bookService.save();
             return "Saved: " + book.toString();
-        } catch (ConnectedEntityDoesNotExistException e) {
-            return "One or more connected entities were not found in data source. Save them or refresh and try again";
         } catch (EmptyCacheException e) {
             return "Nothing to save: cache is empty";
         } catch (ServiceLayerException e) {
