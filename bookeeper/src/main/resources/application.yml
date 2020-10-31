@@ -31,8 +31,11 @@ spring:
     hibernate:
       ddl-auto: validate
     show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
 
 ---
 spring:
   profiles:
-    active: h2, jpa
+    active: h2
