@@ -4,6 +4,9 @@ import com.etn319.dao.EntityNotFoundException;
 import com.etn319.dao.api.AuthorDao;
 import com.etn319.dao.api.BookDao;
 import com.etn319.dao.api.GenreDao;
+import com.etn319.dao.datajpa.AuthorRepository;
+import com.etn319.dao.datajpa.BookRepository;
+import com.etn319.dao.datajpa.GenreRepository;
 import com.etn319.model.Author;
 import com.etn319.model.Book;
 import com.etn319.model.Genre;
@@ -57,7 +60,9 @@ class BookServiceImplTest {
         }
 
         @Bean
-        public BookService bookService(BookDao bookDao, AuthorDao authorDao, GenreDao genreDao, CacheHolder cacheHolder) {
+        public BookService bookService(
+                BookRepository bookDao, AuthorRepository authorDao, GenreRepository genreDao, CacheHolder cacheHolder
+        ) {
             return new BookServiceImpl(bookDao, authorDao, genreDao, cacheHolder);
         }
     }

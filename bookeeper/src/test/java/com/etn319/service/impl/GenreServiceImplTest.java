@@ -2,6 +2,7 @@ package com.etn319.service.impl;
 
 import com.etn319.dao.EntityNotFoundException;
 import com.etn319.dao.api.GenreDao;
+import com.etn319.dao.datajpa.GenreRepository;
 import com.etn319.model.Genre;
 import com.etn319.service.CacheHolder;
 import com.etn319.service.EmptyCacheException;
@@ -43,7 +44,7 @@ class GenreServiceImplTest {
     @Configuration
     static class Config {
         @Bean
-        public GenreService genreService(GenreDao genreDao) {
+        public GenreService genreService(GenreRepository genreDao) {
             return new GenreServiceImpl(genreDao, new CacheHolder());
         }
     }

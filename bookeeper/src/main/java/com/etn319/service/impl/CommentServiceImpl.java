@@ -1,14 +1,14 @@
 package com.etn319.service.impl;
 
-import com.etn319.dao.DaoLayerException;
 import com.etn319.dao.api.BookDao;
-import com.etn319.dao.api.CommentDao;
+import com.etn319.dao.datajpa.CommentRepository;
 import com.etn319.model.Comment;
 import com.etn319.service.CacheHolder;
 import com.etn319.service.ServiceLayerException;
 import com.etn319.service.api.CommentService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.dao.DataAccessException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -20,7 +20,7 @@ import java.util.Optional;
 @RequiredArgsConstructor
 @Service
 public class CommentServiceImpl implements CommentService {
-    private final CommentDao dao;
+    private final CommentRepository dao;
     private final BookDao bookDao;
     private final CacheHolder cache;
 
@@ -50,7 +50,7 @@ public class CommentServiceImpl implements CommentService {
             Comment saved = dao.save(comment);
             clearCache();
             return saved;
-        } catch (DaoLayerException e) {
+        } catch (DataAccessException e) {
             throw new ServiceLayerException(e);
         }
     }
@@ -58,10 +58,15 @@ public class CommentServiceImpl implements CommentService {
     @Override
     @Transactional
     public void deleteById(long id) {
-        try {
-            dao.deleteById(id);
-        } catch (DaoLayerException e) {
-            throw new ServiceLayerException(e);
+        if (dao.existsById(id)) {
+            try {
+                dao.deleteById(id);
+            } catch (DataAccessException e) {
+                throw new ServiceLayerException(e);
+            }
+        } else {
+            // todo: заполнить исключение или придумать новое
+            throw new ServiceLayerException();
         }
     }
 

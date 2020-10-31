@@ -1,13 +1,13 @@
 package com.etn319.service.impl;
 
-import com.etn319.dao.DaoLayerException;
-import com.etn319.dao.api.AuthorDao;
+import com.etn319.dao.datajpa.AuthorRepository;
 import com.etn319.model.Author;
 import com.etn319.service.CacheHolder;
 import com.etn319.service.ServiceLayerException;
 import com.etn319.service.api.AuthorService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.dao.DataAccessException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -18,7 +18,7 @@ import java.util.Optional;
 @RequiredArgsConstructor
 @Service
 public class AuthorServiceImpl implements AuthorService {
-    private final AuthorDao dao;
+    private final AuthorRepository dao;
     private final CacheHolder cache;
 
     @Override
@@ -47,7 +47,7 @@ public class AuthorServiceImpl implements AuthorService {
             Author saved = dao.save(author);
             clearCache();
             return saved;
-        } catch (DaoLayerException e) {
+        } catch (DataAccessException e) {
             throw new ServiceLayerException(e);
         }
     }
@@ -55,10 +55,15 @@ public class AuthorServiceImpl implements AuthorService {
     @Override
     @Transactional
     public void deleteById(long id) {
-        try {
-            dao.deleteById(id);
-        } catch (DaoLayerException e) {
-            throw new ServiceLayerException(e);
+        if (dao.existsById(id)) {
+            try {
+                dao.deleteById(id);
+            } catch (DataAccessException e) {
+                throw new ServiceLayerException(e);
+            }
+        } else {
+            // todo: заполнить исключение или придумать новое
+            throw new ServiceLayerException();
         }
     }
 
