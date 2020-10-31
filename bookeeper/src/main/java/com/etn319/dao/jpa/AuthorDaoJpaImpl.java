@@ -36,10 +36,14 @@ public class AuthorDaoJpaImpl implements AuthorDao {
 
     @Override
     public Author save(Author author) {
-        if (author.getId() == 0L)
+        long authorId = author.getId();
+        if (author.getId() == 0L) {
             entityManager.persist(author);
-        else
-            entityManager.merge(author);
+            entityManager.flush();
+        } else {
+            checkExists(authorId);
+            author = entityManager.merge(author);
+        }
         return author;
     }
 
@@ -60,5 +64,15 @@ public class AuthorDaoJpaImpl implements AuthorDao {
         } catch (RuntimeException e) {
             throw new DaoLayerException(e);
         }
+    }
+
+    private boolean exists(long id) {
+        Author author = entityManager.find(Author.class, id);
+        return (author != null);
+    }
+
+    private void checkExists(long id) {
+        if (!exists(id))
+            throw new EntityNotFoundException();
     }
 }

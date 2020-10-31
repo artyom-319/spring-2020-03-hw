@@ -37,11 +37,14 @@ public class CommentDaoJpaImpl implements CommentDao {
 
     @Override
     public Comment save(Comment comment) {
-        if (comment.getId() == 0L) {
+        long commentId = comment.getId();
+        if (commentId == 0L) {
             em.persist(comment);
             em.flush();
-        } else
-            em.merge(comment);
+        } else {
+            checkExists(commentId);
+            comment = em.merge(comment);
+        }
         return comment;
     }
 
@@ -70,5 +73,15 @@ public class CommentDaoJpaImpl implements CommentDao {
                 "select c from Comment c join fetch c.book b join fetch b.author join fetch b.genre where c.commenter = :commenter", Comment.class);
         query.setParameter("commenter", name);
         return query.getResultList();
+    }
+
+    private boolean exists(long id) {
+        Comment comment = em.find(Comment.class, id);
+        return (comment != null);
+    }
+
+    private void checkExists(long id) {
+        if (!exists(id))
+            throw new EntityNotFoundException();
     }
 }

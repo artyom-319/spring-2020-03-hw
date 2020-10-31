@@ -22,7 +22,7 @@ public class BookDaoJpaImpl implements BookDao {
 
     @Override
     public long count() {
-        TypedQuery<Long> query = entityManager.createQuery("select count(book) from Book book", long.class);
+        TypedQuery<Long> query = entityManager.createQuery("select count(book) from Book book", Long.class);
         return query.getSingleResult();
     }
 
@@ -41,10 +41,14 @@ public class BookDaoJpaImpl implements BookDao {
 
     @Override
     public Book save(Book book) {
-        if (book.getId() == 0L)
+        long bookId = book.getId();
+        if (bookId <= 0L) {
             entityManager.persist(book);
-        else
-            entityManager.merge(book);
+            entityManager.flush();
+        } else {
+            checkExists(bookId);
+            book = entityManager.merge(book);
+        }
         return book;
     }
 
@@ -65,5 +69,15 @@ public class BookDaoJpaImpl implements BookDao {
         } catch (RuntimeException e) {
             throw new DaoLayerException(e);
         }
+    }
+
+    private boolean exists(long id) {
+        Book book = entityManager.find(Book.class, id);
+        return (book != null);
+    }
+
+    private void checkExists(long id) {
+        if (!exists(id))
+            throw new EntityNotFoundException();
     }
 }

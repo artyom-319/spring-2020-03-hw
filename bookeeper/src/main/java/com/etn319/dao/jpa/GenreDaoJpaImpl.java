@@ -36,10 +36,14 @@ public class GenreDaoJpaImpl implements GenreDao {
 
     @Override
     public Genre save(Genre genre) {
-        if (genre.getId() == 0L)
+        long genreId = genre.getId();
+        if (genreId == 0L) {
             entityManager.persist(genre);
-        else
-            entityManager.merge(genre);
+            entityManager.flush();
+        } else {
+            checkExists(genreId);
+            genre = entityManager.merge(genre);
+        }
         return genre;
     }
 
@@ -60,5 +64,15 @@ public class GenreDaoJpaImpl implements GenreDao {
         } catch (RuntimeException e) {
             throw new DaoLayerException(e);
         }
+    }
+
+    private boolean exists(long id) {
+        Genre genre = entityManager.find(Genre.class, id);
+        return (genre != null);
+    }
+
+    private void checkExists(long id) {
+        if (!exists(id))
+            throw new EntityNotFoundException();
     }
 }
