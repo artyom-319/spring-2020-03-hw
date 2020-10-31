@@ -1,4 +1,4 @@
-package com.etn319.dao.jdbc;
+package com.etn319.dao.jpa;
 
 import com.etn319.dao.EntityNotFoundException;
 import com.etn319.dao.api.AuthorDao;
@@ -24,8 +24,8 @@ import static org.assertj.core.api.Assertions.catchThrowable;
 
 @JdbcTest
 @DisplayName("Book DAO")
-@Import({BookDaoImpl.class, GenreDaoImpl.class, AuthorDaoImpl.class})
-@ActiveProfiles("jdbc")
+@Import({BookDaoJpaImpl.class, GenreDaoJpaImpl.class, AuthorDaoJpaImpl.class})
+@ActiveProfiles("jpa")
 class BookDaoImplTest {
     private static final int INITIAL_COUNT = 3;
     private static final int NOVELS_COUNT = 3;

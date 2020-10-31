@@ -1,4 +1,4 @@
-package com.etn319.dao.jdbc;
+package com.etn319.dao.jpa;
 
 import com.etn319.dao.EntityNotFoundException;
 import com.etn319.dao.api.AuthorDao;
@@ -18,8 +18,8 @@ import static org.assertj.core.api.Assertions.catchThrowable;
 
 @JdbcTest
 @DisplayName("Author DAO")
-@Import(AuthorDaoImpl.class)
-@ActiveProfiles("jdbc")
+@Import(AuthorDaoJpaImpl.class)
+@ActiveProfiles("jpa")
 class AuthorDaoImplTest {
     private static final int INITIAL_COUNT = 2;
     private static final String NEW_NAME = "Joseph Heller";

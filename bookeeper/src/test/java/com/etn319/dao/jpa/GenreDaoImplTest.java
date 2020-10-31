@@ -1,4 +1,4 @@
-package com.etn319.dao.jdbc;
+package com.etn319.dao.jpa;
 
 import com.etn319.dao.EntityNotFoundException;
 import com.etn319.dao.api.GenreDao;
@@ -18,8 +18,8 @@ import static org.assertj.core.api.Assertions.catchThrowable;
 
 @JdbcTest
 @DisplayName("Genre DAO")
-@Import(GenreDaoImpl.class)
-@ActiveProfiles("jdbc")
+@Import(GenreDaoJpaImpl.class)
+@ActiveProfiles("jpa")
 class GenreDaoImplTest {
     private static final int INITIAL_COUNT = 2;
     private static final String NEW_TITLE = "Science Fiction";
