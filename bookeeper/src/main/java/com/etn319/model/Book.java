@@ -61,4 +61,14 @@ public class Book {
         this.author = author;
         this.genre = genre;
     }
+
+    @Override
+    public String toString() {
+        return "Book{" +
+                "id=" + id +
+                ", title='" + title + '\'' +
+                ", author=" + (author == null ? null : author.getName()) +
+                ", genre=" + (genre == null ? null : genre.getTitle()) +
+                '}';
+    }
 }
