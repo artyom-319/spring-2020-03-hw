@@ -16,9 +16,9 @@ create table books (
             primary key,
     title     varchar(1024),
     author_id bigint
-        constraint books_author_fkey references authors on delete cascade ,
+        constraint books_author_fkey references authors on delete set null ,
     genre_id  bigint
-        constraint books_genre_fkey references genres on delete cascade
+        constraint books_genre_fkey references genres on delete set null
 );
 
 create table comments (
