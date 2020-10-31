@@ -1,7 +1,9 @@
 package com.etn319.service.impl;
 
 import com.etn319.dao.EntityNotFoundException;
+import com.etn319.dao.api.AuthorDao;
 import com.etn319.dao.api.BookDao;
+import com.etn319.dao.api.GenreDao;
 import com.etn319.model.Author;
 import com.etn319.model.Book;
 import com.etn319.model.Genre;
@@ -25,7 +27,6 @@ import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.catchThrowable;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.longThat;
 import static org.mockito.BDDMockito.given;
@@ -43,8 +44,10 @@ class BookServiceImplTest {
     private static final Book BOOK = new Book(1L, TITLE, new Author(), new Genre());
 
     private final List<Book> allBooks = Collections.nCopies(5, BOOK);
-    private final List<Book> booksByGenre = Collections.emptyList();
-    private final List<Book> booksByAuthor = Collections.singletonList(BOOK);
+    private final List<Book> booksByGenre = Collections.nCopies(4, BOOK);
+    private final List<Book> booksByAuthor = Collections.nCopies(3, BOOK);
+    private final Author author = new Author();
+    private final Genre genre = new Genre();
 
     @Configuration
     static class Config {
@@ -54,13 +57,17 @@ class BookServiceImplTest {
         }
 
         @Bean
-        public BookService bookService(BookDao bookDao, CacheHolder cacheHolder) {
-            return new BookServiceImpl(bookDao, cacheHolder);
+        public BookService bookService(BookDao bookDao, AuthorDao authorDao, GenreDao genreDao, CacheHolder cacheHolder) {
+            return new BookServiceImpl(bookDao, authorDao, genreDao, cacheHolder);
         }
     }
 
     @MockBean
     private BookDao bookDao;
+    @MockBean
+    private AuthorDao authorDao;
+    @MockBean
+    private GenreDao genreDao;
     @Autowired
     private CacheHolder cacheHolder;
     @Autowired
@@ -68,13 +75,17 @@ class BookServiceImplTest {
 
     @BeforeEach
     public void setUp() {
+        author.setBooks(booksByAuthor);
+        genre.setBooks(booksByGenre);
+
         given(bookDao.count()).willReturn(COUNT);
         given(bookDao.getById(anyLong())).willReturn(Optional.of(BOOK));
-        given(bookDao.getByAuthor(any(Author.class))).willReturn(booksByAuthor);
-        given(bookDao.getByGenreId(anyLong())).willReturn(booksByGenre);
         given(bookDao.getAll()).willReturn(allBooks);
         doNothing().when(bookDao).deleteById(longThat(l -> l != NOT_EXISTING_ID));
         doThrow(EntityNotFoundException.class).when(bookDao).deleteById(NOT_EXISTING_ID);
+
+        given(authorDao.getById(anyLong())).willReturn(Optional.of(author));
+        given(genreDao.getById(anyLong())).willReturn(Optional.of(genre));
 
         bookService.clearCache();
     }
@@ -176,7 +187,7 @@ class BookServiceImplTest {
         List<Book> booksByGenre = bookService.getByGenreId(1L);
         var argumentCaptor = ArgumentCaptor.forClass(Long.class);
 
-        verify(bookDao, only()).getByGenreId(argumentCaptor.capture());
+        verify(genreDao, only()).getById(argumentCaptor.capture());
         assertThat(argumentCaptor.getValue()).isEqualTo(1L);
         assertThat(booksByGenre).isSameAs(booksByGenre);
     }
@@ -186,10 +197,10 @@ class BookServiceImplTest {
         var author = new Author(2L, "name", "country");
         cacheHolder.setAuthor(author);
         List<Book> booksByAuthor = bookService.getByCachedAuthor();
-        var argumentCaptor = ArgumentCaptor.forClass(Author.class);
+        var argumentCaptor = ArgumentCaptor.forClass(Long.class);
 
-        verify(bookDao, only()).getByAuthor(argumentCaptor.capture());
-        assertThat(argumentCaptor.getValue()).isEqualTo(author);
+        verify(authorDao, only()).getById(argumentCaptor.capture());
+        assertThat(argumentCaptor.getValue()).isEqualTo(author.getId());
         assertThat(booksByAuthor).isSameAs(booksByAuthor);
     }
 
