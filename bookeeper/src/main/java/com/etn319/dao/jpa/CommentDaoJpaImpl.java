@@ -6,6 +6,7 @@ import com.etn319.dao.api.CommentDao;
 import com.etn319.model.Comment;
 import org.springframework.stereotype.Repository;
 
+import javax.persistence.EntityGraph;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.persistence.TypedQuery;
@@ -14,6 +15,8 @@ import java.util.Optional;
 
 @Repository
 public class CommentDaoJpaImpl implements CommentDao {
+    private static final String FETCH_GRAPH_HINT = "javax.persistence.fetchgraph";
+
     @PersistenceContext
     private EntityManager em;
 
@@ -30,8 +33,10 @@ public class CommentDaoJpaImpl implements CommentDao {
 
     @Override
     public List<Comment> getAll() {
+        EntityGraph entityGraph = em.getEntityGraph(Comment.FETCH_GRAPH_NAME);
         TypedQuery<Comment> query = em.createQuery(
-                "select c from Comment c join fetch c.book b join fetch b.author join fetch b.genre", Comment.class);
+                "select c from Comment c", Comment.class);
+        query.setHint(FETCH_GRAPH_HINT, entityGraph);
         return query.getResultList();
     }
 
@@ -69,9 +74,11 @@ public class CommentDaoJpaImpl implements CommentDao {
 
     @Override
     public List<Comment> getByCommenterName(String name) {
+        EntityGraph entityGraph = em.getEntityGraph(Comment.FETCH_GRAPH_NAME);
         TypedQuery<Comment> query = em.createQuery(
-                "select c from Comment c join fetch c.book b join fetch b.author join fetch b.genre where c.commenter = :commenter", Comment.class);
+                "select c from Comment c where c.commenter = :commenter", Comment.class);
         query.setParameter("commenter", name);
+        query.setHint(FETCH_GRAPH_HINT, entityGraph);
         return query.getResultList();
     }
 

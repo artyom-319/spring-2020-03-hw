@@ -11,6 +11,8 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
+import javax.persistence.NamedAttributeNode;
+import javax.persistence.NamedEntityGraph;
 import javax.persistence.Table;
 
 @Entity
@@ -18,7 +20,10 @@ import javax.persistence.Table;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
+@NamedEntityGraph(name = Comment.FETCH_GRAPH_NAME, attributeNodes = @NamedAttributeNode("book"))
 public class Comment {
+    public static final String FETCH_GRAPH_NAME = "comment-fetchgraph";
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
