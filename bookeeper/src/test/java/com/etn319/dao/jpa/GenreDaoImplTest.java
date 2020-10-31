@@ -6,9 +6,9 @@ import com.etn319.model.Genre;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.jdbc.JdbcTest;
+import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
+import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
 import org.springframework.context.annotation.Import;
-import org.springframework.test.context.ActiveProfiles;
 
 import java.util.List;
 import java.util.Optional;
@@ -16,10 +16,9 @@ import java.util.Optional;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.catchThrowable;
 
-@JdbcTest
+@DataJpaTest
 @DisplayName("Genre DAO")
 @Import(GenreDaoJpaImpl.class)
-@ActiveProfiles("jpa")
 class GenreDaoImplTest {
     private static final int INITIAL_COUNT = 2;
     private static final String NEW_TITLE = "Science Fiction";
@@ -30,6 +29,9 @@ class GenreDaoImplTest {
 
     @Autowired
     private GenreDao dao;
+
+    @Autowired
+    private TestEntityManager em;
 
     @Test
     @DisplayName("count должен возвращать стартовое количество записей")
@@ -103,7 +105,7 @@ class GenreDaoImplTest {
     @Test
     @DisplayName("save для существующего жанра должен возвращать изменённый жанр с тем же id")
     void update() {
-        Genre genre = dao.getById(2L).orElseThrow();
+        Genre genre = em.find(Genre.class, 2L);
         genre.setTitle(NEW_TITLE);
         Genre updated = dao.save(genre);
 
@@ -120,25 +122,25 @@ class GenreDaoImplTest {
     }
 
     @Test
-    @DisplayName("getById после update должен возвращать обновлённый жанр")
+    @DisplayName("em.find после update должен возвращать обновлённый жанр")
     void getByIdUpdatedGenre() {
-        var genre = dao.getById(2L).orElseThrow();
+        var genre = em.find(Genre.class, 2L);
         genre.setTitle(NEW_TITLE);
         var updatedGenre = dao.save(genre);
-        var foundGenre = dao.getById(2L).orElseThrow();
+        var foundGenre = em.find(Genre.class, 2L);
 
         assertThat(foundGenre).isEqualToComparingFieldByField(updatedGenre);
     }
 
     @Test
-    @DisplayName("getById после insert должен возвращать новый жанр")
+    @DisplayName("em.find после insert должен возвращать новый жанр")
     void getByIdInsertedGenre() {
         var genre = new Genre(NEW_TITLE);
         var insertedGenre = dao.save(genre);
-        var foundGenre = dao.getById(insertedGenre.getId());
+        var foundGenre = em.find(Genre.class, insertedGenre.getId());
 
-        assertThat(foundGenre).isPresent();
-        assertThat(foundGenre.orElseThrow())
+        assertThat(foundGenre).isNotNull();
+        assertThat(foundGenre)
                 .isEqualToComparingFieldByField(insertedGenre);
     }
 

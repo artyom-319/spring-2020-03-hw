@@ -6,9 +6,9 @@ import com.etn319.model.Author;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.jdbc.JdbcTest;
+import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
+import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
 import org.springframework.context.annotation.Import;
-import org.springframework.test.context.ActiveProfiles;
 
 import java.util.List;
 import java.util.Optional;
@@ -16,10 +16,9 @@ import java.util.Optional;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.catchThrowable;
 
-@JdbcTest
+@DataJpaTest
 @DisplayName("Author DAO")
 @Import(AuthorDaoJpaImpl.class)
-@ActiveProfiles("jpa")
 class AuthorDaoImplTest {
     private static final int INITIAL_COUNT = 2;
     private static final String NEW_NAME = "Joseph Heller";
@@ -33,6 +32,9 @@ class AuthorDaoImplTest {
 
     @Autowired
     private AuthorDao dao;
+
+    @Autowired
+    private TestEntityManager em;
 
     @Test
     @DisplayName("count должен возвращать стартовое количество записей")
@@ -104,7 +106,7 @@ class AuthorDaoImplTest {
     @Test
     @DisplayName("update должен возвращать изменённого автора с тем же id")
     void updateReturnValue() {
-        Author author = dao.getById(2L).orElseThrow();
+        Author author = em.find(Author.class, 2L);
         author.setName(NEW_NAME);
         author.setCountry(NEW_COUNTRY);
         Author updated = dao.save(author);
@@ -125,11 +127,11 @@ class AuthorDaoImplTest {
     @Test
     @DisplayName("getById после update должен возвращать обновлённого автора")
     void getByIdUpdatedAuthor() {
-        var author = dao.getById(2L).orElseThrow();
+        var author = em.find(Author.class, 2L);
         author.setName(NEW_NAME);
         author.setCountry(NEW_COUNTRY);
         var updatedAuthor = dao.save(author);
-        var foundAuthor = dao.getById(2L).orElseThrow();
+        var foundAuthor = em.find(Author.class, 2L);
 
         assertThat(foundAuthor).isEqualToComparingFieldByField(updatedAuthor);
     }
@@ -139,11 +141,10 @@ class AuthorDaoImplTest {
     void getByIdInsertedAuthor() {
         var author = new Author(NEW_NAME, NEW_COUNTRY);
         var insertedAuthor = dao.save(author);
-        var foundAuthor = dao.getById(insertedAuthor.getId());
+        var foundAuthor = em.find(Author.class, insertedAuthor.getId());
 
         assertThat(foundAuthor)
-                .isPresent();
-        assertThat(foundAuthor.orElseThrow())
+                .isNotNull()
                 .isEqualToComparingFieldByField(insertedAuthor);
     }
 
@@ -162,7 +163,7 @@ class AuthorDaoImplTest {
     void getByIdDeletedAuthor() {
         dao.deleteById(1L);
 
-        Optional<Author> author = dao.getById(1L);
-        assertThat(author).isEmpty();
+        var author = em.find(Author.class, 1L);
+        assertThat(author).isNull();
     }
 }
