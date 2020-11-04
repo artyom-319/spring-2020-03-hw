@@ -1,11 +1,9 @@
 package com.etn319.shell;
 
-import com.etn319.dao.ConnectedEntityDoesNotExistException;
 import com.etn319.model.Book;
 import com.etn319.service.EmptyCacheException;
-import com.etn319.service.EmptyConnectedEntityException;
-import com.etn319.service.UpdateException;
-import com.etn319.service.book.BookService;
+import com.etn319.service.ServiceLayerException;
+import com.etn319.service.api.BookService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.shell.standard.ShellCommandGroup;
 import org.springframework.shell.standard.ShellComponent;
@@ -13,6 +11,7 @@ import org.springframework.shell.standard.ShellMethod;
 import org.springframework.shell.standard.ShellOption;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @ShellComponent
@@ -28,10 +27,8 @@ public class BookCommandHandler implements CommandHandler {
 
     @Override
     public String get(long id) {
-        var book = bookService.getById(id);
-        if (book == null)
-            return String.format("No books with id=%d were found", id);
-        return book.toString();
+        Optional<Book> book = bookService.getById(id);
+        return book.map(Book::toString).orElse("No books found");
     }
 
     @Override
@@ -47,24 +44,21 @@ public class BookCommandHandler implements CommandHandler {
         try {
             var book = bookService.save();
             return "Saved: " + book.toString();
-        } catch (EmptyConnectedEntityException emptyEntityException) {
-            return "One or more connected entities missing in cache. Use corresponding 'get' command(s)";
-        } catch (UpdateException updateException) {
-            return "Failed to update";
-        } catch (ConnectedEntityDoesNotExistException connectedEntityException) {
-            return "One or more connected entities were not found in data source. Save them or refresh and try again";
-        } catch (EmptyCacheException emptyCacheException) {
+        } catch (EmptyCacheException e) {
             return "Nothing to save: cache is empty";
+        } catch (ServiceLayerException e) {
+            return "Failed to update";
         }
     }
 
     @Override
     public String delete(long id) {
-        boolean isDeleted = bookService.deleteById(id);
-        if (isDeleted)
+        try {
+            bookService.deleteById(id);
             return "Deleted";
-        else
+        } catch (ServiceLayerException e) {
             return "Failed to delete";
+        }
     }
 
     @Override
@@ -89,13 +83,19 @@ public class BookCommandHandler implements CommandHandler {
             return stringifyList(books);
         } catch (EmptyCacheException e) {
             return "There is no cached genre. Use /genres/ 'get' command first";
+        } catch (ServiceLayerException e) {
+            return e.getMessage();
         }
     }
 
     @ShellMethod(value = "Find books by genre id", key = {"get-by-genre-id", "by-genre-id", "bgi"})
     public String getByGenreId(@ShellOption("-id") long genreId) {
-        List<Book> books = bookService.getByGenreId(genreId);
-        return stringifyList(books);
+        try {
+            List<Book> books = bookService.getByGenreId(genreId);
+            return stringifyList(books);
+        } catch (ServiceLayerException e) {
+            return e.getMessage();
+        }
     }
 
     @ShellMethod(value = "Find books by author using cached author object", key = {"get-by-author", "by-author", "ba"})
@@ -105,13 +105,20 @@ public class BookCommandHandler implements CommandHandler {
             return stringifyList(books);
         } catch (EmptyCacheException e) {
             return "There is no cached author. Use /authors/ 'get' command first";
+        } catch (ServiceLayerException e) {
+            return e.getMessage();
         }
     }
 
     @ShellMethod(value = "Find books by author id", key = {"get-by-author-id", "by-author-id", "bai"})
     public String getByAuthorId(@ShellOption("-id") long authorId) {
-        List<Book> books = bookService.getByAuthorId(authorId);
-        return stringifyList(books);
+        try {
+
+            List<Book> books = bookService.getByAuthorId(authorId);
+            return stringifyList(books);
+        } catch (ServiceLayerException e) {
+            return e.getMessage();
+        }
     }
 
     @ShellMethod(value = "Create a book object to store it in program cache", key = "create-book")

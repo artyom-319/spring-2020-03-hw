@@ -3,7 +3,7 @@ package com.etn319.service;
 import lombok.Getter;
 
 @Getter
-public class EmptyCacheException extends RuntimeException {
+public class EmptyCacheException extends ServiceLayerException {
     private final String missedEntity;
 
     public EmptyCacheException(String missedEntity) {

@@ -8,6 +8,11 @@ spring:
     initialization-mode : embedded
 #    schema: schema.sql
 #    data: data.sql
+  jpa:
+    generate-ddl: false
+    hibernate:
+      ddl-auto: validate
+    show-sql: true
 
   messages.basename: i18n.bundle
 
@@ -18,9 +23,17 @@ spring:
     url: jdbc:h2:mem:bookeeper
     username: bookeeper
     password:
-    initialization-mode : always
-#    schema: schema.sql
-#    data: data.sql
+    initialization-mode : embedded
+    schema: schema.sql
+    data: data.sql
+  jpa:
+    generate-ddl: false
+    hibernate:
+      ddl-auto: validate
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
 
 ---
 spring:
