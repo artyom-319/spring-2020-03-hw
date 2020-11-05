@@ -1,11 +1,10 @@
 package com.etn319.service.impl;
 
-import com.etn319.service.EntityNotFoundException;
 import com.etn319.dao.GenreRepository;
 import com.etn319.model.Genre;
 import com.etn319.service.CacheHolder;
 import com.etn319.service.EmptyCacheException;
-import com.etn319.service.ServiceLayerException;
+import com.etn319.service.EntityNotFoundException;
 import com.etn319.service.api.GenreService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -24,10 +23,8 @@ import java.util.Optional;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.catchThrowable;
 import static org.mockito.ArgumentMatchers.anyLong;
-import static org.mockito.ArgumentMatchers.longThat;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.doNothing;
-import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.only;
 import static org.mockito.Mockito.verify;
 
@@ -36,6 +33,7 @@ import static org.mockito.Mockito.verify;
 class GenreServiceImplTest {
     private static final long COUNT = -100;
     private static final long NOT_EXISTING_ID = 100L;
+    private static final long EXISTING_ID = 1L;
     private static final String TITLE = "Comedy";
     private static final String NEW_TITLE = "Tragedy";
     private static final Genre GENRE = new Genre(1L, TITLE);
@@ -57,9 +55,11 @@ class GenreServiceImplTest {
     public void setUp() {
         given(genreDao.count()).willReturn(COUNT);
         given(genreDao.findById(anyLong())).willReturn(Optional.of(GENRE));
+        given(genreDao.findById(NOT_EXISTING_ID)).willReturn(Optional.empty());
+        given(genreDao.existsById(EXISTING_ID)).willReturn(true);
+        given(genreDao.existsById(NOT_EXISTING_ID)).willReturn(false);
         given(genreDao.findAll()).willReturn(Collections.emptyList());
-        doNothing().when(genreDao).deleteById(longThat(l -> l != NOT_EXISTING_ID));
-        doThrow(EntityNotFoundException.class).when(genreDao).deleteById(NOT_EXISTING_ID);
+        doNothing().when(genreDao).deleteById(anyLong());
 
         genreService.clearCache();
     }
@@ -142,17 +142,18 @@ class GenreServiceImplTest {
         genreService.deleteById(idToDelete);
         var argumentCaptor = ArgumentCaptor.forClass(Long.class);
 
-        verify(genreDao, only()).deleteById(argumentCaptor.capture());
+        verify(genreDao).deleteById(argumentCaptor.capture());
+        verify(genreDao).existsById(argumentCaptor.getValue());
         assertThat(argumentCaptor.getValue()).isEqualTo(idToDelete);
     }
 
     @Test
-    @DisplayName("deleteById по несуществующему id должен вызывать dao.deleteById с тем же аргументом и кидать исключение")
+    @DisplayName("deleteById по несуществующему id должен вызывать dao.existsById с тем же аргументом и кидать исключение")
     void deleteByIncorrectId() {
         Throwable thrown = catchThrowable(() -> genreService.deleteById(NOT_EXISTING_ID));
         ArgumentCaptor<Long> argumentCaptor = ArgumentCaptor.forClass(Long.class);
-        verify(genreDao, only()).deleteById(argumentCaptor.capture());
-        assertThat(thrown).isInstanceOf(ServiceLayerException.class);
+        verify(genreDao, only()).existsById(argumentCaptor.capture());
+        assertThat(thrown).isInstanceOf(EntityNotFoundException.class);
     }
 
     @Test

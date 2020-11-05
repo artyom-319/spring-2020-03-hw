@@ -1,11 +1,10 @@
 package com.etn319.service.impl;
 
-import com.etn319.service.EntityNotFoundException;
 import com.etn319.dao.AuthorRepository;
 import com.etn319.model.Author;
 import com.etn319.service.CacheHolder;
 import com.etn319.service.EmptyCacheException;
-import com.etn319.service.ServiceLayerException;
+import com.etn319.service.EntityNotFoundException;
 import com.etn319.service.api.AuthorService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -24,10 +23,8 @@ import java.util.Optional;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.catchThrowable;
 import static org.mockito.ArgumentMatchers.anyLong;
-import static org.mockito.ArgumentMatchers.longThat;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.doNothing;
-import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.only;
 import static org.mockito.Mockito.verify;
 
@@ -36,6 +33,7 @@ import static org.mockito.Mockito.verify;
 class AuthorServiceImplTest {
     private static final long COUNT = -100;
     private static final long NOT_EXISTING_ID = 100L;
+    private static final long EXISTING_ID = 1L;
     private static final String NAME = "Pyotr";
     private static final String COUNTRY = "Russia";
     private static final String NEW_NAME = "Peter";
@@ -58,10 +56,12 @@ class AuthorServiceImplTest {
     @BeforeEach
     public void setUp() {
         given(authorDao.count()).willReturn(COUNT);
-        given(authorDao.findById(anyLong())).willReturn(Optional.of(AUTHOR));
+        given(authorDao.findById(EXISTING_ID)).willReturn(Optional.of(AUTHOR));
+        given(authorDao.findById(NOT_EXISTING_ID)).willReturn(Optional.empty());
+        given(authorDao.existsById(EXISTING_ID)).willReturn(true);
+        given(authorDao.existsById(NOT_EXISTING_ID)).willReturn(false);
         given(authorDao.findAll()).willReturn(Collections.emptyList());
-        doNothing().when(authorDao).deleteById(longThat(l -> l != NOT_EXISTING_ID));
-        doThrow(EntityNotFoundException.class).when(authorDao).deleteById(NOT_EXISTING_ID);
+        doNothing().when(authorDao).deleteById(anyLong());
 
         authorService.clearCache();
     }
@@ -140,23 +140,22 @@ class AuthorServiceImplTest {
     @Test
     @DisplayName("deleteById должен вызывать dao.deleteById с тем же аргументом")
     void deleteById() {
-        // todo: выпрямить тест или код
-        var idToDelete = 1L;
+        var idToDelete = EXISTING_ID;
         authorService.deleteById(idToDelete);
         var argumentCaptor = ArgumentCaptor.forClass(Long.class);
 
-        verify(authorDao, only()).deleteById(argumentCaptor.capture());
+        verify(authorDao).deleteById(argumentCaptor.capture());
+        verify(authorDao).deleteById(argumentCaptor.getValue());
         assertThat(argumentCaptor.getValue()).isEqualTo(idToDelete);
     }
 
     @Test
     @DisplayName("deleteById по несуществующему id должен вызывать dao.deleteById с тем же аргументом и кидать исключение")
     void deleteByIncorrectId() {
-        // todo: выпрямить этот тест во всех тестах
         Throwable thrown = catchThrowable(() -> authorService.deleteById(NOT_EXISTING_ID));
         ArgumentCaptor<Long> argumentCaptor = ArgumentCaptor.forClass(Long.class);
-        verify(authorDao, only()).deleteById(argumentCaptor.capture());
-        assertThat(thrown).isInstanceOf(ServiceLayerException.class);
+        verify(authorDao, only()).existsById(argumentCaptor.capture());
+        assertThat(thrown).isInstanceOf(EntityNotFoundException.class);
     }
 
     @Test

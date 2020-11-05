@@ -1,6 +1,5 @@
 package com.etn319.dao.jpa;
 
-import com.etn319.service.EntityNotFoundException;
 import com.etn319.dao.AuthorRepository;
 import com.etn319.model.Author;
 import org.junit.jupiter.api.DisplayName;
@@ -13,7 +12,6 @@ import java.util.List;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.catchThrowable;
 
 @DataJpaTest
 @DisplayName("Author DAO")
@@ -26,7 +24,6 @@ class AuthorDaoImplTest {
     private static final String NAME_2 = "Erich Maria Remarque";
     private static final String COUNTRY_2 = "Germany";
     private static final long ZERO_ID = 0L;
-    private static final long NOT_EXISTING_ID = 100L;
 
     @Autowired
     private AuthorRepository dao;
@@ -112,14 +109,6 @@ class AuthorDaoImplTest {
         assertThat(updated)
                 .extracting(Author::getId, Author::getName, Author::getCountry)
                 .containsExactly(2L, NEW_NAME, NEW_COUNTRY);
-    }
-
-    @Test
-    @DisplayName("update по несуществующему автору должен бросать исключение")
-    void updateByNotExistingId() {
-        var author = new Author(NOT_EXISTING_ID, NEW_NAME, NEW_COUNTRY);
-        Throwable thrown = catchThrowable(() -> dao.save(author));
-        assertThat(thrown).isInstanceOf(EntityNotFoundException.class);
     }
 
     @Test

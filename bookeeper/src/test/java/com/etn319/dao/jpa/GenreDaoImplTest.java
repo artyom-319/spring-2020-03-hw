@@ -1,6 +1,5 @@
 package com.etn319.dao.jpa;
 
-import com.etn319.service.EntityNotFoundException;
 import com.etn319.dao.GenreRepository;
 import com.etn319.model.Genre;
 import org.junit.jupiter.api.DisplayName;
@@ -13,7 +12,6 @@ import java.util.List;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.catchThrowable;
 
 @DataJpaTest
 @DisplayName("Genre DAO")
@@ -23,7 +21,6 @@ class GenreDaoImplTest {
     private static final String TITLE_1 = "Novel";
     private static final String TITLE_2 = "Drama";
     private static final long ZERO_ID = 0L;
-    private static final long NOT_EXISTING_ID = 1000L;
 
     @Autowired
     private GenreRepository dao;
@@ -109,14 +106,6 @@ class GenreDaoImplTest {
 
         assertThat(updated).extracting(Genre::getId, Genre::getTitle)
                 .containsExactly(2L, NEW_TITLE);
-    }
-
-    @Test
-    @DisplayName("update по несуществующему жанру должен бросать исключение")
-    void updateByNotExistingId() {
-        var genre = new Genre(NOT_EXISTING_ID, NEW_TITLE);
-        Throwable thrown = catchThrowable(() -> dao.save(genre));
-        assertThat(thrown).isInstanceOf(EntityNotFoundException.class);
     }
 
     @Test

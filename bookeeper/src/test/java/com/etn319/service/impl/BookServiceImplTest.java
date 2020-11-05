@@ -1,6 +1,5 @@
 package com.etn319.service.impl;
 
-import com.etn319.service.EntityNotFoundException;
 import com.etn319.dao.AuthorRepository;
 import com.etn319.dao.BookRepository;
 import com.etn319.dao.GenreRepository;
@@ -9,7 +8,7 @@ import com.etn319.model.Book;
 import com.etn319.model.Genre;
 import com.etn319.service.CacheHolder;
 import com.etn319.service.EmptyCacheException;
-import com.etn319.service.ServiceLayerException;
+import com.etn319.service.EntityNotFoundException;
 import com.etn319.service.api.BookService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -28,10 +27,8 @@ import java.util.Optional;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.catchThrowable;
 import static org.mockito.ArgumentMatchers.anyLong;
-import static org.mockito.ArgumentMatchers.longThat;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.doNothing;
-import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.only;
 import static org.mockito.Mockito.verify;
 
@@ -39,6 +36,7 @@ import static org.mockito.Mockito.verify;
 class BookServiceImplTest {
     private static final long COUNT = -100;
     private static final long NOT_EXISTING_ID = 100L;
+    private static final long EXISTING_ID = 1L;
     private static final String TITLE = "20 Years Later";
     private static final String NEW_TITLE = "10 Years Later";
     private static final Book BOOK = new Book(1L, TITLE, new Author(), new Genre());
@@ -81,10 +79,12 @@ class BookServiceImplTest {
         genre.setBooks(booksByGenre);
 
         given(bookDao.count()).willReturn(COUNT);
-        given(bookDao.findById(anyLong())).willReturn(Optional.of(BOOK));
+        given(bookDao.findById(EXISTING_ID)).willReturn(Optional.of(BOOK));
+        given(bookDao.findById(NOT_EXISTING_ID)).willReturn(Optional.empty());
+        given(bookDao.existsById(EXISTING_ID)).willReturn(true);
+        given(bookDao.existsById(NOT_EXISTING_ID)).willReturn(false);
         given(bookDao.findAll()).willReturn(allBooks);
-        doNothing().when(bookDao).deleteById(longThat(l -> l != NOT_EXISTING_ID));
-        doThrow(EntityNotFoundException.class).when(bookDao).deleteById(NOT_EXISTING_ID);
+        doNothing().when(bookDao).deleteById(anyLong());
 
         given(authorDao.findById(anyLong())).willReturn(Optional.of(author));
         given(genreDao.findById(anyLong())).willReturn(Optional.of(genre));
@@ -171,7 +171,8 @@ class BookServiceImplTest {
         bookService.deleteById(idToDelete);
         var argumentCaptor = ArgumentCaptor.forClass(Long.class);
 
-        verify(bookDao, only()).deleteById(argumentCaptor.capture());
+        verify(bookDao).deleteById(argumentCaptor.capture());
+        verify(bookDao).deleteById(argumentCaptor.getValue());
         assertThat(argumentCaptor.getValue()).isEqualTo(idToDelete);
     }
 
@@ -180,8 +181,8 @@ class BookServiceImplTest {
     void deleteByIncorrectId() {
         Throwable thrown = catchThrowable(() -> bookService.deleteById(NOT_EXISTING_ID));
         ArgumentCaptor<Long> argumentCaptor = ArgumentCaptor.forClass(Long.class);
-        verify(bookDao, only()).deleteById(argumentCaptor.capture());
-        assertThat(thrown).isInstanceOf(ServiceLayerException.class);
+        verify(bookDao, only()).existsById(argumentCaptor.capture());
+        assertThat(thrown).isInstanceOf(EntityNotFoundException.class);
     }
 
     @Test

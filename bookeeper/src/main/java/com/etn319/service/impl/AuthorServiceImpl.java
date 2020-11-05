@@ -3,6 +3,7 @@ package com.etn319.service.impl;
 import com.etn319.dao.AuthorRepository;
 import com.etn319.model.Author;
 import com.etn319.service.CacheHolder;
+import com.etn319.service.EntityNotFoundException;
 import com.etn319.service.ServiceLayerException;
 import com.etn319.service.api.AuthorService;
 import lombok.RequiredArgsConstructor;
@@ -55,15 +56,14 @@ public class AuthorServiceImpl implements AuthorService {
     @Override
     @Transactional
     public void deleteById(long id) {
-        if (dao.existsById(id)) {
-            try {
-                dao.deleteById(id);
-            } catch (DataAccessException e) {
-                throw new ServiceLayerException(e);
-            }
-        } else {
-            // todo: заполнить исключение или придумать новое
-            throw new ServiceLayerException();
+        if (!dao.existsById(id)) {
+            throw new EntityNotFoundException();
+        }
+
+        try {
+            dao.deleteById(id);
+        } catch (DataAccessException e) {
+            throw new ServiceLayerException(e);
         }
     }
 

@@ -1,6 +1,5 @@
 package com.etn319.dao.jpa;
 
-import com.etn319.service.EntityNotFoundException;
 import com.etn319.dao.AuthorRepository;
 import com.etn319.dao.BookRepository;
 import com.etn319.dao.GenreRepository;
@@ -19,7 +18,6 @@ import java.util.List;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.catchThrowable;
 
 @DataJpaTest
 @DisplayName("Book DAO")
@@ -30,7 +28,6 @@ class BookDaoImplTest {
     private static final String TITLE_2 = "Three Comrades";
     private static final String TITLE_3 = "Sea Wolf";
     private static final long ZERO_ID = 0L;
-    private static final long NOT_EXISTING_ID = 100L;
 
     private Author authorRemarque;
     private Author authorLondon;
@@ -140,14 +137,6 @@ class BookDaoImplTest {
         assertThat(updated)
                 .extracting(Book::getId, Book::getTitle, Book::getAuthor, Book::getGenre)
                 .containsExactly(2L, NEW_TITLE, authorLondon, genreDrama);
-    }
-
-    @Test
-    @DisplayName("update по несуществующей книге должен бросать исключение")
-    void updateByNotExistingId() {
-        var book = new Book(NOT_EXISTING_ID, NEW_TITLE, authorRemarque, genreNovel);
-        Throwable thrown = catchThrowable(() -> dao.save(book));
-        assertThat(thrown).isInstanceOf(EntityNotFoundException.class);
     }
 
     @Test

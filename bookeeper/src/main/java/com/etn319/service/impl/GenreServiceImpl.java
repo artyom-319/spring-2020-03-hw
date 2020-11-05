@@ -3,6 +3,7 @@ package com.etn319.service.impl;
 import com.etn319.dao.GenreRepository;
 import com.etn319.model.Genre;
 import com.etn319.service.CacheHolder;
+import com.etn319.service.EntityNotFoundException;
 import com.etn319.service.ServiceLayerException;
 import com.etn319.service.api.GenreService;
 import lombok.RequiredArgsConstructor;
@@ -54,15 +55,14 @@ public class GenreServiceImpl implements GenreService {
     @Override
     @Transactional
     public void deleteById(long id) {
-        if (dao.existsById(id)) {
-            try {
-                dao.deleteById(id);
-            } catch (DataAccessException e) {
-                throw new ServiceLayerException(e);
-            }
-        } else {
-            // todo: заполнить исключение или придумать новое
-            throw new ServiceLayerException();
+        if (!dao.existsById(id)) {
+            throw new EntityNotFoundException();
+        }
+
+        try {
+            dao.deleteById(id);
+        } catch (DataAccessException e) {
+            throw new ServiceLayerException(e);
         }
     }
 
