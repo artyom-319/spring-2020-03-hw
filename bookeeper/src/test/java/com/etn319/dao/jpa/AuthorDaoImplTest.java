@@ -1,24 +1,20 @@
 package com.etn319.dao.jpa;
 
-import com.etn319.dao.EntityNotFoundException;
-import com.etn319.dao.api.AuthorDao;
+import com.etn319.dao.AuthorRepository;
 import com.etn319.model.Author;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
-import org.springframework.context.annotation.Import;
 
 import java.util.List;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.catchThrowable;
 
 @DataJpaTest
 @DisplayName("Author DAO")
-@Import(AuthorDaoJpaImpl.class)
 class AuthorDaoImplTest {
     private static final int INITIAL_COUNT = 2;
     private static final String NEW_NAME = "Joseph Heller";
@@ -28,10 +24,9 @@ class AuthorDaoImplTest {
     private static final String NAME_2 = "Erich Maria Remarque";
     private static final String COUNTRY_2 = "Germany";
     private static final long ZERO_ID = 0L;
-    private static final long NOT_EXISTING_ID = 100L;
 
     @Autowired
-    private AuthorDao dao;
+    private AuthorRepository dao;
 
     @Autowired
     private TestEntityManager em;
@@ -76,9 +71,9 @@ class AuthorDaoImplTest {
     }
 
     @Test
-    @DisplayName("getById должен находить автора по существующему id")
+    @DisplayName("findById должен находить автора по существующему id")
     void getById() {
-        Optional<Author> author = dao.getById(1);
+        Optional<Author> author = dao.findById(1L);
         assertThat(author).isPresent();
         assertThat(author.orElseThrow())
                 .extracting(Author::getId, Author::getName, Author::getCountry)
@@ -86,16 +81,16 @@ class AuthorDaoImplTest {
     }
 
     @Test
-    @DisplayName("getById по несуществующему id должен возвращать пустой Optional")
+    @DisplayName("findById по несуществующему id должен возвращать пустой Optional")
     void getByNotExistingId() {
-        Optional<Author> author = dao.getById(ZERO_ID);
+        Optional<Author> author = dao.findById(ZERO_ID);
         assertThat(author).isEmpty();
     }
 
     @Test
-    @DisplayName("getAll должен возвращать все объекты в таблице")
+    @DisplayName("findAll должен возвращать все объекты в таблице")
     void getAll() {
-        List<Author> authors = dao.getAll();
+        List<Author> authors = dao.findAll();
 
         assertThat(authors)
                 .hasSize(INITIAL_COUNT)
@@ -117,15 +112,7 @@ class AuthorDaoImplTest {
     }
 
     @Test
-    @DisplayName("update по несуществующему автору должен бросать исключение")
-    void updateByNotExistingId() {
-        var author = new Author(NOT_EXISTING_ID, NEW_NAME, NEW_COUNTRY);
-        Throwable thrown = catchThrowable(() -> dao.save(author));
-        assertThat(thrown).isInstanceOf(EntityNotFoundException.class);
-    }
-
-    @Test
-    @DisplayName("getById после update должен возвращать обновлённого автора")
+    @DisplayName("findById после update должен возвращать обновлённого автора")
     void getByIdUpdatedAuthor() {
         var author = em.find(Author.class, 2L);
         author.setName(NEW_NAME);
@@ -137,7 +124,7 @@ class AuthorDaoImplTest {
     }
 
     @Test
-    @DisplayName("getById после insert должен возвращать нового автора")
+    @DisplayName("findById после insert должен возвращать нового автора")
     void getByIdInsertedAuthor() {
         var author = new Author(NEW_NAME, NEW_COUNTRY);
         var insertedAuthor = dao.save(author);
@@ -159,7 +146,7 @@ class AuthorDaoImplTest {
     }
 
     @Test
-    @DisplayName("getById после delete должен возвращать пустой Optional")
+    @DisplayName("findById после delete должен возвращать пустой Optional")
     void getByIdDeletedAuthor() {
         dao.deleteById(1L);
 

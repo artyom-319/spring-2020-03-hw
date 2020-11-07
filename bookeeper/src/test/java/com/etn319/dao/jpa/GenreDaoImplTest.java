@@ -1,34 +1,29 @@
 package com.etn319.dao.jpa;
 
-import com.etn319.dao.EntityNotFoundException;
-import com.etn319.dao.api.GenreDao;
+import com.etn319.dao.GenreRepository;
 import com.etn319.model.Genre;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
-import org.springframework.context.annotation.Import;
 
 import java.util.List;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.catchThrowable;
 
 @DataJpaTest
 @DisplayName("Genre DAO")
-@Import(GenreDaoJpaImpl.class)
 class GenreDaoImplTest {
     private static final int INITIAL_COUNT = 2;
     private static final String NEW_TITLE = "Science Fiction";
     private static final String TITLE_1 = "Novel";
     private static final String TITLE_2 = "Drama";
     private static final long ZERO_ID = 0L;
-    private static final long NOT_EXISTING_ID = 1000L;
 
     @Autowired
-    private GenreDao dao;
+    private GenreRepository dao;
 
     @Autowired
     private TestEntityManager em;
@@ -73,9 +68,9 @@ class GenreDaoImplTest {
     }
 
     @Test
-    @DisplayName("getById должен находить жанр по существующему id")
+    @DisplayName("findById должен находить жанр по существующему id")
     void getById() {
-        Optional<Genre> genre = dao.getById(1);
+        Optional<Genre> genre = dao.findById(1L);
 
         assertThat(genre)
                 .isPresent();
@@ -85,16 +80,16 @@ class GenreDaoImplTest {
     }
 
     @Test
-    @DisplayName("getById по несуществующему id должен возвращать пустой Optional")
+    @DisplayName("findById по несуществующему id должен возвращать пустой Optional")
     void getByNotExistingId() {
-        Optional<Genre> genre = dao.getById(ZERO_ID);
+        Optional<Genre> genre = dao.findById(ZERO_ID);
         assertThat(genre).isEmpty();
     }
 
     @Test
-    @DisplayName("getAll должен возвращать все объекты в таблице")
+    @DisplayName("findAll должен возвращать все объекты в таблице")
     void getAll() {
-        List<Genre> genres = dao.getAll();
+        List<Genre> genres = dao.findAll();
 
         assertThat(genres)
                 .hasSize(INITIAL_COUNT)
@@ -111,14 +106,6 @@ class GenreDaoImplTest {
 
         assertThat(updated).extracting(Genre::getId, Genre::getTitle)
                 .containsExactly(2L, NEW_TITLE);
-    }
-
-    @Test
-    @DisplayName("update по несуществующему жанру должен бросать исключение")
-    void updateByNotExistingId() {
-        var genre = new Genre(NOT_EXISTING_ID, NEW_TITLE);
-        Throwable thrown = catchThrowable(() -> dao.save(genre));
-        assertThat(thrown).isInstanceOf(EntityNotFoundException.class);
     }
 
     @Test
@@ -155,10 +142,10 @@ class GenreDaoImplTest {
     }
 
     @Test
-    @DisplayName("getById после delete должен возвращать пустой Optional")
+    @DisplayName("findById после delete должен возвращать пустой Optional")
     void getByIdDeletedGenre() {
         dao.deleteById(1L);
-        Optional<Genre> genre = dao.getById(1L);
+        Optional<Genre> genre = dao.findById(1L);
 
         assertThat(genre).isEmpty();
     }

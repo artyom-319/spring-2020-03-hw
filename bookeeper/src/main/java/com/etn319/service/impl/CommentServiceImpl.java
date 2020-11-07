@@ -1,14 +1,15 @@
 package com.etn319.service.impl;
 
-import com.etn319.dao.DaoLayerException;
-import com.etn319.dao.api.BookDao;
-import com.etn319.dao.api.CommentDao;
+import com.etn319.dao.BookRepository;
+import com.etn319.dao.CommentRepository;
 import com.etn319.model.Comment;
 import com.etn319.service.CacheHolder;
+import com.etn319.service.EntityNotFoundException;
 import com.etn319.service.ServiceLayerException;
 import com.etn319.service.api.CommentService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.dao.DataAccessException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -20,8 +21,8 @@ import java.util.Optional;
 @RequiredArgsConstructor
 @Service
 public class CommentServiceImpl implements CommentService {
-    private final CommentDao dao;
-    private final BookDao bookDao;
+    private final CommentRepository dao;
+    private final BookRepository bookDao;
     private final CacheHolder cache;
 
     @Override
@@ -31,14 +32,14 @@ public class CommentServiceImpl implements CommentService {
 
     @Override
     public Optional<Comment> getById(long id) {
-        Optional<Comment> comment = dao.getById(id);
+        Optional<Comment> comment = dao.findById(id);
         comment.ifPresent(cache::setComment);
         return comment;
     }
 
     @Override
     public List<Comment> getAll() {
-        return dao.getAll();
+        return dao.findAll();
     }
 
     @Override
@@ -50,7 +51,7 @@ public class CommentServiceImpl implements CommentService {
             Comment saved = dao.save(comment);
             clearCache();
             return saved;
-        } catch (DaoLayerException e) {
+        } catch (DataAccessException e) {
             throw new ServiceLayerException(e);
         }
     }
@@ -58,9 +59,13 @@ public class CommentServiceImpl implements CommentService {
     @Override
     @Transactional
     public void deleteById(long id) {
+        if (!dao.existsById(id)) {
+            throw new EntityNotFoundException();
+        }
+
         try {
             dao.deleteById(id);
-        } catch (DaoLayerException e) {
+        } catch (DataAccessException e) {
             throw new ServiceLayerException(e);
         }
     }
@@ -69,14 +74,14 @@ public class CommentServiceImpl implements CommentService {
     @Transactional(readOnly = true)
     public List<Comment> getByBook() {
         var cachedBook = cache.getBook();
-        var foundBook = bookDao.getById(cachedBook.getId())
+        var foundBook = bookDao.findById(cachedBook.getId())
                 .orElseThrow(() -> new ServiceLayerException("Book does not exist"));
         return new ArrayList<>(foundBook.getComments());
     }
 
     @Override
     public List<Comment> getByCommenterName(String name) {
-        return dao.getByCommenterName(name);
+        return dao.findByCommenter(name);
     }
 
     @Override

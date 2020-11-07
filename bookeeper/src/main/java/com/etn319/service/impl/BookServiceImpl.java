@@ -1,15 +1,16 @@
 package com.etn319.service.impl;
 
-import com.etn319.dao.DaoLayerException;
-import com.etn319.dao.api.AuthorDao;
-import com.etn319.dao.api.BookDao;
-import com.etn319.dao.api.GenreDao;
+import com.etn319.dao.AuthorRepository;
+import com.etn319.dao.BookRepository;
+import com.etn319.dao.GenreRepository;
 import com.etn319.model.Book;
 import com.etn319.service.CacheHolder;
+import com.etn319.service.EntityNotFoundException;
 import com.etn319.service.ServiceLayerException;
 import com.etn319.service.api.BookService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.dao.DataAccessException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -21,9 +22,9 @@ import java.util.Optional;
 @RequiredArgsConstructor
 @Service
 public class BookServiceImpl implements BookService {
-    private final BookDao dao;
-    private final AuthorDao authorDao;
-    private final GenreDao genreDao;
+    private final BookRepository dao;
+    private final AuthorRepository authorDao;
+    private final GenreRepository genreDao;
     private final CacheHolder cache;
 
     @Override
@@ -33,14 +34,14 @@ public class BookServiceImpl implements BookService {
 
     @Override
     public Optional<Book> getById(long id) {
-        Optional<Book> book = dao.getById(id);
+        Optional<Book> book = dao.findById(id);
         book.ifPresent(cache::setBook);
         return book;
     }
 
     @Override
     public List<Book> getAll() {
-        return dao.getAll();
+        return dao.findAll();
     }
 
     @Override
@@ -51,7 +52,7 @@ public class BookServiceImpl implements BookService {
             Book saved = dao.save(book);
             clearCache();
             return saved;
-        } catch (DaoLayerException e) {
+        } catch (DataAccessException e) {
             throw new ServiceLayerException(e);
         }
     }
@@ -59,9 +60,13 @@ public class BookServiceImpl implements BookService {
     @Override
     @Transactional
     public void deleteById(long id) {
+        if (!dao.existsById(id)) {
+            throw new EntityNotFoundException();
+        }
+
         try {
             dao.deleteById(id);
-        } catch (DaoLayerException e) {
+        } catch (DataAccessException e) {
             throw new ServiceLayerException(e);
         }
     }
@@ -76,7 +81,7 @@ public class BookServiceImpl implements BookService {
     @Override
     @Transactional(readOnly = true)
     public List<Book> getByGenreId(long id) {
-        var genre = genreDao.getById(id)
+        var genre = genreDao.findById(id)
                 .orElseThrow(() -> new ServiceLayerException("Genre does not exist"));
         return new ArrayList<>(genre.getBooks());
     }
@@ -91,7 +96,7 @@ public class BookServiceImpl implements BookService {
     @Override
     @Transactional(readOnly = true)
     public List<Book> getByAuthorId(long id) {
-        var author = authorDao.getById(id)
+        var author = authorDao.findById(id)
                 .orElseThrow(() -> new ServiceLayerException("Author does not exist"));
         return new ArrayList<>(author.getBooks());
     }

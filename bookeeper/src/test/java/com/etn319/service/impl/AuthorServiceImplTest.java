@@ -1,11 +1,10 @@
 package com.etn319.service.impl;
 
-import com.etn319.dao.EntityNotFoundException;
-import com.etn319.dao.api.AuthorDao;
+import com.etn319.dao.AuthorRepository;
 import com.etn319.model.Author;
 import com.etn319.service.CacheHolder;
 import com.etn319.service.EmptyCacheException;
-import com.etn319.service.ServiceLayerException;
+import com.etn319.service.EntityNotFoundException;
 import com.etn319.service.api.AuthorService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -24,10 +23,8 @@ import java.util.Optional;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.catchThrowable;
 import static org.mockito.ArgumentMatchers.anyLong;
-import static org.mockito.ArgumentMatchers.longThat;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.doNothing;
-import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.only;
 import static org.mockito.Mockito.verify;
 
@@ -36,6 +33,7 @@ import static org.mockito.Mockito.verify;
 class AuthorServiceImplTest {
     private static final long COUNT = -100;
     private static final long NOT_EXISTING_ID = 100L;
+    private static final long EXISTING_ID = 1L;
     private static final String NAME = "Pyotr";
     private static final String COUNTRY = "Russia";
     private static final String NEW_NAME = "Peter";
@@ -45,23 +43,25 @@ class AuthorServiceImplTest {
     @Configuration
     static class Config {
         @Bean
-        public AuthorService authorService(AuthorDao authorDao) {
+        public AuthorService authorService(AuthorRepository authorDao) {
             return new AuthorServiceImpl(authorDao, new CacheHolder());
         }
     }
 
     @MockBean
-    private AuthorDao authorDao;
+    private AuthorRepository authorDao;
     @Autowired
     AuthorService authorService;
 
     @BeforeEach
     public void setUp() {
         given(authorDao.count()).willReturn(COUNT);
-        given(authorDao.getById(anyLong())).willReturn(Optional.of(AUTHOR));
-        given(authorDao.getAll()).willReturn(Collections.emptyList());
-        doNothing().when(authorDao).deleteById(longThat(l -> l != NOT_EXISTING_ID));
-        doThrow(EntityNotFoundException.class).when(authorDao).deleteById(NOT_EXISTING_ID);
+        given(authorDao.findById(EXISTING_ID)).willReturn(Optional.of(AUTHOR));
+        given(authorDao.findById(NOT_EXISTING_ID)).willReturn(Optional.empty());
+        given(authorDao.existsById(EXISTING_ID)).willReturn(true);
+        given(authorDao.existsById(NOT_EXISTING_ID)).willReturn(false);
+        given(authorDao.findAll()).willReturn(Collections.emptyList());
+        doNothing().when(authorDao).deleteById(anyLong());
 
         authorService.clearCache();
     }
@@ -75,13 +75,13 @@ class AuthorServiceImplTest {
     }
 
     @Test
-    @DisplayName("getById должен вызывать метод dao.getById, возвращать его результат")
+    @DisplayName("findById должен вызывать метод dao.findById, возвращать его результат")
     void getByIdDelegatesCallToDao() {
         var id = 1L;
         Optional<Author> author = authorService.getById(id);
         ArgumentCaptor<Long> captor = ArgumentCaptor.forClass(Long.class);
 
-        verify(authorDao, only()).getById(captor.capture());
+        verify(authorDao, only()).findById(captor.capture());
         assertThat(captor.getValue()).isEqualTo(id);
 
         assertThat(author).isPresent();
@@ -89,7 +89,7 @@ class AuthorServiceImplTest {
     }
 
     @Test
-    @DisplayName("getById должен кэшировать результат")
+    @DisplayName("findById должен кэшировать результат")
     void getByIdStoresResultInCache() {
         var id = 1L;
         Optional<Author> author = authorService.getById(id);
@@ -102,17 +102,17 @@ class AuthorServiceImplTest {
     }
 
     @Test
-    @DisplayName("getAll должен вызывать dao.getAll и возвращать результат")
+    @DisplayName("findAll должен вызывать dao.findAll и возвращать результат")
     void getAll() {
         List<Author> expected = Collections.emptyList();
         List<Author> actual = authorService.getAll();
 
-        verify(authorDao, only()).getAll();
+        verify(authorDao, only()).findAll();
         assertThat(actual).isSameAs(expected);
     }
 
     @Test
-    @DisplayName("getAll не должен сохранять объекты в кэше")
+    @DisplayName("findAll не должен сохранять объекты в кэше")
     void getAllDoesNotStoreCache() {
         authorService.getAll();
         Throwable thrown = catchThrowable(() -> authorService.getCache());
@@ -140,11 +140,12 @@ class AuthorServiceImplTest {
     @Test
     @DisplayName("deleteById должен вызывать dao.deleteById с тем же аргументом")
     void deleteById() {
-        var idToDelete = 1L;
+        var idToDelete = EXISTING_ID;
         authorService.deleteById(idToDelete);
         var argumentCaptor = ArgumentCaptor.forClass(Long.class);
 
-        verify(authorDao, only()).deleteById(argumentCaptor.capture());
+        verify(authorDao).deleteById(argumentCaptor.capture());
+        verify(authorDao).deleteById(argumentCaptor.getValue());
         assertThat(argumentCaptor.getValue()).isEqualTo(idToDelete);
     }
 
@@ -153,8 +154,8 @@ class AuthorServiceImplTest {
     void deleteByIncorrectId() {
         Throwable thrown = catchThrowable(() -> authorService.deleteById(NOT_EXISTING_ID));
         ArgumentCaptor<Long> argumentCaptor = ArgumentCaptor.forClass(Long.class);
-        verify(authorDao, only()).deleteById(argumentCaptor.capture());
-        assertThat(thrown).isInstanceOf(ServiceLayerException.class);
+        verify(authorDao, only()).existsById(argumentCaptor.capture());
+        assertThat(thrown).isInstanceOf(EntityNotFoundException.class);
     }
 
     @Test

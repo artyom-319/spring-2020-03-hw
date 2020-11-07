@@ -1,9 +1,8 @@
 package com.etn319.dao.jpa;
 
-import com.etn319.dao.EntityNotFoundException;
-import com.etn319.dao.api.AuthorDao;
-import com.etn319.dao.api.BookDao;
-import com.etn319.dao.api.GenreDao;
+import com.etn319.dao.AuthorRepository;
+import com.etn319.dao.BookRepository;
+import com.etn319.dao.GenreRepository;
 import com.etn319.model.Author;
 import com.etn319.model.Book;
 import com.etn319.model.Comment;
@@ -14,17 +13,14 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
-import org.springframework.context.annotation.Import;
 
 import java.util.List;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.catchThrowable;
 
 @DataJpaTest
 @DisplayName("Book DAO")
-@Import({BookDaoJpaImpl.class, GenreDaoJpaImpl.class, AuthorDaoJpaImpl.class})
 class BookDaoImplTest {
     private static final int INITIAL_COUNT = 3;
     private static final String NEW_TITLE = "The Night in Lisbon";
@@ -32,7 +28,6 @@ class BookDaoImplTest {
     private static final String TITLE_2 = "Three Comrades";
     private static final String TITLE_3 = "Sea Wolf";
     private static final long ZERO_ID = 0L;
-    private static final long NOT_EXISTING_ID = 100L;
 
     private Author authorRemarque;
     private Author authorLondon;
@@ -40,20 +35,20 @@ class BookDaoImplTest {
     private Genre genreDrama;
 
     @Autowired
-    private BookDao dao;
+    private BookRepository dao;
     @Autowired
-    private AuthorDao authorDao;
+    private AuthorRepository authorDao;
     @Autowired
-    private GenreDao genreDao;
+    private GenreRepository genreDao;
     @Autowired
     private TestEntityManager em;
 
     @BeforeEach
     public void setUp() {
-        authorLondon = authorDao.getById(1L).orElseThrow();
-        authorRemarque = authorDao.getById(2L).orElseThrow();
-        genreNovel = genreDao.getById(1L).orElseThrow();
-        genreDrama = genreDao.getById(2L).orElseThrow();
+        authorLondon = authorDao.findById(1L).orElseThrow();
+        authorRemarque = authorDao.findById(2L).orElseThrow();
+        genreNovel = genreDao.findById(1L).orElseThrow();
+        genreDrama = genreDao.findById(2L).orElseThrow();
     }
 
     @Test
@@ -96,9 +91,9 @@ class BookDaoImplTest {
     }
 
     @Test
-    @DisplayName("getById должен находить книгу по существующему id")
+    @DisplayName("findById должен находить книгу по существующему id")
     void getById() {
-        Optional<Book> book = dao.getById(1L);
+        Optional<Book> book = dao.findById(1L);
         Book emBook = em.find(Book.class, 1L);
 
         assertThat(book).isPresent();
@@ -109,16 +104,16 @@ class BookDaoImplTest {
     }
 
     @Test
-    @DisplayName("getById по несуществующему id должен возвращать пустой Optional")
+    @DisplayName("findById по несуществующему id должен возвращать пустой Optional")
     void getByNotExistingId() {
-        Optional<Book> book = dao.getById(ZERO_ID);
+        Optional<Book> book = dao.findById(ZERO_ID);
         assertThat(book).isEmpty();
     }
 
     @Test
-    @DisplayName("getAll должен возвращать все объекты в таблице")
+    @DisplayName("findAll должен возвращать все объекты в таблице")
     void getAll() {
-        List<Book> books = dao.getAll();
+        List<Book> books = dao.findAll();
 
         assertThat(books)
                 .hasSize(INITIAL_COUNT)
@@ -145,14 +140,6 @@ class BookDaoImplTest {
     }
 
     @Test
-    @DisplayName("update по несуществующей книге должен бросать исключение")
-    void updateByNotExistingId() {
-        var book = new Book(NOT_EXISTING_ID, NEW_TITLE, authorRemarque, genreNovel);
-        Throwable thrown = catchThrowable(() -> dao.save(book));
-        assertThat(thrown).isInstanceOf(EntityNotFoundException.class);
-    }
-
-    @Test
     @DisplayName("После update из базы по этому же id возвращается обновлённая книга")
     void getByIdUpdatedBook() {
         var book = em.find(Book.class, 2L);
@@ -168,11 +155,11 @@ class BookDaoImplTest {
     }
 
     @Test
-    @DisplayName("getById после insert должен возвращать новую книгу")
+    @DisplayName("findById после insert должен возвращать новую книгу")
     void getByIdInsertedBook() {
         var book = new Book(NEW_TITLE, authorRemarque, genreNovel);
         var insertedBook = dao.save(book);
-        var foundBook = dao.getById(insertedBook.getId());
+        var foundBook = dao.findById(insertedBook.getId());
 
         assertThat(foundBook).isPresent();
         assertThat(foundBook.orElseThrow())
@@ -190,10 +177,10 @@ class BookDaoImplTest {
     }
 
     @Test
-    @DisplayName("getById после delete должен возвращать пустой Optional")
+    @DisplayName("findById после delete должен возвращать пустой Optional")
     void getByIdDeletedBook() {
         dao.deleteById(1L);
-        Optional<Book> deletedBook = dao.getById(1L);
+        Optional<Book> deletedBook = dao.findById(1L);
 
         assertThat(deletedBook).isEmpty();
     }

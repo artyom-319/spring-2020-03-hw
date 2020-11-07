@@ -1,15 +1,14 @@
 package com.etn319.service.impl;
 
-import com.etn319.dao.EntityNotFoundException;
-import com.etn319.dao.api.AuthorDao;
-import com.etn319.dao.api.BookDao;
-import com.etn319.dao.api.GenreDao;
+import com.etn319.dao.AuthorRepository;
+import com.etn319.dao.BookRepository;
+import com.etn319.dao.GenreRepository;
 import com.etn319.model.Author;
 import com.etn319.model.Book;
 import com.etn319.model.Genre;
 import com.etn319.service.CacheHolder;
 import com.etn319.service.EmptyCacheException;
-import com.etn319.service.ServiceLayerException;
+import com.etn319.service.EntityNotFoundException;
 import com.etn319.service.api.BookService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -28,10 +27,8 @@ import java.util.Optional;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.catchThrowable;
 import static org.mockito.ArgumentMatchers.anyLong;
-import static org.mockito.ArgumentMatchers.longThat;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.doNothing;
-import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.only;
 import static org.mockito.Mockito.verify;
 
@@ -39,6 +36,7 @@ import static org.mockito.Mockito.verify;
 class BookServiceImplTest {
     private static final long COUNT = -100;
     private static final long NOT_EXISTING_ID = 100L;
+    private static final long EXISTING_ID = 1L;
     private static final String TITLE = "20 Years Later";
     private static final String NEW_TITLE = "10 Years Later";
     private static final Book BOOK = new Book(1L, TITLE, new Author(), new Genre());
@@ -57,17 +55,19 @@ class BookServiceImplTest {
         }
 
         @Bean
-        public BookService bookService(BookDao bookDao, AuthorDao authorDao, GenreDao genreDao, CacheHolder cacheHolder) {
+        public BookService bookService(
+                BookRepository bookDao, AuthorRepository authorDao, GenreRepository genreDao, CacheHolder cacheHolder
+        ) {
             return new BookServiceImpl(bookDao, authorDao, genreDao, cacheHolder);
         }
     }
 
     @MockBean
-    private BookDao bookDao;
+    private BookRepository bookDao;
     @MockBean
-    private AuthorDao authorDao;
+    private AuthorRepository authorDao;
     @MockBean
-    private GenreDao genreDao;
+    private GenreRepository genreDao;
     @Autowired
     private CacheHolder cacheHolder;
     @Autowired
@@ -79,13 +79,15 @@ class BookServiceImplTest {
         genre.setBooks(booksByGenre);
 
         given(bookDao.count()).willReturn(COUNT);
-        given(bookDao.getById(anyLong())).willReturn(Optional.of(BOOK));
-        given(bookDao.getAll()).willReturn(allBooks);
-        doNothing().when(bookDao).deleteById(longThat(l -> l != NOT_EXISTING_ID));
-        doThrow(EntityNotFoundException.class).when(bookDao).deleteById(NOT_EXISTING_ID);
+        given(bookDao.findById(EXISTING_ID)).willReturn(Optional.of(BOOK));
+        given(bookDao.findById(NOT_EXISTING_ID)).willReturn(Optional.empty());
+        given(bookDao.existsById(EXISTING_ID)).willReturn(true);
+        given(bookDao.existsById(NOT_EXISTING_ID)).willReturn(false);
+        given(bookDao.findAll()).willReturn(allBooks);
+        doNothing().when(bookDao).deleteById(anyLong());
 
-        given(authorDao.getById(anyLong())).willReturn(Optional.of(author));
-        given(genreDao.getById(anyLong())).willReturn(Optional.of(genre));
+        given(authorDao.findById(anyLong())).willReturn(Optional.of(author));
+        given(genreDao.findById(anyLong())).willReturn(Optional.of(genre));
 
         bookService.clearCache();
     }
@@ -99,13 +101,13 @@ class BookServiceImplTest {
     }
 
     @Test
-    @DisplayName("getById должен вызывать метод dao.getById, возвращать его результат")
+    @DisplayName("findById должен вызывать метод dao.findById, возвращать его результат")
     void getByIdDelegatesCallToDao() {
         var id = 1L;
         Optional<Book> book = bookService.getById(id);
         ArgumentCaptor<Long> captor = ArgumentCaptor.forClass(Long.class);
 
-        verify(bookDao, only()).getById(captor.capture());
+        verify(bookDao, only()).findById(captor.capture());
         assertThat(captor.getValue()).isEqualTo(id);
 
         assertThat(book).isPresent();
@@ -113,7 +115,7 @@ class BookServiceImplTest {
     }
 
     @Test
-    @DisplayName("getById должен кэшировать результат")
+    @DisplayName("findById должен кэшировать результат")
     void getByIdStoresResultInCache() {
         var id = 1L;
         Optional<Book> book = bookService.getById(id);
@@ -126,16 +128,16 @@ class BookServiceImplTest {
     }
 
     @Test
-    @DisplayName("getAll должен вызывать dao.getAll и возвращать результат")
+    @DisplayName("findAll должен вызывать dao.findAll и возвращать результат")
     void getAll() {
         List<Book> actual = bookService.getAll();
 
-        verify(bookDao, only()).getAll();
+        verify(bookDao, only()).findAll();
         assertThat(actual).isSameAs(allBooks);
     }
 
     @Test
-    @DisplayName("getAll не должен сохранять объекты в кэше")
+    @DisplayName("findAll не должен сохранять объекты в кэше")
     void getAllDoesNotStoreCache() {
         bookService.getAll();
         Throwable thrown = catchThrowable(() -> bookService.getCache());
@@ -169,7 +171,8 @@ class BookServiceImplTest {
         bookService.deleteById(idToDelete);
         var argumentCaptor = ArgumentCaptor.forClass(Long.class);
 
-        verify(bookDao, only()).deleteById(argumentCaptor.capture());
+        verify(bookDao).deleteById(argumentCaptor.capture());
+        verify(bookDao).deleteById(argumentCaptor.getValue());
         assertThat(argumentCaptor.getValue()).isEqualTo(idToDelete);
     }
 
@@ -178,8 +181,8 @@ class BookServiceImplTest {
     void deleteByIncorrectId() {
         Throwable thrown = catchThrowable(() -> bookService.deleteById(NOT_EXISTING_ID));
         ArgumentCaptor<Long> argumentCaptor = ArgumentCaptor.forClass(Long.class);
-        verify(bookDao, only()).deleteById(argumentCaptor.capture());
-        assertThat(thrown).isInstanceOf(ServiceLayerException.class);
+        verify(bookDao, only()).existsById(argumentCaptor.capture());
+        assertThat(thrown).isInstanceOf(EntityNotFoundException.class);
     }
 
     @Test
@@ -187,7 +190,7 @@ class BookServiceImplTest {
         List<Book> booksByGenre = bookService.getByGenreId(1L);
         var argumentCaptor = ArgumentCaptor.forClass(Long.class);
 
-        verify(genreDao, only()).getById(argumentCaptor.capture());
+        verify(genreDao, only()).findById(argumentCaptor.capture());
         assertThat(argumentCaptor.getValue()).isEqualTo(1L);
         assertThat(booksByGenre).isSameAs(booksByGenre);
     }
@@ -199,7 +202,7 @@ class BookServiceImplTest {
         List<Book> booksByAuthor = bookService.getByCachedAuthor();
         var argumentCaptor = ArgumentCaptor.forClass(Long.class);
 
-        verify(authorDao, only()).getById(argumentCaptor.capture());
+        verify(authorDao, only()).findById(argumentCaptor.capture());
         assertThat(argumentCaptor.getValue()).isEqualTo(author.getId());
         assertThat(booksByAuthor).isSameAs(booksByAuthor);
     }
