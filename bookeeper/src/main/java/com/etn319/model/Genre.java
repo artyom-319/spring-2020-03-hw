@@ -2,6 +2,7 @@ package com.etn319.model;
 
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.springframework.data.mongodb.core.mapping.Document;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -14,12 +15,16 @@ import java.util.List;
 
 @Entity
 @Table(name = "genres")
+@Document("genres")
 @Data
 @NoArgsConstructor
 public class Genre {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
+
+    @org.springframework.data.annotation.Id
+    private String _id;
 
     @Column(name = "title")
     private String title;
