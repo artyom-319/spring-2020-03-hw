@@ -15,29 +15,30 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 @ShellComponent
-@ShellCommandGroup("Special Comment Commands")
+@ShellCommandGroup("Comment Commands")
 @RequiredArgsConstructor
-public class CommentCommandHandler implements CommandHandler {
+public class CommentCommandHandler {
     private final CommentService service;
 
-    @Override
+    @ShellMethod(value = "Count comments", key = "ccount")
     public String count() {
         return "Comments found: " + service.count();
     }
 
-    @Override
-    public String get(long id) {
+    @ShellMethod(value = "Get comment by id and load it to cache", key = "cget")
+    public String get(String id) {
         Optional<Comment> comment = service.getById(id);
-        return comment.map(Comment::toString).orElse("No comments found");
+        return comment.map(Comment::toString)
+                .orElse("No comments found");
     }
 
-    @Override
+    @ShellMethod(value = "Get all comments", key = "call")
     public String getAll() {
         List<Comment> comments = service.getAll();
         return stringifyList(comments);
     }
 
-    @Override
+    @ShellMethod(value = "Save cached comment to DB", key = "csave")
     public String save() {
         try {
             var comment = service.save();
@@ -49,8 +50,8 @@ public class CommentCommandHandler implements CommandHandler {
         }
     }
 
-    @Override
-    public String delete(long id) {
+    @ShellMethod(value = "Delete comment by id", key = "cdelete")
+    public String delete(String id) {
         try {
             service.deleteById(id);
             return "Deleted";
@@ -59,13 +60,13 @@ public class CommentCommandHandler implements CommandHandler {
         }
     }
 
-    @Override
+    @ShellMethod(value = "Clear cached comment", key = {"cclear", "ccl"})
     public String clearCache() {
         service.clearCache();
         return "Cache cleared";
     }
 
-    @Override
+    @ShellMethod(value = "Get cached comment", key = {"ccurrent", "ccache", "cc"})
     public String getCurrent() {
         try {
             return service.getCache().toString();
@@ -74,33 +75,44 @@ public class CommentCommandHandler implements CommandHandler {
         }
     }
 
-    @ShellMethod(value = "Find comments for a book using cached book object", key = {"comments-for-book", "cfb"})
+    @ShellMethod(value = "Find comments for a book using cached book object", key = {"cbook", "cforbook", "cfb"})
     public String getForBook() {
         try {
             List<Comment> comments = service.getByBook();
             return stringifyList(comments);
         } catch (EmptyCacheException e) {
-            return "There is no cached book. Use /books/ 'get' command first";
+            return "There is no cached book. Use 'bget' command first";
         }
     }
 
-    @ShellMethod(value = "Find comments by commenter name", key = {"comments-by-commenter", "cbc"})
-    public String getByCommenterName(@ShellOption({"--commenter", "-c"}) String commenter) {
+    @ShellMethod(value = "Find comments by user name", key = {"cuser", "cbyuser"})
+    public String getByCommenterName(@ShellOption({"user", "-u"}) String commenter) {
         List<Comment> comments = service.getByCommenterName(commenter);
         return stringifyList(comments);
     }
 
-    @ShellMethod(value = "Create a comment object to store it in program cache", key = "create-comment")
-    public String create(@ShellOption({"--text", "-t"}) String text, @ShellOption({"--commenter", "-c"}) String commenter) {
-        var comment = service.create(text, commenter);
-        return String.format("Created: %s\nTo save it in database use /comments/ 'save' command", comment.toString());
+    @ShellMethod(value = "Wire comment to cached book", key = {"csetbook", "csetb", "csb"})
+    public String wireBook() {
+        try {
+            var comment = service.wireBook();
+            return "Comment wired to book: " + comment.toString();
+        } catch (EmptyCacheException e) {
+            String missed = e.getMissedEntity();
+            return String.format("There is no cached %s. Create or load it first", missed);
+        }
     }
 
-    @ShellMethod(value = "Update cached comment object", key = "change-comment")
-    public String change(@ShellOption({"--text", "-t"}) String text, @ShellOption({"--commenter", "-c"}) String commenter) {
+    @ShellMethod(value = "Create a comment object and store it in program cache", key = "cnew")
+    public String create(@ShellOption({"text", "-t"}) String text, @ShellOption({"commenter", "-c"}) String commenter) {
+        var comment = service.create(text, commenter);
+        return String.format("Created: %s\nTo save it in database use 'csave' command", comment.toString());
+    }
+
+    @ShellMethod(value = "Update cached comment object", key = "cset")
+    public String change(@ShellOption({"text", "-t"}) String text, @ShellOption({"commenter", "-c"}) String commenter) {
         try {
             var comment = service.change(text, commenter);
-            return String.format("Changed: %s\nTo save it in database use /comments/ 'save' command", comment.toString());
+            return String.format("Changed: %s\nTo save it in database use 'csave' command", comment.toString());
         } catch (EmptyCacheException e) {
             return "Nothing to change: cache is empty";
         }
