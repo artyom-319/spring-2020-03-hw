@@ -18,7 +18,7 @@ public interface BookService {
      * @return объект книги, упакованный в <code>Optional</code>
      * <code>Optional.empty()</code>, если не найдена
      */
-    Optional<Book> getById(long id);
+    Optional<Book> getById(String id);
 
     /**
      * Получить все книги
@@ -39,7 +39,7 @@ public interface BookService {
      * @param id id книги, которую нужно удалить
      * @throws com.etn319.service.ServiceLayerException, если удаление не удалось выполнить
      */
-    void deleteById(long id);
+    void deleteById(String id);
 
     /**
      * Найти книги по закэшированному жанру
@@ -50,10 +50,10 @@ public interface BookService {
 
     /**
      * Найти книги по id жанра
-     * @param id id жанра
+     * @param title id жанра
      * @return список книг в данном жанре
      */
-    List<Book> getByGenreId(long id);
+    List<Book> getByGenreTitle(String title);
 
     /**
      * Найти книги по закэшированному автору
@@ -67,7 +67,7 @@ public interface BookService {
      * @param id id автора
      * @return список книг данного автора
      */
-    List<Book> getByAuthorId(long id);
+    List<Book> getByAuthorId(String id);
 
     /**
      * Создать книгу и разместить её в кэше

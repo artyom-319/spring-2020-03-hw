@@ -13,33 +13,18 @@ public interface GenreService {
     long count();
 
     /**
-     * Загрузить в кэш жанр по id
-     * @param id идентификатор искомого жанра
+     * Загрузить в кэш жанр по названию
+     * @param title название искомого жанра
      * @return объект жанра, упакованный в <code>Optional</code>
      * <code>Optional.empty()</code>, если не найден
      */
-    Optional<Genre> getById(long id);
+    Optional<Genre> getByTitle(String title);
 
     /**
      * Получить все жанры
      * @return список жанров
      */
     List<Genre> getAll();
-
-    /**
-     * Сохраняет кэшированный жанр. В случае успеха очищает кэш
-     * @return сохранённый объект жанра
-     * @throws com.etn319.service.ServiceLayerException, если произошла ошибка при сохранении
-     * @throws com.etn319.service.EmptyCacheException, если в кэше нет жанра
-     */
-    Genre save();
-
-    /**
-     * Удаляет жанр по id
-     * @param id id жанра, который нужно удалить
-     * @throws com.etn319.service.ServiceLayerException, если произошла ошибка при удалении
-     */
-    void deleteById(long id);
 
     /**
      * Создать жанр и разместить его в кэше
