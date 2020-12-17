@@ -1,8 +1,6 @@
 package com.etn319.service.impl;
 
-import com.etn319.dao.AuthorRepository;
-import com.etn319.dao.BookRepository;
-import com.etn319.dao.GenreRepository;
+import com.etn319.dao.mongo.BookMongoRepository;
 import com.etn319.model.Book;
 import com.etn319.service.CacheHolder;
 import com.etn319.service.EntityNotFoundException;
@@ -12,9 +10,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DataAccessException;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -22,9 +18,7 @@ import java.util.Optional;
 @RequiredArgsConstructor
 @Service
 public class BookServiceImpl implements BookService {
-    private final BookRepository dao;
-    private final AuthorRepository authorDao;
-    private final GenreRepository genreDao;
+    private final BookMongoRepository dao;
     private final CacheHolder cache;
 
     @Override
@@ -33,7 +27,7 @@ public class BookServiceImpl implements BookService {
     }
 
     @Override
-    public Optional<Book> getById(long id) {
+    public Optional<Book> getById(String id) {
         Optional<Book> book = dao.findById(id);
         book.ifPresent(cache::setBook);
         return book;
@@ -45,7 +39,6 @@ public class BookServiceImpl implements BookService {
     }
 
     @Override
-    @Transactional
     public Book save() {
         var book = cache.getBook();
         try {
@@ -58,8 +51,7 @@ public class BookServiceImpl implements BookService {
     }
 
     @Override
-    @Transactional
-    public void deleteById(long id) {
+    public void deleteById(String id) {
         if (!dao.existsById(id)) {
             throw new EntityNotFoundException();
         }
@@ -72,33 +64,25 @@ public class BookServiceImpl implements BookService {
     }
 
     @Override
-    @Transactional(readOnly = true)
     public List<Book> getByCachedGenre() {
         var cachedGenre = cache.getGenre();
-        return getByGenreId(cachedGenre.getId());
+        return getByGenreTitle(cachedGenre.getTitle());
     }
 
     @Override
-    @Transactional(readOnly = true)
-    public List<Book> getByGenreId(long id) {
-        var genre = genreDao.findById(id)
-                .orElseThrow(() -> new ServiceLayerException("Genre does not exist"));
-        return new ArrayList<>(genre.getBooks());
+    public List<Book> getByGenreTitle(String title) {
+        return dao.findAllByGenreTitle(title);
     }
 
     @Override
-    @Transactional(readOnly = true)
     public List<Book> getByCachedAuthor() {
         var cachedAuthor = cache.getAuthor();
-        return getByAuthorId(cachedAuthor.getId());
+        return getByAuthorId(cachedAuthor.get_id());
     }
 
     @Override
-    @Transactional(readOnly = true)
-    public List<Book> getByAuthorId(long id) {
-        var author = authorDao.findById(id)
-                .orElseThrow(() -> new ServiceLayerException("Author does not exist"));
-        return new ArrayList<>(author.getBooks());
+    public List<Book> getByAuthorId(String id) {
+        return dao.findAllByAuthor__id(id);
     }
 
     @Override

@@ -25,6 +25,7 @@ import java.util.List;
 @Document("books")
 @Table(name = "books")
 @Data
+@NoArgsConstructor
 @NamedEntityGraph(
         name = Book.FETCH_GRAPH_NAME,
         attributeNodes = {
