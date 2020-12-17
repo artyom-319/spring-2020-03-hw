@@ -1,7 +1,9 @@
 package com.etn319.dao.mongo;
 
-import com.etn319.model.mongo.MongoGenre;
+import com.etn319.model.Genre;
 import org.springframework.data.mongodb.repository.MongoRepository;
+import org.springframework.data.repository.NoRepositoryBean;
 
-public interface GenreMongoRepository extends MongoRepository<MongoGenre, String> {
+@NoRepositoryBean
+public interface GenreMongoRepository extends MongoRepository<Genre, String> {
 }
