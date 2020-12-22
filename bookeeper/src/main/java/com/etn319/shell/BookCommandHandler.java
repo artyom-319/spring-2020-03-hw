@@ -14,6 +14,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+// todo: поиск по имени автора и по заголовку книги
 @ShellComponent
 @ShellCommandGroup("Book Commands")
 @RequiredArgsConstructor
@@ -28,6 +29,13 @@ public class BookCommandHandler {
     @ShellMethod(value = "Get a book by id and load it to cache", key = "bget")
     public String get(String id) {
         Optional<Book> book = bookService.getById(id);
+        return book.map(Book::toString)
+                .orElse("No books found");
+    }
+
+    @ShellMethod(value = "Get the first book and load it to cache", key = "bfirst")
+    public String first() {
+        Optional<Book> book = bookService.first();
         return book.map(Book::toString)
                 .orElse("No books found");
     }
