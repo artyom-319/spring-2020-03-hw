@@ -6,6 +6,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.data.mongo.DataMongoTest;
 import org.springframework.dao.DuplicateKeyException;
+import org.springframework.data.domain.Example;
 import org.springframework.data.mongodb.repository.config.EnableMongoRepositories;
 import org.springframework.test.annotation.DirtiesContext;
 
@@ -19,8 +20,6 @@ public class AuthorMongoRepositoryTest {
 
     @Autowired
     private AuthorMongoRepository dao;
-    @Autowired
-    private BookMongoRepository bookDao;
 
     @Test
     @DirtiesContext
@@ -40,20 +39,5 @@ public class AuthorMongoRepositoryTest {
         Throwable t = catchThrowable(() -> dao.save(author2));
 
         assertThat(t).isInstanceOf(DuplicateKeyException.class);
-    }
-
-    @Test
-    @DirtiesContext
-    void saveBook() {
-        var book = new Book();
-        book.setTitle("Voina and Mir");
-        var author = new Author();
-        author.setName("Tolstoy");
-        dao.save(author);
-        book.setAuthor(author);
-        bookDao.save(book);
-        dao.delete(author);
-
-        bookDao.findAll().forEach(System.out::println);
     }
 }

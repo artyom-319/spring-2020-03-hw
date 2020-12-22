@@ -9,6 +9,7 @@ import com.etn319.service.api.AuthorService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DataAccessException;
+import org.springframework.data.domain.Example;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -29,6 +30,13 @@ public class AuthorServiceImpl implements AuthorService {
     @Override
     public Optional<Author> getById(String id) {
         Optional<Author> author = dao.findById(id);
+        author.ifPresent(cache::setAuthor);
+        return author;
+    }
+
+    @Override
+    public Optional<Author> first() {
+        Optional<Author> author = dao.findOne(Example.of(new Author()));
         author.ifPresent(cache::setAuthor);
         return author;
     }

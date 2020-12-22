@@ -9,6 +9,7 @@ import com.etn319.service.api.BookService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DataAccessException;
+import org.springframework.data.domain.Example;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -29,6 +30,13 @@ public class BookServiceImpl implements BookService {
     @Override
     public Optional<Book> getById(String id) {
         Optional<Book> book = dao.findById(id);
+        book.ifPresent(cache::setBook);
+        return book;
+    }
+
+    @Override
+    public Optional<Book> first() {
+        Optional<Book> book = dao.findOne(Example.of(new Book()));
         book.ifPresent(cache::setBook);
         return book;
     }

@@ -56,6 +56,16 @@ public class GenreMongoRepositoryCustomImpl implements GenreMongoRepositoryCusto
                 template.aggregate(aggregation, Book.class, Genre.class).getUniqueMappedResult());
     }
 
+    @Override
+    public Optional<Genre> first() {
+        Aggregation aggregation = newAggregation(
+                project().andExclude("_id").and("genre.title").as("title"),
+                Aggregation.limit(1)
+        );
+        return Optional.ofNullable(
+                template.aggregate(aggregation, Book.class, Genre.class).getUniqueMappedResult());
+    }
+
     @Data
     public static class LongAggregationHolder {
         private long longValue;

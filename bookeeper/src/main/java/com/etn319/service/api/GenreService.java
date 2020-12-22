@@ -21,6 +21,13 @@ public interface GenreService {
     Optional<Genre> getByTitle(String title);
 
     /**
+     * Извлечь из базы случайный жанр
+     * @return объект жанра, упакованный в <code>Optional</code>, если в базе есть хоть один жанр
+     * <code>Optional.empty()</code>, если база пустая
+     */
+    Optional<Genre> first();
+
+    /**
      * Получить все жанры
      * @return список жанров
      */

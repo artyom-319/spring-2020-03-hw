@@ -9,4 +9,5 @@ public interface GenreMongoRepositoryCustom {
     long count();
     List<Genre> findAll();
     Optional<Genre> findByTitle(String title);
+    Optional<Genre> first();
 }

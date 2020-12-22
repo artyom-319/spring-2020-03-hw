@@ -31,6 +31,13 @@ public class GenreServiceImpl implements GenreService {
     }
 
     @Override
+    public Optional<Genre> first() {
+        Optional<Genre> genre = dao.first();
+        genre.ifPresent(cache::setGenre);
+        return genre;
+    }
+
+    @Override
     public List<Genre> getAll() {
         return dao.findAll();
     }

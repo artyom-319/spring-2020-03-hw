@@ -83,4 +83,19 @@ public class GenreMongoRepositoryTest {
                 .extracting(Genre::getTitle)
                 .isEqualTo(title);
     }
+
+    @Test
+    @DirtiesContext
+    void getFirstOnNonEmptyDataBase_ShouldReturnNonEmptyGenre() {
+        var title1 = "Genre1";
+        var title2 = "Genre2";
+        template.save(new Book("Book1", null, new Genre(title1)));
+        template.save(new Book("Book2", null, new Genre(title2)));
+
+        Optional<Genre> firstGenre = dao.first();
+        assertThat(firstGenre)
+                .isPresent().get()
+                .extracting(Genre::getTitle)
+                .isIn(title1, title2);
+    }
 }

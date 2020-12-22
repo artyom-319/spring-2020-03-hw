@@ -21,6 +21,13 @@ public interface CommentService {
     Optional<Comment> getById(String id);
 
     /**
+     * Извлечь из базы случайный комментарий
+     * @return объект комментария, упакованный в <code>Optional</code>, если в базе есть хоть один коммент
+     * <code>Optional.empty()</code>, если база пустая
+     */
+    Optional<Comment> first();
+
+    /**
      * Получить все комментарии
      * @return список комментариев
      */

@@ -9,6 +9,7 @@ import com.etn319.service.api.CommentService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DataAccessException;
+import org.springframework.data.domain.Example;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -29,6 +30,13 @@ public class CommentServiceImpl implements CommentService {
     @Override
     public Optional<Comment> getById(String id) {
         Optional<Comment> comment = dao.findById(id);
+        comment.ifPresent(cache::setComment);
+        return comment;
+    }
+
+    @Override
+    public Optional<Comment> first() {
+        Optional<Comment> comment = dao.findOne(Example.of(new Comment()));
         comment.ifPresent(cache::setComment);
         return comment;
     }

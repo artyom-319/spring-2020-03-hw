@@ -21,6 +21,13 @@ public interface AuthorService {
     Optional<Author> getById(String id);
 
     /**
+     * Извлечь из базы случайного автора
+     * @return объект автора, упакованный в <code>Optional</code>, если в базе есть хоть один автор
+     * <code>Optional.empty()</code>, если база пустая
+     */
+    Optional<Author> first();
+
+    /**
      * Получить всех авторов
      * @return список авторов
      */

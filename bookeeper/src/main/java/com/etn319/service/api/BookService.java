@@ -21,6 +21,13 @@ public interface BookService {
     Optional<Book> getById(String id);
 
     /**
+     * Извлечь из базы случайную книгу
+     * @return объект книги, упакованный в <code>Optional</code>, если в базе есть хоть одна книга
+     * <code>Optional.empty()</code>, если база пустая
+     */
+    Optional<Book> first();
+
+    /**
      * Получить все книги
      * @return список книг
      */
