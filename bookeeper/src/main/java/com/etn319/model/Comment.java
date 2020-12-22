@@ -30,6 +30,9 @@ public class Comment {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
 
+    @org.springframework.data.annotation.Id
+    private String _id;
+
     @Column(name = "commenter")
     @Field("commenter")
     private String commenter;
@@ -46,7 +49,7 @@ public class Comment {
     @Override
     public String toString() {
         return "Comment{" +
-                "id=" + id +
+                "id=" + _id +
                 ", commenter='" + commenter + '\'' +
                 ", text='" + text + '\'' +
                 ", book name='" + (book == null ? null : book.getTitle()) + '\'' +
