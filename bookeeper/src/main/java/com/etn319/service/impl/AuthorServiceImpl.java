@@ -35,6 +35,13 @@ public class AuthorServiceImpl implements AuthorService {
     }
 
     @Override
+    public Optional<Author> getByName(String name) {
+        Optional<Author> author = dao.findByName(name);
+        author.ifPresent(cache::setAuthor);
+        return author;
+    }
+
+    @Override
     public Optional<Author> first() {
         Optional<Author> author = dao.findOne(Example.of(new Author()));
         author.ifPresent(cache::setAuthor);

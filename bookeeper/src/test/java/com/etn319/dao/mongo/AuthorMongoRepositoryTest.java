@@ -1,12 +1,10 @@
 package com.etn319.dao.mongo;
 
 import com.etn319.model.Author;
-import com.etn319.model.Book;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.data.mongo.DataMongoTest;
 import org.springframework.dao.DuplicateKeyException;
-import org.springframework.data.domain.Example;
 import org.springframework.data.mongodb.repository.config.EnableMongoRepositories;
 import org.springframework.test.annotation.DirtiesContext;
 

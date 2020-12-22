@@ -21,6 +21,14 @@ public interface AuthorService {
     Optional<Author> getById(String id);
 
     /**
+     * Загрузить в кэш автора по имени
+     * @param name имя автора
+     * @return объект автора, упакованный в <code>Optional</code>
+     * <code>Optional.empty()</code>, если не найден
+     */
+    Optional<Author> getByName(String name);
+
+    /**
      * Извлечь из базы случайного автора
      * @return объект автора, упакованный в <code>Optional</code>, если в базе есть хоть один автор
      * <code>Optional.empty()</code>, если база пустая
