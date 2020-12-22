@@ -1,12 +1,15 @@
 package com.etn319.dao.mongo;
 
+import com.etn319.dao.mongo.events.AuthorEventListener;
+import com.etn319.dao.mongo.events.BookEventListener;
 import com.etn319.model.Author;
 import com.etn319.model.Book;
 import com.etn319.model.Genre;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.data.mongo.DataMongoTest;
-import org.springframework.data.mapping.MappingException;
+import org.springframework.context.annotation.Import;
 import org.springframework.data.mongodb.core.MongoOperations;
 import org.springframework.data.mongodb.core.aggregation.Aggregation;
 import org.springframework.data.mongodb.core.query.Criteria;
@@ -16,11 +19,11 @@ import org.springframework.test.annotation.DirtiesContext;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.catchThrowable;
 import static org.springframework.data.mongodb.core.aggregation.Aggregation.match;
 
 @DataMongoTest
 @EnableMongoRepositories
+@Import({BookEventListener.class, AuthorEventListener.class})
 public class BookMongoRepositoryTest {
     private static final long INITIAL_COUNT = 0L;
     private static final Genre GENRE = new Genre("Genre");
@@ -35,6 +38,7 @@ public class BookMongoRepositoryTest {
 
     @Test
     @DirtiesContext
+    @DisplayName("При вставке книги их число должно увеличиваться")
     void saveNewEntity__shouldAffectCount() {
         var book = new Book("Title", null, GENRE);
         dao.save(book);
@@ -43,16 +47,8 @@ public class BookMongoRepositoryTest {
     }
 
     @Test
-    // todo: исправить поведение (тест ниже это делает)
-    void saveNewEntityWithTransientAuthor__shouldThrowException() {
-        var book = new Book("Title", TRANSIENT_AUTHOR, GENRE);
-        Throwable t = catchThrowable(() -> dao.save(book));
-        assertThat(t).isInstanceOf(MappingException.class);
-    }
-
-    @Test
     @DirtiesContext
-    // todo: заставить тест проходить
+    @DisplayName("При сохранении книги с автором, которого нет в базе, автор тоже должен туда записываться")
     void saveNewEntityWithTransientAuthor__shouldSaveBoth() {
         var book = dao.save(new Book("Title", TRANSIENT_AUTHOR, GENRE));
         var author = book.getAuthor();
@@ -63,7 +59,7 @@ public class BookMongoRepositoryTest {
 
     @Test
     @DirtiesContext
-    // todo: заставить тест проходить
+    @DisplayName("При сохранение книги вложенный автор тоже должен обновляться")
     void saveEntityWithExistingRelatedOne__shouldUpdateRelated() {
         var author = authorDao.save(TRANSIENT_AUTHOR);
         var book = dao.save(new Book("Title", author, GENRE));
@@ -81,7 +77,7 @@ public class BookMongoRepositoryTest {
 
     @Test
     @DirtiesContext
-    // todo: затирать ссылку на автора при его удалении
+    @DisplayName("При удалении автора ссылка на него в книге должна отвязываться")
     void deleteAuthor_ShouldSetNullToBookAuthor() {
         var author = authorDao.save(TRANSIENT_AUTHOR);
         var book = dao.save(new Book("Title", author, GENRE));
