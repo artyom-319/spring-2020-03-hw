@@ -31,6 +31,13 @@ public class GenreCommandHandler {
                 .orElse("No genres found");
     }
 
+    @ShellMethod(value = "Get the first genre object and load it to cache", key = "gfirst")
+    public String first() {
+        Optional<Genre> genre = genreService.first();
+        return genre.map(Genre::toString)
+                .orElse("No genres found");
+    }
+
     @ShellMethod(value = "Get all genres", key = "gall")
     public String getAll() {
         List<Genre> genres = genreService.getAll();
