@@ -41,7 +41,7 @@ public class BookEventListener extends AbstractMongoEventListener<Book> {
         Author author = source.getAuthor();
         if (author != null) {
             Author saved = template.save(author);
-            log.info("Saved author id={}", saved.get_id());
+            log.info("Saved author id={}", saved.getId());
         }
     }
 }

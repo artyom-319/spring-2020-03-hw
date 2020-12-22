@@ -77,12 +77,12 @@ public class BookServiceImpl implements BookService {
     @Override
     public List<Book> getByCachedAuthor() {
         var cachedAuthor = cache.getAuthor();
-        return getByAuthorId(cachedAuthor.get_id());
+        return getByAuthorId(cachedAuthor.getId());
     }
 
     @Override
     public List<Book> getByAuthorId(String id) {
-        return dao.findAllByAuthor__id(id);
+        return dao.findAllByAuthor_id(id);
     }
 
     @Override

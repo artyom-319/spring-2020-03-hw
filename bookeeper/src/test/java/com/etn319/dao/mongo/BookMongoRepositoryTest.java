@@ -53,8 +53,8 @@ public class BookMongoRepositoryTest {
         var book = dao.save(new Book("Title", TRANSIENT_AUTHOR, GENRE));
         var author = book.getAuthor();
 
-        assertThat(dao.existsById(book.get_id())).isTrue();
-        assertThat(authorDao.existsById(author.get_id())).isTrue();
+        assertThat(dao.existsById(book.getId())).isTrue();
+        assertThat(authorDao.existsById(author.getId())).isTrue();
     }
 
     @Test
@@ -67,7 +67,7 @@ public class BookMongoRepositoryTest {
         String updatedName = "updated";
         book.getAuthor().setName(updatedName);
         dao.save(book);
-        var updatedAuthor = authorDao.findById(author.get_id());
+        var updatedAuthor = authorDao.findById(author.getId());
 
         assertThat(updatedAuthor)
                 .isPresent().get()
@@ -83,13 +83,13 @@ public class BookMongoRepositoryTest {
         var book = dao.save(new Book("Title", author, GENRE));
 
         authorDao.delete(author);
-        var updatedBook = dao.findById(book.get_id()).orElseThrow();
+        var updatedBook = dao.findById(book.getId()).orElseThrow();
         assertThat(updatedBook)
                 .extracting(Book::getAuthor)
                 .isNull();
 
         Aggregation aggregation = Aggregation.newAggregation(
-                match(Criteria.where("author._id").is(author.get_id()))
+                match(Criteria.where("author._id").is(author.getId()))
         );
         List<Book> results = template.aggregate(aggregation, Book.class, Book.class).getMappedResults();
         assertThat(results).isEmpty();

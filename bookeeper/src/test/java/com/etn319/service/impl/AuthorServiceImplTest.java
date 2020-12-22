@@ -163,7 +163,7 @@ class AuthorServiceImplTest {
         var author = authorService.create(NAME, COUNTRY);
 
         assertThat(author).isNotNull()
-                .extracting(Author::get_id, Author::getName, Author::getCountry)
+                .extracting(Author::getId, Author::getName, Author::getCountry)
                 .containsExactly(null, NAME, COUNTRY);
     }
 
@@ -206,7 +206,7 @@ class AuthorServiceImplTest {
         var changedAuthor = authorService.change(NEW_NAME, null);
 
         assertThat(changedAuthor).isNotNull()
-                .extracting(Author::get_id, Author::getName, Author::getCountry)
+                .extracting(Author::getId, Author::getName, Author::getCountry)
                 .containsExactly(null, NEW_NAME, COUNTRY);
     }
 

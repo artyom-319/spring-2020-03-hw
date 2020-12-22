@@ -15,7 +15,7 @@ import java.util.List;
 @NoArgsConstructor
 public class Book {
     @Id
-    private String _id;
+    private String id;
 
     @Field("title")
     private String title;
@@ -36,8 +36,8 @@ public class Book {
         this.genre = genre;
     }
 
-    public Book(String _id, String title, Author author, Genre genre) {
-        this._id = _id;
+    public Book(String id, String title, Author author, Genre genre) {
+        this.id = id;
         this.title = title;
         this.author = author;
         this.genre = genre;
@@ -46,7 +46,7 @@ public class Book {
     @Override
     public String toString() {
         return "Book{" +
-                "id=" + _id +
+                "id=" + id +
                 ", title='" + title + '\'' +
                 ", author=" + (author == null ? null : author.getName()) +
                 ", genre=" + (genre == null ? null : genre.getTitle()) +

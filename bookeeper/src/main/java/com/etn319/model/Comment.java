@@ -12,7 +12,7 @@ import org.springframework.data.mongodb.core.mapping.Field;
 @NoArgsConstructor
 public class Comment {
     @Id
-    private String _id;
+    private String id;
 
     @Field("commenter")
     private String commenter;
@@ -26,7 +26,7 @@ public class Comment {
     @Override
     public String toString() {
         return "Comment{" +
-                "id=" + _id +
+                "id=" + id +
                 ", commenter='" + commenter + '\'' +
                 ", text='" + text + '\'' +
                 ", book name='" + (book == null ? null : book.getTitle()) + '\'' +

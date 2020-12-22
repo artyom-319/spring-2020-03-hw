@@ -14,7 +14,7 @@ import java.util.List;
 @NoArgsConstructor
 public class Author {
     @Id
-    private String _id;
+    private String id;
 
     @Field("name")
     @Indexed(unique = true)
@@ -30,8 +30,8 @@ public class Author {
         this.country = country;
     }
 
-    public Author(String _id, String name, String country) {
-        this._id = _id;
+    public Author(String id, String name, String country) {
+        this.id = id;
         this.name = name;
         this.country = country;
     }
@@ -39,7 +39,7 @@ public class Author {
     @Override
     public String toString() {
         return "Author{" +
-                "id=" + _id +
+                "id=" + id +
                 ", name='" + name + '\'' +
                 ", country='" + country + '\'' +
                 '}';

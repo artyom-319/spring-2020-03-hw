@@ -34,10 +34,10 @@ public class CommentMongoRepositoryTest {
         comment.setText("Text");
         comment.setBook(book);
         var commentBefore = template.save(comment);
-        assertThat(dao.findById(commentBefore.get_id())).isPresent();
+        assertThat(dao.findById(commentBefore.getId())).isPresent();
 
         template.remove(book);
-        Optional<Comment> commentAfter = dao.findById(commentBefore.get_id());
+        Optional<Comment> commentAfter = dao.findById(commentBefore.getId());
         commentAfter.ifPresent(System.out::println);
         assertThat(commentAfter).isEmpty();
     }

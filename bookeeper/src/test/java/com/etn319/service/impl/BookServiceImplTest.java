@@ -73,7 +73,7 @@ class BookServiceImplTest {
         given(bookDao.findAll()).willReturn(allBooks);
         doNothing().when(bookDao).deleteById(anyString());
 
-        given(bookDao.findAllByAuthor__id(anyString())).willReturn(booksByAuthor);
+        given(bookDao.findAllByAuthor_id(anyString())).willReturn(booksByAuthor);
         given(bookDao.findAllByGenreTitle(anyString())).willReturn(booksByGenre);
 
         bookService.clearCache();
@@ -188,8 +188,8 @@ class BookServiceImplTest {
         List<Book> booksByAuthor = bookService.getByCachedAuthor();
         var argumentCaptor = ArgumentCaptor.forClass(String.class);
 
-        verify(bookDao, only()).findAllByAuthor__id(argumentCaptor.capture());
-        assertThat(argumentCaptor.getValue()).isEqualTo(author.get_id());
+        verify(bookDao, only()).findAllByAuthor_id(argumentCaptor.capture());
+        assertThat(argumentCaptor.getValue()).isEqualTo(author.getId());
         assertThat(booksByAuthor).isSameAs(booksByAuthor);
     }
 
@@ -200,7 +200,7 @@ class BookServiceImplTest {
         var book = bookService.create(TITLE);
 
         assertThat(book).isNotNull()
-                .extracting(Book::get_id, Book::getTitle)
+                .extracting(Book::getId, Book::getTitle)
                 .containsExactly(null, TITLE);
     }
 
