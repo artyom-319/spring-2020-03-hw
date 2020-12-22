@@ -37,7 +37,7 @@ class BookServiceImplTest {
     private static final String EXISTING_ID = "EXISTING_ID";
     private static final String TITLE = "20 Years Later";
     private static final String NEW_TITLE = "10 Years Later";
-    private static final Book BOOK = new Book(1L, TITLE, new Author(), new Genre());
+    private static final Book BOOK = new Book("1L", TITLE, new Author(), new Genre());
 
     private final List<Book> allBooks = Collections.nCopies(5, BOOK);
     private final List<Book> booksByGenre = Collections.nCopies(4, BOOK);
@@ -200,8 +200,8 @@ class BookServiceImplTest {
         var book = bookService.create(TITLE);
 
         assertThat(book).isNotNull()
-                .extracting(Book::getId, Book::getTitle)
-                .containsExactly(0L, TITLE);
+                .extracting(Book::get_id, Book::getTitle)
+                .containsExactly(null, TITLE);
     }
 
     @Test

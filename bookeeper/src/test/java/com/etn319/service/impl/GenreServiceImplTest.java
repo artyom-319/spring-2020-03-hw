@@ -34,7 +34,7 @@ class GenreServiceImplTest {
     private static final String EXISTING_TITLE = "EXISTING_TITLE";
     private static final String TITLE = "Comedy";
     private static final String NEW_TITLE = "Tragedy";
-    private static final Genre GENRE = new Genre(1L, TITLE);
+    private static final Genre GENRE = new Genre(TITLE);
 
     @Configuration
     static class Config {
@@ -117,8 +117,8 @@ class GenreServiceImplTest {
         var genre = genreService.create(TITLE);
 
         assertThat(genre).isNotNull()
-                .extracting(Genre::getId, Genre::getTitle)
-                .containsExactly(0L, TITLE);
+                .extracting(Genre::getTitle)
+                .isEqualTo(TITLE);
     }
 
     @Test

@@ -38,7 +38,7 @@ class AuthorServiceImplTest {
     private static final String COUNTRY = "Russia";
     private static final String NEW_NAME = "Peter";
     private static final String NEW_COUNTRY = "Germany";
-    private static final Author AUTHOR = new Author(1L, NAME, COUNTRY);
+    private static final Author AUTHOR = new Author("1L", NAME, COUNTRY);
 
     @Configuration
     static class Config {
@@ -163,8 +163,8 @@ class AuthorServiceImplTest {
         var author = authorService.create(NAME, COUNTRY);
 
         assertThat(author).isNotNull()
-                .extracting(Author::getId, Author::getName, Author::getCountry)
-                .containsExactly(0L, NAME, COUNTRY);
+                .extracting(Author::get_id, Author::getName, Author::getCountry)
+                .containsExactly(null, NAME, COUNTRY);
     }
 
     @Test
@@ -206,8 +206,8 @@ class AuthorServiceImplTest {
         var changedAuthor = authorService.change(NEW_NAME, null);
 
         assertThat(changedAuthor).isNotNull()
-                .extracting(Author::getId, Author::getName, Author::getCountry)
-                .containsExactly(0L, NEW_NAME, COUNTRY);
+                .extracting(Author::get_id, Author::getName, Author::getCountry)
+                .containsExactly(null, NEW_NAME, COUNTRY);
     }
 
     @Test
