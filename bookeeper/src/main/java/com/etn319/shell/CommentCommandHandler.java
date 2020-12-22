@@ -32,6 +32,13 @@ public class CommentCommandHandler {
                 .orElse("No comments found");
     }
 
+    @ShellMethod(value = "Get the first comment and load it to cache", key = "cfirst")
+    public String first() {
+        Optional<Comment> comment = service.first();
+        return comment.map(Comment::toString)
+                .orElse("No comments found");
+    }
+
     @ShellMethod(value = "Get all comments", key = "call")
     public String getAll() {
         List<Comment> comments = service.getAll();
@@ -46,7 +53,7 @@ public class CommentCommandHandler {
         } catch (EmptyCacheException e) {
             return "Nothing to save: cache is empty";
         } catch (ServiceLayerException e) {
-            return "Failed to save";
+            return "Failed to save: " + e.getMessage();
         }
     }
 
@@ -103,13 +110,17 @@ public class CommentCommandHandler {
     }
 
     @ShellMethod(value = "Create a comment object and store it in program cache", key = "cnew")
-    public String create(@ShellOption({"text", "-t"}) String text, @ShellOption({"commenter", "-c"}) String commenter) {
+    public String create(
+            @ShellOption({"text", "-t"}) String text,
+            @ShellOption(value = {"commenter", "-c"}, defaultValue = ShellOption.NULL) String commenter) {
         var comment = service.create(text, commenter);
         return String.format("Created: %s\nTo save it in database use 'csave' command", comment.toString());
     }
 
     @ShellMethod(value = "Update cached comment object", key = "cset")
-    public String change(@ShellOption({"text", "-t"}) String text, @ShellOption({"commenter", "-c"}) String commenter) {
+    public String change(
+            @ShellOption(value = {"text", "-t"}, defaultValue = ShellOption.NULL) String text,
+            @ShellOption(value = {"commenter", "-c"}, defaultValue = ShellOption.NULL) String commenter) {
         try {
             var comment = service.change(text, commenter);
             return String.format("Changed: %s\nTo save it in database use 'csave' command", comment.toString());

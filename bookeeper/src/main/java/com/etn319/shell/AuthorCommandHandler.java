@@ -32,6 +32,20 @@ public class AuthorCommandHandler {
                 .orElse("No authors found");
     }
 
+    @ShellMethod(value = Commands.GET_BY_NAME_TITLE, key = {"abyname", "abn"})
+    public String getByName(String name) {
+        Optional<Author> author = authorService.getByName(name);
+        return author.map(Author::toString)
+                .orElse("No authors found");
+    }
+
+    @ShellMethod(value = Commands.GET_FIRST_TITLE, key = "afirst")
+    public String first() {
+        Optional<Author> author = authorService.first();
+        return author.map(Author::toString)
+                .orElse("No authors found");
+    }
+
     @ShellMethod(value = Commands.GET_ALL_TITLE, key = "aall")
     public String getAll() {
         List<Author> authors = authorService.getAll();
@@ -80,13 +94,19 @@ public class AuthorCommandHandler {
     }
 
     @ShellMethod(value = Commands.CREATE_TITLE, key = "anew")
-    public String create(@ShellOption({"name", "-n"}) String name, @ShellOption({"country", "-c"}) String country) {
+    public String create(
+            @ShellOption({"name", "-n"}) String name,
+            @ShellOption(value = {"country", "-c"}, defaultValue = ShellOption.NULL) String country
+    ) {
         var author = authorService.create(name, country);
         return String.format("Created: %s\nTo save it in database use 'asave' command", author.toString());
     }
 
     @ShellMethod(value = Commands.CHANGE_TITLE, key = "aset")
-    public String change(@ShellOption({"name", "-n"}) String name, @ShellOption({"country", "-c"}) String country) {
+    public String change(
+            @ShellOption(value = {"name", "-n"}, defaultValue = ShellOption.NULL) String name,
+            @ShellOption(value = {"country", "-c"}, defaultValue = ShellOption.NULL) String country
+    ) {
         try {
             var author = authorService.change(name, country);
             return String.format("Changed: %s\nTo save it in database use 'asave' command", author.toString());
@@ -98,6 +118,8 @@ public class AuthorCommandHandler {
     private static class Commands {
         private static final String COUNT_TITLE = "Count author objects";
         private static final String GET_TITLE = "Get an author object by id and load it to cache";
+        private static final String GET_BY_NAME_TITLE = "Get an author object by name and load it to cache";
+        private static final String GET_FIRST_TITLE = "Get the first author object and load it to cache";
         private static final String GET_ALL_TITLE = "Get all author objects";
         private static final String SAVE_TITLE = "Save cached author object to DB";
         private static final String DELETE_TITLE = "Delete an author object by id";
