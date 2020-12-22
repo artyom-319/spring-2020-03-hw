@@ -42,8 +42,7 @@ public class CommentServiceImpl implements CommentService {
     public Comment save() {
         var comment = cache.getComment();
         if (comment.getBook() == null) {
-            // todo: exception message
-            throw new ServiceLayerException();
+            throw new ServiceLayerException("Failed to save comment because it has no book wired");
         }
 
         try {
@@ -84,7 +83,6 @@ public class CommentServiceImpl implements CommentService {
         var comment = new Comment();
         comment.setText(text);
         comment.setCommenter(commenter);
-        comment.setBook(cache.getBook());
         cache.setComment(comment);
         return comment;
     }
