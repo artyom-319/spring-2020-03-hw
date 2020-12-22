@@ -26,6 +26,7 @@ public class GenreMongoRepositoryCustomImpl implements GenreMongoRepositoryCusto
     public long count() {
         Aggregation aggregation = newAggregation(
                 project().andExclude("_id").and("genre.title").as("title"),
+                match(Criteria.where("title").ne(null)),
                 group("_id", "title"),
                 Aggregation.count().as("longValue")
         );
@@ -39,6 +40,7 @@ public class GenreMongoRepositoryCustomImpl implements GenreMongoRepositoryCusto
     public List<Genre> findAll() {
         Aggregation aggregation = newAggregation(
                 project().andExclude("_id").and("genre.title").as("title"),
+                match(Criteria.where("title").ne(null)),
                 group("_id", "title")
         );
         return template.aggregate(aggregation, Book.class, Genre.class).getMappedResults();
