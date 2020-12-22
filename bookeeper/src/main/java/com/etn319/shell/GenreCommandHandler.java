@@ -19,7 +19,7 @@ import java.util.stream.Collectors;
 public class GenreCommandHandler {
     private final GenreService genreService;
 
-    @ShellMethod(value = "Count genre objects", key = "count")
+    @ShellMethod(value = "Count genre objects", key = "gcount")
     public String count() {
         return "Genres found: " + genreService.count();
     }
