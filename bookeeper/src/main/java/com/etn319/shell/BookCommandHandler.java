@@ -14,7 +14,6 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-// todo: поиск по имени автора и по заголовку книги
 @ShellComponent
 @ShellCommandGroup("Book Commands")
 @RequiredArgsConstructor

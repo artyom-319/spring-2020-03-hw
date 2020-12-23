@@ -59,7 +59,7 @@ public class BookMongoRepositoryTest {
 
     @Test
     @DirtiesContext
-    @DisplayName("При сохранение книги вложенный автор тоже должен обновляться")
+    @DisplayName("При сохранении книги вложенный автор тоже должен обновляться")
     void saveEntityWithExistingRelatedOne__shouldUpdateRelated() {
         var author = authorDao.save(TRANSIENT_AUTHOR);
         var book = dao.save(new Book("Title", author, GENRE));
