@@ -30,10 +30,7 @@ public class CommentMongoRepositoryTest {
     @DisplayName("При удалении книги комментарии к ней также должны удаляться")
     void bookRemoval_ShouldDeleteRelatedComment() {
         var book = template.save(new Book("Book Title", null, null));
-        var comment = new Comment();
-        comment.setText("Text");
-        comment.setBook(book);
-        var commentBefore = template.save(comment);
+        var commentBefore = template.save(new Comment("Text", "Commenter", book));
         assertThat(dao.findById(commentBefore.getId())).isPresent();
 
         template.remove(book);

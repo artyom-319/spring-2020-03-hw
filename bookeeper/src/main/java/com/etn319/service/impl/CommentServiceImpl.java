@@ -88,9 +88,7 @@ public class CommentServiceImpl implements CommentService {
 
     @Override
     public Comment create(String text, String commenter) {
-        var comment = new Comment();
-        comment.setText(text);
-        comment.setCommenter(commenter);
+        var comment = new Comment(text, commenter, null);
         cache.setComment(comment);
         return comment;
     }

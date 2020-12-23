@@ -23,6 +23,12 @@ public class Comment {
     @DBRef
     private Book book;
 
+    public Comment(String text, String commenter, Book book) {
+        this.commenter = commenter;
+        this.text = text;
+        this.book = book;
+    }
+
     @Override
     public String toString() {
         return "Comment{" +
