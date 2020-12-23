@@ -1,8 +1,9 @@
 spring:
-  mongodb:
-    host: localhost
-    port: 0
-    name: mydb
+  data:
+    mongodb:
+      host: localhost
+      port: 0
+      database: mydb
 
   shell:
     interactive:

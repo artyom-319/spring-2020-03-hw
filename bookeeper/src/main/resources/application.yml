@@ -38,10 +38,11 @@ spring:
 ---
 spring:
   profiles: mongo
-  mongodb:
-    host: localhost
-    port: 27017
-    name: mydb
+  data:
+    mongodb:
+      host: localhost
+      port: 27017
+      database: mydb
 ---
 spring:
   profiles:
