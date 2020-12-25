@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+    <h1 th:text="${ book.title }">BOOK TITLE</h1>
+    <span th:text="${ book.author.name }">AUTHOR NAME</span>
+    <br/>
+    <span th:text="${ book.genre.title }">[GENRE]</span>
+    <hr/>
+    <div th:each="comment : ${ comments }">
+        <h3 class="comment-text" th:text="${ comment.text }">COMMENT TEXT</h3>
+        <br/>
+        <span class="commenter" th:text="${ comment.commenter }">COMMENTOR</span>
+        <hr/>
+    </div>
+</body>
+</html>
