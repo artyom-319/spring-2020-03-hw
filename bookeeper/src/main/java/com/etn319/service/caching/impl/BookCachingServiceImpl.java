@@ -1,15 +1,13 @@
-package com.etn319.service.impl;
+package com.etn319.service.caching.impl;
 
-import com.etn319.dao.mongo.BookMongoRepository;
+import com.etn319.model.Author;
 import com.etn319.model.Book;
-import com.etn319.service.CacheHolder;
-import com.etn319.service.EntityNotFoundException;
-import com.etn319.service.ServiceLayerException;
-import com.etn319.service.api.BookService;
+import com.etn319.model.Genre;
+import com.etn319.service.caching.CacheHolder;
+import com.etn319.service.caching.api.BookCachingService;
+import com.etn319.service.common.api.BookService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.dao.DataAccessException;
-import org.springframework.data.domain.Example;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -18,79 +16,80 @@ import java.util.Optional;
 @Slf4j
 @RequiredArgsConstructor
 @Service
-public class BookServiceImpl implements BookService {
-    private final BookMongoRepository dao;
+public class BookCachingServiceImpl implements BookCachingService {
+    private final BookService baseService;
     private final CacheHolder cache;
 
     @Override
     public long count() {
-        return dao.count();
+        return baseService.count();
     }
 
     @Override
     public Optional<Book> getById(String id) {
-        Optional<Book> book = dao.findById(id);
+        Optional<Book> book = baseService.getById(id);
         book.ifPresent(cache::setBook);
         return book;
     }
 
     @Override
     public Optional<Book> first() {
-        Optional<Book> book = dao.findOne(Example.of(new Book()));
+        Optional<Book> book = baseService.first();
         book.ifPresent(cache::setBook);
         return book;
     }
 
     @Override
     public List<Book> getAll() {
-        return dao.findAll();
+        return baseService.getAll();
     }
 
     @Override
     public Book save() {
         var book = cache.getBook();
-        try {
-            Book saved = dao.save(book);
-            clearCache();
-            return saved;
-        } catch (DataAccessException e) {
-            throw new ServiceLayerException(e);
-        }
+        return baseService.save(book);
+    }
+
+    @Override
+    public Book save(Book book) {
+        return baseService.save(book);
     }
 
     @Override
     public void deleteById(String id) {
-        if (!dao.existsById(id)) {
-            throw new EntityNotFoundException();
-        }
-
-        try {
-            dao.deleteById(id);
-        } catch (DataAccessException e) {
-            throw new ServiceLayerException(e);
-        }
+        baseService.deleteById(id);
     }
 
     @Override
     public List<Book> getByCachedGenre() {
         var cachedGenre = cache.getGenre();
-        return getByGenreTitle(cachedGenre.getTitle());
+        return getByGenre(cachedGenre);
+    }
+
+    @Override
+    public List<Book> getByGenre(Genre genre) {
+        return baseService.getByGenre(genre);
     }
 
     @Override
     public List<Book> getByGenreTitle(String title) {
-        return dao.findAllByGenreTitle(title);
+        return baseService.getByGenreTitle(title);
     }
 
     @Override
     public List<Book> getByCachedAuthor() {
         var cachedAuthor = cache.getAuthor();
-        return getByAuthorId(cachedAuthor.getId());
+        return baseService.getByAuthor(cachedAuthor);
+    }
+
+    @Override
+    public List<Book> getByAuthor(Author author) {
+        return baseService.getByAuthor(author);
     }
 
     @Override
     public List<Book> getByAuthorId(String id) {
-        return dao.findAllByAuthor_id(id);
+        return baseService.getByAuthorId(id);
     }
 
     @Override

@@ -1,13 +1,15 @@
-package com.etn319.service.impl;
+package com.etn319.service.caching.impl;
 
 import com.etn319.dao.mongo.BookMongoRepository;
 import com.etn319.model.Author;
 import com.etn319.model.Book;
 import com.etn319.model.Genre;
-import com.etn319.service.CacheHolder;
-import com.etn319.service.EmptyCacheException;
+import com.etn319.service.caching.CacheHolder;
+import com.etn319.service.caching.EmptyCacheException;
 import com.etn319.service.EntityNotFoundException;
-import com.etn319.service.api.BookService;
+import com.etn319.service.caching.api.BookCachingService;
+import com.etn319.service.common.api.BookService;
+import com.etn319.service.common.impl.BookServiceImpl;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -46,13 +48,18 @@ class BookServiceImplTest {
     @Configuration
     static class Config {
         @Bean
+        public BookService bookServiceBase(BookMongoRepository dao) {
+            return new BookServiceImpl(dao);
+        }
+
+        @Bean
         public CacheHolder cacheHolder() {
             return new CacheHolder();
         }
 
         @Bean
-        public BookService bookService(BookMongoRepository bookDao, CacheHolder cacheHolder) {
-            return new BookServiceImpl(bookDao, cacheHolder);
+        public BookCachingService bookService(BookService baseService, CacheHolder cacheHolder) {
+            return new BookCachingServiceImpl(baseService, cacheHolder);
         }
     }
 
@@ -61,7 +68,7 @@ class BookServiceImplTest {
     @Autowired
     private CacheHolder cacheHolder;
     @Autowired
-    private BookService bookService;
+    private BookCachingService bookService;
 
     @BeforeEach
     public void setUp() {
@@ -108,7 +115,7 @@ class BookServiceImplTest {
 
         assertThat(book).isPresent();
         assertThat(bookService)
-                .extracting(BookService::getCache)
+                .extracting(BookCachingService::getCache)
                 .isNotNull()
                 .isEqualTo(book.orElseThrow());
     }

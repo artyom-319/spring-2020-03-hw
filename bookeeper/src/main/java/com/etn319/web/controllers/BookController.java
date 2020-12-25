@@ -1,7 +1,7 @@
 package com.etn319.web.controllers;
 
 import com.etn319.model.Book;
-import com.etn319.service.api.BookService;
+import com.etn319.service.common.api.BookService;
 import com.etn319.web.NotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

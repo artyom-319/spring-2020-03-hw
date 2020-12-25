@@ -1,9 +1,9 @@
 package com.etn319.shell;
 
 import com.etn319.model.Book;
-import com.etn319.service.EmptyCacheException;
 import com.etn319.service.ServiceLayerException;
-import com.etn319.service.api.BookService;
+import com.etn319.service.caching.EmptyCacheException;
+import com.etn319.service.caching.api.BookCachingService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.shell.standard.ShellCommandGroup;
 import org.springframework.shell.standard.ShellComponent;
@@ -18,7 +18,7 @@ import java.util.stream.Collectors;
 @ShellCommandGroup("Book Commands")
 @RequiredArgsConstructor
 public class BookCommandHandler {
-    private final BookService bookService;
+    private final BookCachingService bookService;
 
     @ShellMethod(value = "Count book objects", key = "bcount")
     public String count() {

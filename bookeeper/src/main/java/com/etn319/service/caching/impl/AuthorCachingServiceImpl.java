@@ -1,15 +1,11 @@
-package com.etn319.service.impl;
+package com.etn319.service.caching.impl;
 
-import com.etn319.dao.mongo.AuthorMongoRepository;
 import com.etn319.model.Author;
-import com.etn319.service.CacheHolder;
-import com.etn319.service.EntityNotFoundException;
-import com.etn319.service.ServiceLayerException;
-import com.etn319.service.api.AuthorService;
+import com.etn319.service.caching.CacheHolder;
+import com.etn319.service.caching.api.AuthorCachingService;
+import com.etn319.service.common.api.AuthorService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.dao.DataAccessException;
-import org.springframework.data.domain.Example;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -18,65 +14,55 @@ import java.util.Optional;
 @Slf4j
 @RequiredArgsConstructor
 @Service
-public class AuthorServiceImpl implements AuthorService {
-    private final AuthorMongoRepository dao;
+public class AuthorCachingServiceImpl implements AuthorCachingService {
+    private final AuthorService baseService;
     private final CacheHolder cache;
 
     @Override
     public long count() {
-        return dao.count();
+        return baseService.count();
     }
 
     @Override
     public Optional<Author> getById(String id) {
-        Optional<Author> author = dao.findById(id);
+        Optional<Author> author = baseService.getById(id);
         author.ifPresent(cache::setAuthor);
         return author;
     }
 
     @Override
     public Optional<Author> getByName(String name) {
-        Optional<Author> author = dao.findByName(name);
+        Optional<Author> author = baseService.getByName(name);
         author.ifPresent(cache::setAuthor);
         return author;
     }
 
     @Override
     public Optional<Author> first() {
-        Optional<Author> author = dao.findOne(Example.of(new Author()));
+        Optional<Author> author = baseService.first();
         author.ifPresent(cache::setAuthor);
         return author;
     }
 
     @Override
     public List<Author> getAll() {
-        return dao.findAll();
+        return baseService.getAll();
     }
 
     @Override
     public Author save() {
         var author = cache.getAuthor();
+        return baseService.save(author);
+    }
 
-        try {
-            Author saved = dao.save(author);
-            clearCache();
-            return saved;
-        } catch (DataAccessException e) {
-            throw new ServiceLayerException(e);
-        }
+    @Override
+    public Author save(Author author) {
+        return baseService.save(author);
     }
 
     @Override
     public void deleteById(String id) {
-        if (!dao.existsById(id)) {
-            throw new EntityNotFoundException();
-        }
-
-        try {
-            dao.deleteById(id);
-        } catch (DataAccessException e) {
-            throw new ServiceLayerException(e);
-        }
+        baseService.deleteById(id);
     }
 
     @Override

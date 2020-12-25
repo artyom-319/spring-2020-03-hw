@@ -1,10 +1,12 @@
-package com.etn319.service.impl;
+package com.etn319.service.caching.impl;
 
 import com.etn319.dao.mongo.GenreMongoRepositoryCustom;
 import com.etn319.model.Genre;
-import com.etn319.service.CacheHolder;
-import com.etn319.service.EmptyCacheException;
-import com.etn319.service.api.GenreService;
+import com.etn319.service.caching.CacheHolder;
+import com.etn319.service.caching.EmptyCacheException;
+import com.etn319.service.caching.api.GenreCachingService;
+import com.etn319.service.common.api.GenreService;
+import com.etn319.service.common.impl.GenreServiceImpl;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -39,15 +41,20 @@ class GenreServiceImplTest {
     @Configuration
     static class Config {
         @Bean
-        public GenreService genreService(GenreMongoRepositoryCustom genreDao) {
-            return new GenreServiceImpl(genreDao, new CacheHolder());
+        public GenreService genreServiceBase(GenreMongoRepositoryCustom dao) {
+            return new GenreServiceImpl(dao);
+        }
+
+        @Bean
+        public GenreCachingService genreService(GenreService baseService) {
+            return new GenreCachingServiceImpl(baseService, new CacheHolder());
         }
     }
 
     @MockBean
     private GenreMongoRepositoryCustom genreDao;
     @Autowired
-    private GenreService genreService;
+    private GenreCachingService genreService;
 
     @BeforeEach
     public void setUp() {
@@ -88,7 +95,7 @@ class GenreServiceImplTest {
 
         assertThat(genre).isPresent();
         assertThat(genreService)
-                .extracting(GenreService::getCache)
+                .extracting(GenreCachingService::getCache)
                 .isNotNull()
                 .isEqualTo(genre.orElseThrow());
     }

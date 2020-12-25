@@ -1,15 +1,12 @@
-package com.etn319.service.impl;
+package com.etn319.service.caching.impl;
 
-import com.etn319.dao.mongo.CommentMongoRepository;
+import com.etn319.model.Book;
 import com.etn319.model.Comment;
-import com.etn319.service.CacheHolder;
-import com.etn319.service.EntityNotFoundException;
-import com.etn319.service.ServiceLayerException;
-import com.etn319.service.api.CommentService;
+import com.etn319.service.caching.CacheHolder;
+import com.etn319.service.caching.api.CommentCachingService;
+import com.etn319.service.common.api.CommentService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.dao.DataAccessException;
-import org.springframework.data.domain.Example;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -18,72 +15,64 @@ import java.util.Optional;
 @Slf4j
 @RequiredArgsConstructor
 @Service
-public class CommentServiceImpl implements CommentService {
-    private final CommentMongoRepository dao;
+public class CommentCachingServiceImpl implements CommentCachingService {
+    private final CommentService baseService;
     private final CacheHolder cache;
 
     @Override
     public long count() {
-        return dao.count();
+        return baseService.count();
     }
 
     @Override
     public Optional<Comment> getById(String id) {
-        Optional<Comment> comment = dao.findById(id);
+        Optional<Comment> comment = baseService.getById(id);
         comment.ifPresent(cache::setComment);
         return comment;
     }
 
     @Override
     public Optional<Comment> first() {
-        Optional<Comment> comment = dao.findOne(Example.of(new Comment()));
+        Optional<Comment> comment = baseService.first();
         comment.ifPresent(cache::setComment);
         return comment;
     }
 
     @Override
     public List<Comment> getAll() {
-        return dao.findAll();
+        return baseService.getAll();
     }
 
     @Override
     public Comment save() {
         var comment = cache.getComment();
-        if (comment.getBook() == null) {
-            throw new ServiceLayerException("Failed to save comment because it has no book wired");
-        }
+        return baseService.save(comment);
+    }
 
-        try {
-            Comment saved = dao.save(comment);
-            clearCache();
-            return saved;
-        } catch (DataAccessException e) {
-            throw new ServiceLayerException(e);
-        }
+    @Override
+    public Comment save(Comment comment) {
+        return baseService.save(comment);
     }
 
     @Override
     public void deleteById(String id) {
-        if (!dao.existsById(id)) {
-            throw new EntityNotFoundException();
-        }
-
-        try {
-            dao.deleteById(id);
-        } catch (DataAccessException e) {
-            throw new ServiceLayerException(e);
-        }
+        baseService.deleteById(id);
     }
 
     @Override
     public List<Comment> getByBook() {
         var cachedBook = cache.getBook();
-        return dao.findAllByBook(cachedBook);
+        return baseService.getByBook(cachedBook);
+    }
+
+    @Override
+    public List<Comment> getByBook(Book book) {
+        return baseService.getByBook(book);
     }
 
     @Override
     public List<Comment> getByCommenterName(String name) {
-        return dao.findAllByCommenter(name);
+        return baseService.getByCommenterName(name);
     }
 
     @Override

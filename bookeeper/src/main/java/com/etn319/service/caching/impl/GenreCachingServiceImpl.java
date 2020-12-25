@@ -1,9 +1,9 @@
-package com.etn319.service.impl;
+package com.etn319.service.caching.impl;
 
-import com.etn319.dao.mongo.GenreMongoRepositoryCustom;
 import com.etn319.model.Genre;
-import com.etn319.service.CacheHolder;
-import com.etn319.service.api.GenreService;
+import com.etn319.service.caching.CacheHolder;
+import com.etn319.service.caching.api.GenreCachingService;
+import com.etn319.service.common.api.GenreService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -14,32 +14,32 @@ import java.util.Optional;
 @Service
 @Slf4j
 @RequiredArgsConstructor
-public class GenreServiceImpl implements GenreService {
-    private final GenreMongoRepositoryCustom dao;
+public class GenreCachingServiceImpl implements GenreCachingService {
+    private final GenreService baseService;
     private final CacheHolder cache;
 
     @Override
     public long count() {
-        return dao.count();
+        return baseService.count();
     }
 
     @Override
     public Optional<Genre> getByTitle(String title) {
-        Optional<Genre> genre = dao.findByTitle(title);
+        Optional<Genre> genre = baseService.getByTitle(title);
         genre.ifPresent(cache::setGenre);
         return genre;
     }
 
     @Override
     public Optional<Genre> first() {
-        Optional<Genre> genre = dao.first();
+        Optional<Genre> genre = baseService.first();
         genre.ifPresent(cache::setGenre);
         return genre;
     }
 
     @Override
     public List<Genre> getAll() {
-        return dao.findAll();
+        return baseService.getAll();
     }
 
     @Override

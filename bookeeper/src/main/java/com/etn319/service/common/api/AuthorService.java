@@ -1,4 +1,4 @@
-package com.etn319.service.api;
+package com.etn319.service.common.api;
 
 import com.etn319.model.Author;
 
@@ -13,7 +13,7 @@ public interface AuthorService {
     long count();
 
     /**
-     * Загрузить в кэш автора по id
+     * Поиск автора по id
      * @param id идентификатор искомого автора
      * @return объект автора, упакованный в <code>Optional</code>
      * <code>Optional.empty()</code>, если не найден
@@ -21,7 +21,7 @@ public interface AuthorService {
     Optional<Author> getById(String id);
 
     /**
-     * Загрузить в кэш автора по имени
+     * Поиск автора по имени
      * @param name имя автора
      * @return объект автора, упакованный в <code>Optional</code>
      * <code>Optional.empty()</code>, если не найден
@@ -42,12 +42,12 @@ public interface AuthorService {
     List<Author> getAll();
 
     /**
-     * Сохраняет кэшированного автора. В случае успеха очищает кэш
-     * @return сохранённый объект автора
+     * Сохраняет автора
+     * @param author автор, которого требуется сохранить
+     * @return обновлённый объект автора
      * @throws com.etn319.service.ServiceLayerException, если произошла ошибка при сохранении
-     * @throws com.etn319.service.EmptyCacheException, если в кэше нет автора
      */
-    Author save();
+    Author save(Author author);
 
     /**
      * Удаляет автора по id
@@ -55,34 +55,4 @@ public interface AuthorService {
      * @throws com.etn319.service.ServiceLayerException, если удаление не удалось выполнить
      */
     void deleteById(String id);
-
-    /**
-     * Создать автора и разместить его в кэше
-     * @param name имя автора
-     * @param country страна проживания автора
-     * @return объект автора
-     */
-    Author create(String name, String country);
-
-    /**
-     * Изменить автора в кэше. Если какой-либо из параметров {@code null}, то соответствующее поле
-     * автора не меняется
-     * @param name имя автора
-     * @param country страна проживания автора
-     * @return объект автора
-     * @throws com.etn319.service.EmptyCacheException, если в кэше нет автора
-     */
-    Author change(String name, String country);
-
-    /**
-     * Очистить кэш
-     */
-    void clearCache();
-
-    /**
-     * Получить объект автора из кэша
-     * @return кэшированный автор
-     * @throws com.etn319.service.EmptyCacheException если в кэше нет автора
-     */
-    Author getCache();
 }

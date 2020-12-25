@@ -1,11 +1,13 @@
-package com.etn319.service.impl;
+package com.etn319.service.caching.impl;
 
 import com.etn319.dao.mongo.AuthorMongoRepository;
 import com.etn319.model.Author;
-import com.etn319.service.CacheHolder;
-import com.etn319.service.EmptyCacheException;
+import com.etn319.service.caching.CacheHolder;
+import com.etn319.service.caching.EmptyCacheException;
 import com.etn319.service.EntityNotFoundException;
-import com.etn319.service.api.AuthorService;
+import com.etn319.service.caching.api.AuthorCachingService;
+import com.etn319.service.common.api.AuthorService;
+import com.etn319.service.common.impl.AuthorServiceImpl;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -43,15 +45,20 @@ class AuthorServiceImplTest {
     @Configuration
     static class Config {
         @Bean
-        public AuthorService authorService(AuthorMongoRepository authorDao) {
-            return new AuthorServiceImpl(authorDao, new CacheHolder());
+        public AuthorService authorServiceBase(AuthorMongoRepository dao) {
+            return new AuthorServiceImpl(dao);
+        }
+
+        @Bean
+        public AuthorCachingService authorService(AuthorService baseService) {
+            return new AuthorCachingServiceImpl(baseService, new CacheHolder());
         }
     }
 
     @MockBean
     private AuthorMongoRepository authorDao;
     @Autowired
-    AuthorService authorService;
+    private AuthorCachingService authorService;
 
     @BeforeEach
     public void setUp() {
@@ -95,7 +102,7 @@ class AuthorServiceImplTest {
 
         assertThat(author).isPresent();
         assertThat(authorService)
-                .extracting(AuthorService::getCache)
+                .extracting(AuthorCachingService::getCache)
                 .isNotNull()
                 .isEqualTo(author.orElseThrow());
     }

@@ -1,9 +1,9 @@
 package com.etn319.shell;
 
 import com.etn319.model.Comment;
-import com.etn319.service.EmptyCacheException;
 import com.etn319.service.ServiceLayerException;
-import com.etn319.service.api.CommentService;
+import com.etn319.service.caching.EmptyCacheException;
+import com.etn319.service.caching.api.CommentCachingService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.shell.standard.ShellCommandGroup;
 import org.springframework.shell.standard.ShellComponent;
@@ -18,7 +18,7 @@ import java.util.stream.Collectors;
 @ShellCommandGroup("Comment Commands")
 @RequiredArgsConstructor
 public class CommentCommandHandler {
-    private final CommentService service;
+    private final CommentCachingService service;
 
     @ShellMethod(value = "Count comments", key = "ccount")
     public String count() {
