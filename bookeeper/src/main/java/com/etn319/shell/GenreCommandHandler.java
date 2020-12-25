@@ -66,14 +66,14 @@ public class GenreCommandHandler {
     @ShellMethod(value = "Create a genre object and store it in program cache", key = "gnew")
     public String create(@ShellOption({"title", "-t"}) String title) {
         var genre = genreService.create(title);
-        return String.format("Created: %s\nTo save it in database use /genres/ 'save' command", genre.toString());
+        return String.format("Created: %s\nYou can wire it to a book using 'bsetg' command", genre.toString());
     }
 
     @ShellMethod(value = "Update cached genre object", key = "gset")
     public String change(@ShellOption({"title", "-t"}) String title) {
         try {
             var genre = genreService.change(title);
-            return String.format("Changed: %s\nTo save it in database use /genres/ 'save' command", genre.toString());
+            return String.format("Changed: %s\n", genre.toString());
         } catch (EmptyCacheException e) {
             return "Nothing to change: cache is empty";
         }
