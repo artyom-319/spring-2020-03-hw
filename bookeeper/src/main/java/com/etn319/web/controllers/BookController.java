@@ -3,6 +3,8 @@ package com.etn319.web.controllers;
 import com.etn319.model.Book;
 import com.etn319.service.common.api.BookService;
 import com.etn319.web.NotFoundException;
+import com.etn319.web.dto.BookDto;
+import com.etn319.web.dto.CommentDto;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Controller;
@@ -32,7 +34,8 @@ public class BookController {
     public String bookDetails(Model model, @PathVariable("id") String bookId) {
         log.info("GET /books/{} received", bookId);
         Book book = service.getById(bookId).orElseThrow(NotFoundException::new);
-        model.addAttribute("book", book);
+        model.addAttribute("book", BookDto.ofDao(book));
+        //todo: тут пока будет пустой список приходить, надо заполнять в дао
         model.addAttribute("comments", book.getComments());
         return "book_details";
     }
@@ -46,10 +49,10 @@ public class BookController {
     }
 
     @PostMapping("/books/edit")
-    public String editBook(Model model, Book book) {
-        log.info("POST /books/edit?id={} received", book.getId());
-        Book savedBook = service.save(book);
-        model.addAttribute("book", savedBook);
+    public String editBook(Model model, BookDto bookDto) {
+        log.info("POST /books/edit?id={} received", bookDto.getId());
+        Book savedBook = service.save(bookDto.toDao());
+        model.addAttribute("book", BookDto.ofDao(savedBook));
         return "book_details";
     }
 
