@@ -1,15 +1,9 @@
 spring:
-  datasource:
-    url: jdbc:h2:mem:testdb
-    initialization-mode : always
-    schema: schema.sql
-    data: data.sql
-
-  jpa:
-    hibernate:
-      ddl-auto: none
-    generate-ddl: false
-    show-sql: true
+  data:
+    mongodb:
+      host: localhost
+      port: 0
+      database: mydb
 
   shell:
     interactive:

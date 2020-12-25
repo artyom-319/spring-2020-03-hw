@@ -18,7 +18,14 @@ public interface CommentService {
      * @return объект комментария, упакованный в <code>Optional</code>
      * <code>Optional.empty()</code>, если не найден
      */
-    Optional<Comment> getById(long id);
+    Optional<Comment> getById(String id);
+
+    /**
+     * Извлечь из базы случайный комментарий
+     * @return объект комментария, упакованный в <code>Optional</code>, если в базе есть хоть один коммент
+     * <code>Optional.empty()</code>, если база пустая
+     */
+    Optional<Comment> first();
 
     /**
      * Получить все комментарии
@@ -39,7 +46,7 @@ public interface CommentService {
      * @param id id комментария, который нужно удалить
      * @throws com.etn319.service.ServiceLayerException, если произошла ошибка при удалении
      */
-    void deleteById(long id);
+    void deleteById(String id);
 
     /**
      * Получить комментарии к кэшированной книге
@@ -71,6 +78,13 @@ public interface CommentService {
      * @throws com.etn319.service.EmptyCacheException, если в кэше нет комментария
      */
     Comment change(String text, String commenter);
+
+    /**
+     * Привязать книгу к комментарию
+     * @return текущий комментарий
+     * @throws com.etn319.service.EmptyCacheException, если в кэше нет книги или комментария
+     */
+    Comment wireBook();
 
     /**
      * Очистить кэш

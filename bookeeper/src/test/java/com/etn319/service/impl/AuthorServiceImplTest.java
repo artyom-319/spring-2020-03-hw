@@ -1,6 +1,6 @@
 package com.etn319.service.impl;
 
-import com.etn319.dao.AuthorRepository;
+import com.etn319.dao.mongo.AuthorMongoRepository;
 import com.etn319.model.Author;
 import com.etn319.service.CacheHolder;
 import com.etn319.service.EmptyCacheException;
@@ -22,7 +22,7 @@ import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.catchThrowable;
-import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.only;
@@ -32,24 +32,24 @@ import static org.mockito.Mockito.verify;
 @DisplayName("Author Service")
 class AuthorServiceImplTest {
     private static final long COUNT = -100;
-    private static final long NOT_EXISTING_ID = 100L;
-    private static final long EXISTING_ID = 1L;
+    private static final String NOT_EXISTING_ID = "NOT_EXISTING_ID";
+    private static final String EXISTING_ID = "EXISTING_ID";
     private static final String NAME = "Pyotr";
     private static final String COUNTRY = "Russia";
     private static final String NEW_NAME = "Peter";
     private static final String NEW_COUNTRY = "Germany";
-    private static final Author AUTHOR = new Author(1L, NAME, COUNTRY);
+    private static final Author AUTHOR = new Author("1L", NAME, COUNTRY);
 
     @Configuration
     static class Config {
         @Bean
-        public AuthorService authorService(AuthorRepository authorDao) {
+        public AuthorService authorService(AuthorMongoRepository authorDao) {
             return new AuthorServiceImpl(authorDao, new CacheHolder());
         }
     }
 
     @MockBean
-    private AuthorRepository authorDao;
+    private AuthorMongoRepository authorDao;
     @Autowired
     AuthorService authorService;
 
@@ -61,7 +61,7 @@ class AuthorServiceImplTest {
         given(authorDao.existsById(EXISTING_ID)).willReturn(true);
         given(authorDao.existsById(NOT_EXISTING_ID)).willReturn(false);
         given(authorDao.findAll()).willReturn(Collections.emptyList());
-        doNothing().when(authorDao).deleteById(anyLong());
+        doNothing().when(authorDao).deleteById(anyString());
 
         authorService.clearCache();
     }
@@ -77,9 +77,9 @@ class AuthorServiceImplTest {
     @Test
     @DisplayName("findById должен вызывать метод dao.findById, возвращать его результат")
     void getByIdDelegatesCallToDao() {
-        var id = 1L;
+        var id = EXISTING_ID;
         Optional<Author> author = authorService.getById(id);
-        ArgumentCaptor<Long> captor = ArgumentCaptor.forClass(Long.class);
+        ArgumentCaptor<String> captor = ArgumentCaptor.forClass(String.class);
 
         verify(authorDao, only()).findById(captor.capture());
         assertThat(captor.getValue()).isEqualTo(id);
@@ -91,8 +91,7 @@ class AuthorServiceImplTest {
     @Test
     @DisplayName("findById должен кэшировать результат")
     void getByIdStoresResultInCache() {
-        var id = 1L;
-        Optional<Author> author = authorService.getById(id);
+        Optional<Author> author = authorService.getById(EXISTING_ID);
 
         assertThat(author).isPresent();
         assertThat(authorService)
@@ -142,7 +141,7 @@ class AuthorServiceImplTest {
     void deleteById() {
         var idToDelete = EXISTING_ID;
         authorService.deleteById(idToDelete);
-        var argumentCaptor = ArgumentCaptor.forClass(Long.class);
+        var argumentCaptor = ArgumentCaptor.forClass(String.class);
 
         verify(authorDao).deleteById(argumentCaptor.capture());
         verify(authorDao).deleteById(argumentCaptor.getValue());
@@ -153,7 +152,7 @@ class AuthorServiceImplTest {
     @DisplayName("deleteById по несуществующему id должен вызывать dao.deleteById с тем же аргументом и кидать исключение")
     void deleteByIncorrectId() {
         Throwable thrown = catchThrowable(() -> authorService.deleteById(NOT_EXISTING_ID));
-        ArgumentCaptor<Long> argumentCaptor = ArgumentCaptor.forClass(Long.class);
+        ArgumentCaptor<String> argumentCaptor = ArgumentCaptor.forClass(String.class);
         verify(authorDao, only()).existsById(argumentCaptor.capture());
         assertThat(thrown).isInstanceOf(EntityNotFoundException.class);
     }
@@ -165,7 +164,7 @@ class AuthorServiceImplTest {
 
         assertThat(author).isNotNull()
                 .extracting(Author::getId, Author::getName, Author::getCountry)
-                .containsExactly(0L, NAME, COUNTRY);
+                .containsExactly(null, NAME, COUNTRY);
     }
 
     @Test
@@ -208,7 +207,7 @@ class AuthorServiceImplTest {
 
         assertThat(changedAuthor).isNotNull()
                 .extracting(Author::getId, Author::getName, Author::getCountry)
-                .containsExactly(0L, NEW_NAME, COUNTRY);
+                .containsExactly(null, NEW_NAME, COUNTRY);
     }
 
     @Test

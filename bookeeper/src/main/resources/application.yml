@@ -37,5 +37,13 @@ spring:
 
 ---
 spring:
+  profiles: mongo
+  data:
+    mongodb:
+      host: localhost
+      port: 27017
+      database: mydb
+---
+spring:
   profiles:
-    active: h2
+    active: mongo

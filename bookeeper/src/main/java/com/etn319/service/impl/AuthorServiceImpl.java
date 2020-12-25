@@ -1,6 +1,6 @@
 package com.etn319.service.impl;
 
-import com.etn319.dao.AuthorRepository;
+import com.etn319.dao.mongo.AuthorMongoRepository;
 import com.etn319.model.Author;
 import com.etn319.service.CacheHolder;
 import com.etn319.service.EntityNotFoundException;
@@ -9,8 +9,8 @@ import com.etn319.service.api.AuthorService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DataAccessException;
+import org.springframework.data.domain.Example;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
@@ -19,7 +19,7 @@ import java.util.Optional;
 @RequiredArgsConstructor
 @Service
 public class AuthorServiceImpl implements AuthorService {
-    private final AuthorRepository dao;
+    private final AuthorMongoRepository dao;
     private final CacheHolder cache;
 
     @Override
@@ -28,8 +28,22 @@ public class AuthorServiceImpl implements AuthorService {
     }
 
     @Override
-    public Optional<Author> getById(long id) {
+    public Optional<Author> getById(String id) {
         Optional<Author> author = dao.findById(id);
+        author.ifPresent(cache::setAuthor);
+        return author;
+    }
+
+    @Override
+    public Optional<Author> getByName(String name) {
+        Optional<Author> author = dao.findByName(name);
+        author.ifPresent(cache::setAuthor);
+        return author;
+    }
+
+    @Override
+    public Optional<Author> first() {
+        Optional<Author> author = dao.findOne(Example.of(new Author()));
         author.ifPresent(cache::setAuthor);
         return author;
     }
@@ -40,7 +54,6 @@ public class AuthorServiceImpl implements AuthorService {
     }
 
     @Override
-    @Transactional
     public Author save() {
         var author = cache.getAuthor();
 
@@ -54,8 +67,7 @@ public class AuthorServiceImpl implements AuthorService {
     }
 
     @Override
-    @Transactional
-    public void deleteById(long id) {
+    public void deleteById(String id) {
         if (!dao.existsById(id)) {
             throw new EntityNotFoundException();
         }

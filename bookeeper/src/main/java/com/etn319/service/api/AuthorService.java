@@ -18,7 +18,22 @@ public interface AuthorService {
      * @return объект автора, упакованный в <code>Optional</code>
      * <code>Optional.empty()</code>, если не найден
      */
-    Optional<Author> getById(long id);
+    Optional<Author> getById(String id);
+
+    /**
+     * Загрузить в кэш автора по имени
+     * @param name имя автора
+     * @return объект автора, упакованный в <code>Optional</code>
+     * <code>Optional.empty()</code>, если не найден
+     */
+    Optional<Author> getByName(String name);
+
+    /**
+     * Извлечь из базы случайного автора
+     * @return объект автора, упакованный в <code>Optional</code>, если в базе есть хоть один автор
+     * <code>Optional.empty()</code>, если база пустая
+     */
+    Optional<Author> first();
 
     /**
      * Получить всех авторов
@@ -39,7 +54,7 @@ public interface AuthorService {
      * @param id id автора, которого нужно удалить
      * @throws com.etn319.service.ServiceLayerException, если удаление не удалось выполнить
      */
-    void deleteById(long id);
+    void deleteById(String id);
 
     /**
      * Создать автора и разместить его в кэше

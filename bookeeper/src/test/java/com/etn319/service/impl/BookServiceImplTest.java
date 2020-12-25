@@ -1,8 +1,6 @@
 package com.etn319.service.impl;
 
-import com.etn319.dao.AuthorRepository;
-import com.etn319.dao.BookRepository;
-import com.etn319.dao.GenreRepository;
+import com.etn319.dao.mongo.BookMongoRepository;
 import com.etn319.model.Author;
 import com.etn319.model.Book;
 import com.etn319.model.Genre;
@@ -26,7 +24,7 @@ import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.catchThrowable;
-import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.only;
@@ -35,17 +33,15 @@ import static org.mockito.Mockito.verify;
 @SpringBootTest
 class BookServiceImplTest {
     private static final long COUNT = -100;
-    private static final long NOT_EXISTING_ID = 100L;
-    private static final long EXISTING_ID = 1L;
+    private static final String NOT_EXISTING_ID = "NOT_EXISTING_ID";
+    private static final String EXISTING_ID = "EXISTING_ID";
     private static final String TITLE = "20 Years Later";
     private static final String NEW_TITLE = "10 Years Later";
-    private static final Book BOOK = new Book(1L, TITLE, new Author(), new Genre());
+    private static final Book BOOK = new Book("1L", TITLE, new Author(), new Genre());
 
     private final List<Book> allBooks = Collections.nCopies(5, BOOK);
     private final List<Book> booksByGenre = Collections.nCopies(4, BOOK);
     private final List<Book> booksByAuthor = Collections.nCopies(3, BOOK);
-    private final Author author = new Author();
-    private final Genre genre = new Genre();
 
     @Configuration
     static class Config {
@@ -55,19 +51,13 @@ class BookServiceImplTest {
         }
 
         @Bean
-        public BookService bookService(
-                BookRepository bookDao, AuthorRepository authorDao, GenreRepository genreDao, CacheHolder cacheHolder
-        ) {
-            return new BookServiceImpl(bookDao, authorDao, genreDao, cacheHolder);
+        public BookService bookService(BookMongoRepository bookDao, CacheHolder cacheHolder) {
+            return new BookServiceImpl(bookDao, cacheHolder);
         }
     }
 
     @MockBean
-    private BookRepository bookDao;
-    @MockBean
-    private AuthorRepository authorDao;
-    @MockBean
-    private GenreRepository genreDao;
+    private BookMongoRepository bookDao;
     @Autowired
     private CacheHolder cacheHolder;
     @Autowired
@@ -75,19 +65,16 @@ class BookServiceImplTest {
 
     @BeforeEach
     public void setUp() {
-        author.setBooks(booksByAuthor);
-        genre.setBooks(booksByGenre);
-
         given(bookDao.count()).willReturn(COUNT);
         given(bookDao.findById(EXISTING_ID)).willReturn(Optional.of(BOOK));
         given(bookDao.findById(NOT_EXISTING_ID)).willReturn(Optional.empty());
         given(bookDao.existsById(EXISTING_ID)).willReturn(true);
         given(bookDao.existsById(NOT_EXISTING_ID)).willReturn(false);
         given(bookDao.findAll()).willReturn(allBooks);
-        doNothing().when(bookDao).deleteById(anyLong());
+        doNothing().when(bookDao).deleteById(anyString());
 
-        given(authorDao.findById(anyLong())).willReturn(Optional.of(author));
-        given(genreDao.findById(anyLong())).willReturn(Optional.of(genre));
+        given(bookDao.findAllByAuthor_id(anyString())).willReturn(booksByAuthor);
+        given(bookDao.findAllByGenreTitle(anyString())).willReturn(booksByGenre);
 
         bookService.clearCache();
     }
@@ -103,9 +90,9 @@ class BookServiceImplTest {
     @Test
     @DisplayName("findById должен вызывать метод dao.findById, возвращать его результат")
     void getByIdDelegatesCallToDao() {
-        var id = 1L;
+        var id = EXISTING_ID;
         Optional<Book> book = bookService.getById(id);
-        ArgumentCaptor<Long> captor = ArgumentCaptor.forClass(Long.class);
+        ArgumentCaptor<String> captor = ArgumentCaptor.forClass(String.class);
 
         verify(bookDao, only()).findById(captor.capture());
         assertThat(captor.getValue()).isEqualTo(id);
@@ -117,8 +104,7 @@ class BookServiceImplTest {
     @Test
     @DisplayName("findById должен кэшировать результат")
     void getByIdStoresResultInCache() {
-        var id = 1L;
-        Optional<Book> book = bookService.getById(id);
+        Optional<Book> book = bookService.getById(EXISTING_ID);
 
         assertThat(book).isPresent();
         assertThat(bookService)
@@ -167,9 +153,9 @@ class BookServiceImplTest {
     @Test
     @DisplayName("deleteById должен вызывать dao.deleteById с тем же аргументом")
     void deleteById() {
-        var idToDelete = 1L;
+        var idToDelete = EXISTING_ID;
         bookService.deleteById(idToDelete);
-        var argumentCaptor = ArgumentCaptor.forClass(Long.class);
+        var argumentCaptor = ArgumentCaptor.forClass(String.class);
 
         verify(bookDao).deleteById(argumentCaptor.capture());
         verify(bookDao).deleteById(argumentCaptor.getValue());
@@ -180,29 +166,29 @@ class BookServiceImplTest {
     @DisplayName("deleteById по несуществующему id должен вызывать dao.deleteById с тем же аргументом и кидать исключение")
     void deleteByIncorrectId() {
         Throwable thrown = catchThrowable(() -> bookService.deleteById(NOT_EXISTING_ID));
-        ArgumentCaptor<Long> argumentCaptor = ArgumentCaptor.forClass(Long.class);
+        ArgumentCaptor<String> argumentCaptor = ArgumentCaptor.forClass(String.class);
         verify(bookDao, only()).existsById(argumentCaptor.capture());
         assertThat(thrown).isInstanceOf(EntityNotFoundException.class);
     }
 
     @Test
-    void getByGenreId() {
-        List<Book> booksByGenre = bookService.getByGenreId(1L);
-        var argumentCaptor = ArgumentCaptor.forClass(Long.class);
+    void getByGenreTitle() {
+        List<Book> booksByGenre = bookService.getByGenreTitle("genreTitle");
+        var argumentCaptor = ArgumentCaptor.forClass(String.class);
 
-        verify(genreDao, only()).findById(argumentCaptor.capture());
-        assertThat(argumentCaptor.getValue()).isEqualTo(1L);
+        verify(bookDao, only()).findAllByGenreTitle(argumentCaptor.capture());
+        assertThat(argumentCaptor.getValue()).isEqualTo("genreTitle");
         assertThat(booksByGenre).isSameAs(booksByGenre);
     }
 
     @Test
     void getByCachedAuthor() {
-        var author = new Author(2L, "name", "country");
+        var author = new Author("id0", "name", "country");
         cacheHolder.setAuthor(author);
         List<Book> booksByAuthor = bookService.getByCachedAuthor();
-        var argumentCaptor = ArgumentCaptor.forClass(Long.class);
+        var argumentCaptor = ArgumentCaptor.forClass(String.class);
 
-        verify(authorDao, only()).findById(argumentCaptor.capture());
+        verify(bookDao, only()).findAllByAuthor_id(argumentCaptor.capture());
         assertThat(argumentCaptor.getValue()).isEqualTo(author.getId());
         assertThat(booksByAuthor).isSameAs(booksByAuthor);
     }
@@ -215,7 +201,7 @@ class BookServiceImplTest {
 
         assertThat(book).isNotNull()
                 .extracting(Book::getId, Book::getTitle)
-                .containsExactly(0L, TITLE);
+                .containsExactly(null, TITLE);
     }
 
     @Test
