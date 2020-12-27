@@ -1,12 +1,14 @@
 package com.etn319.service.caching.impl;
 
 import com.etn319.dao.mongo.BookMongoRepository;
+import com.etn319.dao.mongo.CommentMongoRepository;
 import com.etn319.model.Author;
 import com.etn319.model.Book;
+import com.etn319.model.Comment;
 import com.etn319.model.Genre;
+import com.etn319.service.EntityNotFoundException;
 import com.etn319.service.caching.CacheHolder;
 import com.etn319.service.caching.EmptyCacheException;
-import com.etn319.service.EntityNotFoundException;
 import com.etn319.service.caching.api.BookCachingService;
 import com.etn319.service.common.api.BookService;
 import com.etn319.service.common.impl.BookServiceImpl;
@@ -44,12 +46,14 @@ class BookServiceImplTest {
     private final List<Book> allBooks = Collections.nCopies(5, BOOK);
     private final List<Book> booksByGenre = Collections.nCopies(4, BOOK);
     private final List<Book> booksByAuthor = Collections.nCopies(3, BOOK);
+    private final List<Comment> commentsByBook =
+            Collections.nCopies(2, new Comment("text", "commenter", BOOK));
 
     @Configuration
     static class Config {
         @Bean
-        public BookService bookServiceBase(BookMongoRepository dao) {
-            return new BookServiceImpl(dao);
+        public BookService bookServiceBase(BookMongoRepository dao, CommentMongoRepository commentDao) {
+            return new BookServiceImpl(dao, commentDao);
         }
 
         @Bean
@@ -65,6 +69,8 @@ class BookServiceImplTest {
 
     @MockBean
     private BookMongoRepository bookDao;
+    @MockBean
+    private CommentMongoRepository commentDao;
     @Autowired
     private CacheHolder cacheHolder;
     @Autowired
@@ -78,6 +84,7 @@ class BookServiceImplTest {
         given(bookDao.existsById(EXISTING_ID)).willReturn(true);
         given(bookDao.existsById(NOT_EXISTING_ID)).willReturn(false);
         given(bookDao.findAll()).willReturn(allBooks);
+        given(commentDao.findAllByBook(BOOK)).willReturn(commentsByBook);
         doNothing().when(bookDao).deleteById(anyString());
 
         given(bookDao.findAllByAuthor_id(anyString())).willReturn(booksByAuthor);

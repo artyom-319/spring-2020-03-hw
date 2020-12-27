@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Controller
 @Slf4j
@@ -35,8 +36,7 @@ public class BookController {
         log.info("GET /books/{} received", bookId);
         Book book = service.getById(bookId).orElseThrow(NotFoundException::new);
         model.addAttribute("book", BookDto.ofDao(book));
-        //todo: тут пока будет пустой список приходить, надо заполнять в дао
-        model.addAttribute("comments", book.getComments());
+        model.addAttribute("comments", book.getComments().stream().map(CommentDto::ofDao).collect(Collectors.toList()));
         return "book_details";
     }
 

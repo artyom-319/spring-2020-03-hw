@@ -1,8 +1,10 @@
 package com.etn319.service.common.impl;
 
 import com.etn319.dao.mongo.BookMongoRepository;
+import com.etn319.dao.mongo.CommentMongoRepository;
 import com.etn319.model.Author;
 import com.etn319.model.Book;
+import com.etn319.model.Comment;
 import com.etn319.model.Genre;
 import com.etn319.service.EntityNotFoundException;
 import com.etn319.service.ServiceLayerException;
@@ -23,6 +25,7 @@ import java.util.Optional;
 @Primary
 public class BookServiceImpl implements BookService {
     private final BookMongoRepository dao;
+    private final CommentMongoRepository commentDao;
 
     @Override
     public long count() {
@@ -31,7 +34,13 @@ public class BookServiceImpl implements BookService {
 
     @Override
     public Optional<Book> getById(String id) {
-        return dao.findById(id);
+        Optional<Book> oBook = dao.findById(id);
+        if (oBook.isPresent()) {
+            Book book = oBook.get();
+            List<Comment> comments = commentDao.findAllByBook(book);
+            book.setComments(comments);
+        }
+        return oBook;
     }
 
     @Override
