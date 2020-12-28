@@ -45,6 +45,7 @@ public class CommentServiceImpl implements CommentService {
 
     @Override
     public Comment save(Comment comment) {
+        // проверять на пустоту комментария и автора
         if (comment.getBook() == null) {
             throw new ServiceLayerException("Failed to save comment because it has no book wired");
         }

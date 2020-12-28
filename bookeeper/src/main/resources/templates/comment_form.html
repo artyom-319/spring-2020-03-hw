@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>New Author</title>
+</head>
+<body>
+    <div th:fragment="comment-form(bookId)">
+        <h3>Leave a comment..</h3>
+        <form id="comment-new-form" th:action="@{/comments/new}" method="post" action="book_details.html">
+            <div class="row">
+                <label for="name-input">Your name:</label>
+                <input id="name-input" name="commenter" type="text" placeholder="Enter your name..."/>
+            </div>
+
+            <div class="row">
+                <label for="text-input">Your opinion:</label>
+                <input id="text-input" name="text" type="text" placeholder="Express your thoughts..."/>
+            </div>
+
+            <div class="row" hidden>
+                <label for="book-id-input">Book ID</label>
+                <input id="book-id-input" readonly name="bookId" type="text" th:value="${ bookId }"/>
+            </div>
+
+            <div class="row">
+                <button type="submit">Save</button>
+            </div>
+        </form>
+    </div>
+</body>
+</html>

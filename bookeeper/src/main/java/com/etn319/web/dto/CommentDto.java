@@ -1,5 +1,6 @@
 package com.etn319.web.dto;
 
+import com.etn319.model.Book;
 import com.etn319.model.Comment;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -14,11 +15,15 @@ public class CommentDto {
     private String id;
     private String text;
     private String commenter;
-    private BookDto book;
+    private String bookId;
 
     public Comment toDao() {
-        //todo: comment model constructor
-        return new Comment();
+        Book book = null;
+        if (bookId != null && !bookId.isBlank()) {
+            book = new Book();
+            book.setId(bookId);
+        }
+        return new Comment(text, commenter, book);
     }
 
     public static CommentDto ofDao(Comment dao) {
@@ -26,7 +31,7 @@ public class CommentDto {
                 .id(dao.getId())
                 .text(dao.getText())
                 .commenter(dao.getCommenter())
-                .book(BookDto.ofDao(dao.getBook()))
+                .bookId(dao.getBook() == null ? null : dao.getBook().getId())
                 .build();
     }
 }

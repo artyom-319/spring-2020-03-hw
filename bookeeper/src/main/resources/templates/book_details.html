@@ -16,12 +16,19 @@
             <a href="book_edit.html" th:href="@{/books/edit(id=${ book.id })}">edit</a>
         </div>
         <hr/>
-        <div class="comments-container" th:each="comment : ${ comments }">
-            <div class="comment-container">
-                <h3 class="comment-text" th:text="${ comment.text }">COMMENT TEXT</h3>
-                <br/>
-                <span class="commenter" th:text="${ comment.commenter }">COMMENTOR</span>
-                <hr/>
+        <div class="comments-container">
+            <div th:insert="comment_form :: comment-form(bookId=${ book.id })"></div>
+            <div class="comments-header">
+                <h2 th:if="${ comments.isEmpty() }">There's no comments yet</h2>
+                <h2 th:if="${ !comments.isEmpty() }">Comments:</h2>
+            </div>
+            <div class="comment-list" th:each="comment : ${ comments }">
+                <div class="comment-container">
+                    <h3 class="comment-text" th:text="${ comment.text }">COMMENT TEXT</h3>
+                    <br/>
+                    <span class="commenter" th:text="${ comment.commenter }">COMMENTOR</span>
+                    <hr/>
+                </div>
             </div>
         </div>
     </div>
