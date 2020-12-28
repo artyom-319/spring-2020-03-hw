@@ -5,6 +5,8 @@
     <title>New Book</title>
 </head>
 <body>
+<a href="books.html" th:href="@{/books/}">&lt;&lt; back to books</a>
+<h2>New book</h2>
 <form id="book-new-form" th:action="@{/books/}" method="post" action="book_new.html">
     <div class="row">
         <label for="title-input">Title:</label>
@@ -14,7 +16,7 @@
     <div class="row">
         <label for="author-input">Author:</label>
         <select id="author-input" name="authorId">
-            <option style="display:none"></option>>
+            <option style="display:none"></option>
             <option th:each="author : ${ authors }" th:text="${ author.name }" th:value="${ author.id }"></option>
         </select>
     </div>

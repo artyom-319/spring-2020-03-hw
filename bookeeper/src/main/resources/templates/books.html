@@ -10,10 +10,10 @@
     <hr/>
     <div th:each="book : ${ books }">
         <a class="book-title" th:text="${ book.title }" th:href="@{/books/{id}(id=${ book.id })}">BOOK TITLE</a>
-        <a class="book-author" href="author.html" th:href="@{/authors/{id}(id=${ book.author.id })}"
-           th:text="${ book.author.name }">AUTHOR</a>
+        <a th:if="${ book.authorId != null }" class="book-author" href="author.html" th:href="@{/authors/{id}(id=${ book.authorId })}"
+           th:text="${ book.authorName }">AUTHOR</a>
         <br/>
-        <span th:text="${ book.genre.title }">[GENRE]</span>
+        <span th:if="${ book.genreTitle != null }" th:text="${ book.genreTitle }">[GENRE]</span>
         <hr/>
     </div>
 </body>

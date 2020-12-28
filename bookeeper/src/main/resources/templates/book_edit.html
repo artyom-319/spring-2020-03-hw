@@ -5,7 +5,9 @@
     <title th:text="|Edit ${book.title}|"></title>
 </head>
 <body>
-<form id="edit-form" th:action="@{/books/{id}(id=${book.id})}" method="post" action="edit.html">
+<a href="books.html" th:href="@{/books/{id}(id=${book.id})}">&lt;&lt; back to book</a>
+<h2>Edit book</h2>
+<form id="edit-form" th:action="@{/books/{id}(id=${book.id})}" method="post" action="book_edit.html">
     <div class="row">
         <label for="id-input">ID:</label>
         <input id="id-input" type="text" readonly="readonly" th:value="${ book.id }" value="12345"/>
@@ -13,13 +15,14 @@
 
     <div class="row">
         <label for="title-input">Title:</label>
-        <input id="title-input" name="title" type="text" th:value="${ book.title }" value="BOOK TITLE"/>
+        <input id="title-input" name="title" type="text" th:value="${ book.title }" value="BOOK TITLE" required/>
     </div>
 
     <div class="row">
         <label for="author-input">Author:</label>
         <select id="author-input" name="authorId" th:value="${ book.authorId }">
             <option th:each="author : ${ authors }" th:text="${ author.name }" th:value="${ author.id }" th:selected="${ author.id == book.authorId}"></option>
+            <option style="display:none"></option>
         </select>
     </div>
 

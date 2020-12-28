@@ -29,7 +29,10 @@ public class BookController {
     @GetMapping("/books")
     public String bookList(Model model) {
         log.info("GET /books received");
-        List<Book> bookList = service.getAll();
+        List<BookDto> bookList = service.getAll()
+                .stream()
+                .map(BookDto::ofDao)
+                .collect(Collectors.toList());
         model.addAttribute("books", bookList);
         return "books";
     }
@@ -63,8 +66,7 @@ public class BookController {
     public String editBook(Model model, BookDto bookDto) {
         log.info("POST /books/edit?id={} received", bookDto.getId());
         Book savedBook = service.save(bookDto.toDao());
-        model.addAttribute("book", BookDto.ofDao(savedBook));
-        return "redirect:/books/";
+        return "redirect:/books/" + savedBook.getId();
     }
 
     @GetMapping("/books/new")

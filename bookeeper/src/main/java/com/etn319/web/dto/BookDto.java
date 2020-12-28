@@ -20,7 +20,15 @@ public class BookDto {
     private String genreTitle;
 
     public Book toDao() {
-        return new Book(id, title, new Author(authorId, authorName, null), new Genre(genreTitle));
+        Author author = null;
+        Genre genre = null;
+        if (authorId != null && !authorId.isBlank()) {
+            author = new Author(authorId, authorName, null);
+        }
+        if (genreTitle != null && !genreTitle.isBlank()) {
+            genre = new Genre(genreTitle);
+        }
+        return new Book(id, title, author, genre);
     }
 
     public static BookDto ofDao(Book dao) {
