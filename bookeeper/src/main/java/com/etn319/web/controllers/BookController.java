@@ -22,6 +22,7 @@ import java.util.stream.Collectors;
 @Controller
 @Slf4j
 @RequiredArgsConstructor
+// todo: исключения для некорректных параметров, их обработка
 public class BookController {
     private final BookService service;
     private final AuthorService authorService;
