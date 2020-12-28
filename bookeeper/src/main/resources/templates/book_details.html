@@ -2,22 +2,28 @@
 <html lang="en" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
-    <title>Title</title>
+    <title th:text="|${book.title} - Bookeeper|">Book Details - Bookeeper</title>
 </head>
 <body>
-    <a href="books.html" th:href="@{/books/}">&lt;&lt; back to books</a>
-    <h1 th:text="${ book.title }">BOOK TITLE</h1>
-    <span th:text="${ book.authorName }">AUTHOR NAME</span>
-    <br/>
-    <span th:text="${ book.genreTitle }">[GENRE]</span>
-    <br/>
-    <a href="book_edit.html" th:href="@{/books/edit(id=${ book.id })}">edit</a>
-    <hr/>
-    <div th:each="comment : ${ comments }">
-        <h3 class="comment-text" th:text="${ comment.text }">COMMENT TEXT</h3>
-        <br/>
-        <span class="commenter" th:text="${ comment.commenter }">COMMENTOR</span>
+    <div th:insert="navbar :: navbar"></div>
+    <div class="book-container">
+        <div class="book-info-container">
+            <h1 th:text="${ book.title }">BOOK TITLE</h1>
+            <span th:text="${ book.authorName }">AUTHOR NAME</span>
+            <br/>
+            <span th:text="${ book.genreTitle }">[GENRE]</span>
+            <br/>
+            <a href="book_edit.html" th:href="@{/books/edit(id=${ book.id })}">edit</a>
+        </div>
         <hr/>
+        <div class="comments-container" th:each="comment : ${ comments }">
+            <div class="comment-container">
+                <h3 class="comment-text" th:text="${ comment.text }">COMMENT TEXT</h3>
+                <br/>
+                <span class="commenter" th:text="${ comment.commenter }">COMMENTOR</span>
+                <hr/>
+            </div>
+        </div>
     </div>
 </body>
 </html>

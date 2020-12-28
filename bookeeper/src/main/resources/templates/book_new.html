@@ -5,6 +5,7 @@
     <title>New Book</title>
 </head>
 <body>
+<div th:insert="navbar :: navbar"></div>
 <a href="books.html" th:href="@{/books/}">&lt;&lt; back to books</a>
 <h2>New book</h2>
 <form id="book-new-form" th:action="@{/books/}" method="post" action="book_new.html">

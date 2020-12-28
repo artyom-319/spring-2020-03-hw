@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Navbar</title>
+</head>
+<body>
+    <div class="navbar" th:fragment="navbar">
+        <div class="navbar-content">
+            <a href="books.html" th:href="@{/books/}">Books</a>
+            <a href="authors.html" th:href="@{/authors/}">Authors</a>
+            <a href="genres.html" th:href="@{/genres/}">Genres</a>
+        </div>
+    </div>
+</body>
+</html>

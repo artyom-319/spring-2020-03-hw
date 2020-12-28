@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title th:text="|${author.name} - Bookeeper|">AuthorDetails - Bookeeper</title>
+</head>
+<body>
+    <div th:insert="navbar :: navbar"></div>
+    <div class="author-container">
+        <div class="author-info-container">
+            <h1 th:text="${ author.name }">AUTHOR NAME</h1>
+            <span th:text="${ author.country }">AUTHOR COUNTRY</span>
+            <br/>
+            <a href="author_edit.html" th:href="@{/authors/edit(id=${ author.id })}">edit</a>
+        </div>
+        <hr/>
+        <div class="author-books-container" th:each="book : ${ books }">
+            <div class="book-container">
+                <a class="comment-text" th:href="@{/books/{id}(id=${book.id})}" th:text="${ book.title }">BOOK TITLE</a>
+                <br/>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
