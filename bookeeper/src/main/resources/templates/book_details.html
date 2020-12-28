@@ -6,9 +6,11 @@
 </head>
 <body>
     <h1 th:text="${ book.title }">BOOK TITLE</h1>
-    <span th:text="${ book.author.name }">AUTHOR NAME</span>
+    <span th:text="${ book.authorName }">AUTHOR NAME</span>
     <br/>
-    <span th:text="${ book.genre.title }">[GENRE]</span>
+    <span th:text="${ book.genreTitle }">[GENRE]</span>
+    <br/>
+    <a href="book_edit.html" th:href="@{/books/edit(id=${ book.id })}">edit</a>
     <hr/>
     <div th:each="comment : ${ comments }">
         <h3 class="comment-text" th:text="${ comment.text }">COMMENT TEXT</h3>

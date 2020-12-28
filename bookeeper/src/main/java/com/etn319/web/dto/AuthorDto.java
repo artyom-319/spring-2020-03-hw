@@ -18,6 +18,7 @@ public class AuthorDto {
     public static AuthorDto ofDao(Author dao) {
         return AuthorDto.builder()
                 .id(dao.getId())
+                .name(dao.getName())
                 .country(dao.getCountry())
                 .build();
     }

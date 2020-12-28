@@ -6,6 +6,7 @@
 </head>
 <body>
     <h1>Book Collection</h1>
+    <a href="book_new.html" th:href="@{/books/new}">new</a>
     <hr/>
     <div th:each="book : ${ books }">
         <a class="book-title" th:text="${ book.title }" th:href="@{/books/{id}(id=${ book.id })}">BOOK TITLE</a>
