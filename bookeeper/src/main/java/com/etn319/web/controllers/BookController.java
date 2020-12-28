@@ -27,7 +27,7 @@ public class BookController {
     private final AuthorService authorService;
 
     @GetMapping("/books")
-    public String bookList(Model model) {
+    public String list(Model model) {
         log.info("GET /books received");
         List<BookDto> bookList = service.getAll()
                 .stream()
@@ -38,7 +38,7 @@ public class BookController {
     }
 
     @GetMapping("/books/{id}")
-    public String bookDetails(Model model, @PathVariable("id") String bookId) {
+    public String details(Model model, @PathVariable("id") String bookId) {
         log.info("GET /books/{} received", bookId);
         Book book = service.getById(bookId).orElseThrow(NotFoundException::new);
         model.addAttribute("book", BookDto.ofDao(book));
@@ -50,7 +50,7 @@ public class BookController {
     }
 
     @GetMapping("/books/edit")
-    public String editBookView(Model model, @RequestParam("id") String bookId) {
+    public String editView(Model model, @RequestParam("id") String bookId) {
         log.info("GET /books/edit?id={} received", bookId);
         Book book = service.getById(bookId).orElseThrow(NotFoundException::new);
         List<AuthorDto> authors = authorService.getAll()
@@ -63,7 +63,7 @@ public class BookController {
     }
 
     @PostMapping("/books/{id}")
-    public String editBook(Model model, BookDto bookDto) {
+    public String edit(BookDto bookDto) {
         log.info("POST /books/edit?id={} received", bookDto.getId());
         Book savedBook = service.save(bookDto.toDao());
         return "redirect:/books/" + savedBook.getId();
@@ -71,7 +71,7 @@ public class BookController {
 
     @GetMapping("/books/new")
     public String newBook(Model model) {
-        log.info("POST /books/ received");
+        log.info("GET /books/new received");
         List<AuthorDto> authors = authorService.getAll()
                 .stream()
                 .map(AuthorDto::ofDao)

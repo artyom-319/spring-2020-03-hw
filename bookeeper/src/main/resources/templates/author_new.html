@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>New Author</title>
+</head>
+<body>
+<div th:insert="navbar :: navbar"></div>
+<h2>New author</h2>
+<form id="author-new-form" th:action="@{/authors/}" method="post" action="author_new.html">
+    <div class="row">
+        <label for="name-input">Name:</label>
+        <input id="name-input" name="name" type="text" placeholder="Enter name..."/>
+    </div>
+
+    <div class="row">
+        <label for="country-input">Genre:</label>
+        <input id="country-input" name="country" type="text" placeholder="Enter country..."/>
+    </div>
+
+    <div class="row">
+        <button type="submit">Save</button>
+    </div>
+</form>
+</body>
+</html>

@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title th:text="|Edit ${author.name}|"></title>
+</head>
+<body>
+<div th:insert="navbar :: navbar"></div>
+<div class="author-edit-container'">
+    <a href="authors.html" th:href="@{/authors/{id}(id=${author.id})}">&lt;&lt; back to author</a>
+    <h2>Edit author</h2>
+    <form id="edit-form" th:action="@{/authors/{id}(id=${author.id})}" method="post" action="author_edit.html">
+        <div class="row">
+            <label for="id-input">ID:</label>
+            <input id="id-input" type="text" readonly="readonly" th:value="${ author.id }" value="12345"/>
+        </div>
+
+        <div class="row">
+            <label for="name-input">Name:</label>
+            <input id="name-input" name="name" type="text" th:value="${ author.name }" value="AUTHOR NAME" required/>
+        </div>
+
+        <div class="row">
+            <label for="country-input">Country:</label>
+            <input id="country-input" name="country" type="text" th:value="${ author.country }" value="AUTHOR COUNTRY"/>
+        </div>
+
+        <div class="row">
+            <button type="submit">Save</button>
+        </div>
+    </form>
+</div>
+</body>
+</html>

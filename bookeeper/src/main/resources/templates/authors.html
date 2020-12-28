@@ -7,7 +7,7 @@
 <body>
     <div th:insert="navbar :: navbar"></div>
     <h1>Authors</h1>
-    <a href="authors_new.html" th:href="@{/authors/new}">new</a>
+    <a href="author_new.html" th:href="@{/authors/new}">new</a>
     <hr/>
     <div th:each="author : ${ authors }">
         <a class="author-name" th:text="${ author.name }" th:href="@{/authors/{id}(id=${ author.id })}">AUTHOR NAME</a>

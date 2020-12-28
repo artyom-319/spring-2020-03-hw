@@ -6,12 +6,11 @@
 </head>
 <body>
 <div th:insert="navbar :: navbar"></div>
-<a href="books.html" th:href="@{/books/}">&lt;&lt; back to books</a>
 <h2>New book</h2>
 <form id="book-new-form" th:action="@{/books/}" method="post" action="book_new.html">
     <div class="row">
         <label for="title-input">Title:</label>
-        <input id="title-input" name="title" type="text" placeholder="book title"/>
+        <input id="title-input" name="title" type="text" placeholder="Enter title..."/>
     </div>
 
     <div class="row">
@@ -24,7 +23,7 @@
 
     <div class="row">
         <label for="genre-input">Genre:</label>
-        <input id="genre-input" name="genreTitle" type="text"/>
+        <input id="genre-input" name="genreTitle" type="text" placeholder="Enter genre..."/>
     </div>
 
     <div class="row">

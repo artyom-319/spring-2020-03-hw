@@ -9,7 +9,7 @@
     <div class="book-container">
         <div class="book-info-container">
             <h1 th:text="${ book.title }">BOOK TITLE</h1>
-            <span th:text="${ book.authorName }">AUTHOR NAME</span>
+            <a th:href="@{/authors/{id}(id=${ book.authorId })}" th:text="${ book.authorName }">AUTHOR NAME</a>
             <br/>
             <span th:text="${ book.genreTitle }">[GENRE]</span>
             <br/>

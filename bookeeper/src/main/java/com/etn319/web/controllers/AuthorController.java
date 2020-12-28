@@ -1,5 +1,6 @@
 package com.etn319.web.controllers;
 
+import com.etn319.model.Author;
 import com.etn319.service.common.api.AuthorService;
 import com.etn319.service.common.api.BookService;
 import com.etn319.web.NotFoundException;
@@ -11,6 +12,8 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -44,5 +47,42 @@ public class AuthorController {
         model.addAttribute("author", author);
         model.addAttribute("books", booksByAuthor);
         return "author_details";
+    }
+
+    @GetMapping("/authors/edit")
+    public String editView(Model model, @RequestParam("id") String id) {
+        log.info("GET /authors/edit?id={} received", id);
+        AuthorDto author = service.getById(id)
+                .map(AuthorDto::ofDao)
+                .orElseThrow(NotFoundException::new);
+        model.addAttribute("author", author);
+        return "author_edit";
+    }
+
+    @PostMapping("/authors/{id}")
+    public String edit(AuthorDto authorDto) {
+        log.info("POST /authors/edit?id={} received", authorDto.getId());
+        Author savedAuthor = service.save(authorDto.toDao());
+        return "redirect:/authors/" + savedAuthor.getId();
+    }
+
+    @GetMapping("/authors/new")
+    public String newAuthorView() {
+        log.info("GET /authors/new received");
+        return "author_new";
+    }
+
+    @PostMapping("/authors")
+    public String newAuthor(AuthorDto authorDto) {
+        log.info("POST /authors/ received");
+        Author savedAuthor = service.save(authorDto.toDao());
+        return "redirect:/authors/" + savedAuthor.getId();
+    }
+
+    @GetMapping("/authors/delete")
+    public String delete(@RequestParam("id") String id) {
+        log.info("GET /authors/delete?id={} received", id);
+        service.deleteById(id);
+        return "redirect:authors";
     }
 }
