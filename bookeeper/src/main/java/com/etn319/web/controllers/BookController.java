@@ -92,7 +92,7 @@ public class BookController {
     public String deleteBook(@RequestParam("id") String bookId) {
         log.info("GET /books/delete?id={} received", bookId);
         service.deleteById(bookId);
-        return "redirect:books";
+        return "redirect:/books";
     }
 
     private Supplier<NotFoundException> notFoundExceptionSupplier(String missingId) {

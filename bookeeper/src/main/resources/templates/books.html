@@ -3,19 +3,33 @@
 <head>
     <meta charset="UTF-8">
     <title>Book Collection - Bookeeper</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta1/dist/css/bootstrap.min.css"/>
+    <link rel="stylesheet" href="/css/base.css"/>
 </head>
 <body>
-    <div th:insert="navbar :: navbar"></div>
-    <h1>Book Collection</h1>
-    <a href="book_new.html" th:href="@{/books/new}">new</a>
-    <hr/>
-    <div th:each="book : ${ books }">
-        <a class="book-title" th:text="${ book.title }" th:href="@{/books/{id}(id=${ book.id })}">BOOK TITLE</a>
-        <a th:if="${ book.authorId != null }" class="book-author" href="author.html" th:href="@{/authors/{id}(id=${ book.authorId })}"
-           th:text="${ book.authorName }">AUTHOR</a>
-        <br/>
-        <span th:if="${ book.genreTitle != null }" th:text="${ book.genreTitle }">[GENRE]</span>
+    <div class="container col-md-5">
+        <div th:insert="navbar :: navbar"></div>
         <hr/>
+        <div class="row g-2">
+            <span class="large col-10">Book Collection</span>
+            <a class="col-2 text-decoration-none" href="book_new.html" th:href="@{/books/new}">new</a>
+        </div>
+        <ul class="list-group">
+            <li class="list-group-item" th:each="book : ${ books }">
+                <div class="row">
+                    <a class="book-title pre-large col-8 text-decoration-none text-dark" th:text="${ book.title }" th:href="@{/books/{id}(id=${ book.id })}">
+                        BOOK TITLE
+                    </a>
+                    <a class="book-author col-4 text-decoration-none" th:if="${ book.authorId != null }" href="author_details.html"
+                       th:href="@{/authors/{id}(id=${ book.authorId })}" th:text="${ book.authorName }">AUTHOR</a>
+                    <br/>
+                </div>
+                <div class="row" th:if="${ book.genreTitle != null }">
+                    <a class="text-secondary pre-small"
+                       th:text="${ book.genreTitle }" th:href="@{/genres/{title}/books(title=${ book.genreTitle })}">[GENRE]</a>
+                </div>
+            </li>
+        </ul>
     </div>
 </body>
 </html>

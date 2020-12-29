@@ -84,7 +84,7 @@ public class AuthorController {
     public String delete(@RequestParam("id") String id) {
         log.info("GET /authors/delete?id={} received", id);
         service.deleteById(id);
-        return "redirect:authors";
+        return "redirect:/authors";
     }
 
     private Supplier<NotFoundException> notFoundExceptionSupplier(String missingId) {

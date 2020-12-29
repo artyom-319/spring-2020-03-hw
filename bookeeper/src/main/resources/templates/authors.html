@@ -3,16 +3,29 @@
 <head>
     <meta charset="UTF-8">
     <title>Authors - Bookeeper</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta1/dist/css/bootstrap.min.css"/>
+    <link rel="stylesheet" href="/css/base.css"/>
 </head>
 <body>
-    <div th:insert="navbar :: navbar"></div>
-    <h1>Authors</h1>
-    <a href="author_new.html" th:href="@{/authors/new}">new</a>
-    <hr/>
-    <div th:each="author : ${ authors }">
-        <a class="author-name" th:text="${ author.name }" th:href="@{/authors/{id}(id=${ author.id })}">AUTHOR NAME</a>
-        <span th:if="${ author.country != null }" th:text="${ author.country }">COUNTRY</span>
+    <div class="container col-md-5">
+        <div th:insert="navbar :: navbar"></div>
         <hr/>
+        <div class="row g-2">
+            <span class="large col-10">Authors</span>
+            <a class="col-2 text-decoration-none" href="author_new.html" th:href="@{/authors/new}">new</a>
+        </div>
+        <ul class="list-group">
+            <li class="list-group-item" th:each="author : ${ authors }">
+                <div class="row">
+                    <a class="author-name pre-large text-decoration-none"
+                       th:text="${ author.name }"
+                       th:href="@{/authors/{id}(id=${ author.id })}">AUTHOR NAME</a>
+                </div>
+                <div class="row" th:if="${ author.country != null }">
+                    <span class="text-secondary pre-small" th:text="${ author.country }">COUNTRY</span>
+                </div>
+            </li>
+        </ul>
     </div>
 </body>
 </html>
