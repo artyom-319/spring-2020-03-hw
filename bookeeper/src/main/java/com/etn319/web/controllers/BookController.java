@@ -17,12 +17,12 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import java.util.List;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 @Controller
 @Slf4j
 @RequiredArgsConstructor
-// todo: исключения для некорректных параметров, их обработка
 public class BookController {
     private final BookService service;
     private final AuthorService authorService;
@@ -41,7 +41,7 @@ public class BookController {
     @GetMapping("/books/{id}")
     public String details(Model model, @PathVariable("id") String bookId) {
         log.info("GET /books/{} received", bookId);
-        Book book = service.getById(bookId).orElseThrow(NotFoundException::new);
+        Book book = service.getById(bookId).orElseThrow(notFoundExceptionSupplier(bookId));
         model.addAttribute("book", BookDto.ofDao(book));
         model.addAttribute("comments",
                 book.getComments().stream()
@@ -53,7 +53,7 @@ public class BookController {
     @GetMapping("/books/edit")
     public String editView(Model model, @RequestParam("id") String bookId) {
         log.info("GET /books/edit?id={} received", bookId);
-        Book book = service.getById(bookId).orElseThrow(NotFoundException::new);
+        Book book = service.getById(bookId).orElseThrow(notFoundExceptionSupplier(bookId));
         List<AuthorDto> authors = authorService.getAll()
                 .stream()
                 .map(AuthorDto::ofDao)
@@ -93,5 +93,9 @@ public class BookController {
         log.info("GET /books/delete?id={} received", bookId);
         service.deleteById(bookId);
         return "redirect:books";
+    }
+
+    private Supplier<NotFoundException> notFoundExceptionSupplier(String missingId) {
+        return () -> new NotFoundException("No book found by id=" + missingId);
     }
 }

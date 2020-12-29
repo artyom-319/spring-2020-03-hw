@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import java.util.List;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 @Controller
@@ -39,7 +40,7 @@ public class AuthorController {
     public String details(Model model, @PathVariable("id") String id) {
         AuthorDto author = service.getById(id)
                 .map(AuthorDto::ofDao)
-                .orElseThrow(NotFoundException::new);
+                .orElseThrow(notFoundExceptionSupplier(id));
         List<BookDto> booksByAuthor = bookService.getByAuthorId(id)
                 .stream()
                 .map(BookDto::ofDao)
@@ -54,7 +55,7 @@ public class AuthorController {
         log.info("GET /authors/edit?id={} received", id);
         AuthorDto author = service.getById(id)
                 .map(AuthorDto::ofDao)
-                .orElseThrow(NotFoundException::new);
+                .orElseThrow(notFoundExceptionSupplier(id));
         model.addAttribute("author", author);
         return "author_edit";
     }
@@ -84,5 +85,9 @@ public class AuthorController {
         log.info("GET /authors/delete?id={} received", id);
         service.deleteById(id);
         return "redirect:authors";
+    }
+
+    private Supplier<NotFoundException> notFoundExceptionSupplier(String missingId) {
+        return () -> new NotFoundException("No author found by id=" + missingId);
     }
 }

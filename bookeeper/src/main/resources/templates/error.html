@@ -7,9 +7,18 @@
 <body>
 <div th:insert="navbar :: navbar"></div>
     <div class="error-container">
-        <div th:each="e : ${#fields.detailedErrors()}" th:class="${e.global}? globalerr : fielderr">
-            <span th:text="${e.global}? '*' : ${e.fieldName}">The field name</span> |
-            <span th:text="${e.message}">The error message</span>
+        <div class="error-header">
+            <h1>Поздравляем! Вы сломали Bookeeper!</h1>
+            <span>Вы - великолепны!</span>
+            <br/>
+        </div>
+        <div class="error-content">
+            <h3 th:if="${ status != null && status == 500 }"
+                th:text="|В течение минуты проджекту упадёт смска с ошибкой, а через 10
+                 минут разработчик будет разбужен, приглашён в зум и публично покаран|"></h3>
+            <br/>
+            <h3 th:text="|${ status } - ${ error }|"></h3>
+            <span th:text="${ message }"></span>
         </div>
     </div>
 </body>
