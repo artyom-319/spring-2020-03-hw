@@ -43,6 +43,7 @@ spring:
       host: localhost
       port: 27017
       database: mydb
+      mongock-enabled: true
 ---
 spring:
   profiles:
