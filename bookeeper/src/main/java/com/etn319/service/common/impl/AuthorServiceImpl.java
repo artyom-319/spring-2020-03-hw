@@ -4,6 +4,7 @@ import com.etn319.dao.mongo.AuthorMongoRepository;
 import com.etn319.model.Author;
 import com.etn319.service.EntityNotFoundException;
 import com.etn319.service.ServiceLayerException;
+import com.etn319.service.common.EmptyMandatoryFieldException;
 import com.etn319.service.common.api.AuthorService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -13,6 +14,7 @@ import org.springframework.data.domain.Example;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 @Slf4j
@@ -49,6 +51,8 @@ public class AuthorServiceImpl implements AuthorService {
 
     @Override
     public Author save(Author author) {
+        Objects.requireNonNull(author);
+        checkNotEmpty(author.getName(), "Author name cannot be empty");
         try {
             return dao.save(author);
         } catch (DataAccessException e) {
@@ -67,5 +71,11 @@ public class AuthorServiceImpl implements AuthorService {
         } catch (DataAccessException e) {
             throw new ServiceLayerException(e);
         }
+    }
+
+    @SuppressWarnings("SameParameterValue")
+    private void checkNotEmpty(String source, String message) {
+        if (source == null || source.trim().isBlank())
+            throw new EmptyMandatoryFieldException(message);
     }
 }

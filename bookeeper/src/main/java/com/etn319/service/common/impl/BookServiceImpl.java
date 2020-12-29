@@ -8,6 +8,7 @@ import com.etn319.model.Comment;
 import com.etn319.model.Genre;
 import com.etn319.service.EntityNotFoundException;
 import com.etn319.service.ServiceLayerException;
+import com.etn319.service.common.EmptyMandatoryFieldException;
 import com.etn319.service.common.api.BookService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -17,6 +18,7 @@ import org.springframework.data.domain.Example;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 @Slf4j
@@ -55,6 +57,8 @@ public class BookServiceImpl implements BookService {
 
     @Override
     public Book save(Book book) {
+        Objects.requireNonNull(book);
+        checkNotEmpty(book.getTitle(), "Book title cannot be empty");
         try {
             return dao.save(book);
         } catch (DataAccessException e) {
@@ -93,5 +97,11 @@ public class BookServiceImpl implements BookService {
     @Override
     public List<Book> getByAuthorId(String id) {
         return dao.findAllByAuthor_id(id);
+    }
+
+    @SuppressWarnings("SameParameterValue")
+    private void checkNotEmpty(String source, String message) {
+        if (source == null || source.trim().isBlank())
+            throw new EmptyMandatoryFieldException(message);
     }
 }

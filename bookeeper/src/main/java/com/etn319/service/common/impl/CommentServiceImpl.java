@@ -5,6 +5,7 @@ import com.etn319.model.Book;
 import com.etn319.model.Comment;
 import com.etn319.service.EntityNotFoundException;
 import com.etn319.service.ServiceLayerException;
+import com.etn319.service.common.EmptyMandatoryFieldException;
 import com.etn319.service.common.api.CommentService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -14,6 +15,7 @@ import org.springframework.data.domain.Example;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 @Slf4j
@@ -45,9 +47,11 @@ public class CommentServiceImpl implements CommentService {
 
     @Override
     public Comment save(Comment comment) {
-        // todo: проверять на пустоту комментария и автора
+        Objects.requireNonNull(comment);
+        checkNotEmpty(comment.getCommenter(), "Commenter name cannot be empty");
+        checkNotEmpty(comment.getText(), "Comment text cannot be empty");
         if (comment.getBook() == null) {
-            throw new ServiceLayerException("Failed to save comment because it has no book wired");
+            throw new EmptyMandatoryFieldException("A book must be wired in order to save comment");
         }
 
         try {
@@ -78,5 +82,10 @@ public class CommentServiceImpl implements CommentService {
     @Override
     public List<Comment> getByCommenterName(String name) {
         return dao.findAllByCommenter(name);
+    }
+
+    private void checkNotEmpty(String source, String message) {
+        if (source == null || source.trim().isBlank())
+            throw new EmptyMandatoryFieldException(message);
     }
 }
