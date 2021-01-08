@@ -1,8 +1,8 @@
 package com.etn319.shell;
 
 import com.etn319.model.Genre;
-import com.etn319.service.EmptyCacheException;
-import com.etn319.service.api.GenreService;
+import com.etn319.service.caching.EmptyCacheException;
+import com.etn319.service.caching.api.GenreCachingService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.shell.standard.ShellCommandGroup;
 import org.springframework.shell.standard.ShellComponent;
@@ -17,7 +17,7 @@ import java.util.stream.Collectors;
 @ShellCommandGroup("Genre Commands")
 @RequiredArgsConstructor
 public class GenreCommandHandler {
-    private final GenreService genreService;
+    private final GenreCachingService genreService;
 
     @ShellMethod(value = "Count genre objects", key = "gcount")
     public String count() {

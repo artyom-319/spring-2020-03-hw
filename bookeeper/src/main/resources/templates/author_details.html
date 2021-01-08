@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title th:text="|${author.name} - Bookeeper|">AuthorDetails - Bookeeper</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta1/dist/css/bootstrap.min.css"/>
+    <link rel="stylesheet" href="/css/base.css"/>
+</head>
+<body>
+    <div class="author-container container col-md-5">
+        <div th:insert="navbar :: navbar"></div>
+        <div class="author-info-container container border rounded">
+            <div class="row">
+                <div class="col-9">
+                    <b th:text="${ author.name }">AUTHOR NAME</b>
+                </div>
+                <div class="col-1">
+                    <a class="text-decoration-none" href="author_edit.html" th:href="@{/authors/edit(id=${ author.id })}">edit</a>
+                </div>
+                <div class="col-1">
+                    <a class="text-decoration-none" href="authors.html" th:href="@{/authors/delete(id=${ author.id })}">delete</a>
+                </div>
+            </div>
+            <div class="row">
+                <span class="text-secondary" th:text="${ author.country }">AUTHOR COUNTRY</span>
+            </div>
+            <br/>
+        </div>
+        <hr />
+        <h4>Books:</h4>
+        <div class="author-books-container">
+            <ul class="list-group">
+                <li class="list-group-item" th:each="book : ${ books }">
+                    <a class="comment-text" th:href="@{/books/{id}(id=${book.id})}" th:text="${ book.title }">BOOK TITLE</a>
+                </li>
+            </ul>
+        </div>
+    </div>
+</body>
+</html>

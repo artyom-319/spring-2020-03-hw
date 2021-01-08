@@ -36,12 +36,12 @@ public class BookEventListener extends AbstractMongoEventListener<Book> {
 
     @Override
     public void onBeforeConvert(BeforeConvertEvent<Book> event) {
-        super.onBeforeConvert(event);
-        Book source = event.getSource();
-        Author author = source.getAuthor();
-        if (author != null) {
-            Author saved = template.save(author);
-            log.info("Saved author id={}", saved.getId());
-        }
+//        super.onBeforeConvert(event);
+//        Book source = event.getSource();
+//        Author author = source.getAuthor();
+//        if (author != null) {
+//            Author saved = template.save(author);
+//            log.info("Saved author id={}", saved.getId());
+//        }
     }
 }

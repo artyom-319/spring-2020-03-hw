@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>New Author</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta1/dist/css/bootstrap.min.css"/>
+    <link rel="stylesheet" href="/css/base.css"/>
+</head>
+<body>
+    <div class="author-new-container container col-md-3">
+        <div th:insert="navbar :: navbar"></div>
+        <h3>New author</h3>
+        <form id="author-new-form" th:action="@{/authors/}" method="post" action="author_new.html">
+            <div class="row input-group mb-3">
+                <label class="form-label" for="name-input">Name:</label>
+                <input class="form-control" id="name-input" name="name" type="text" placeholder="Enter name..." required/>
+            </div>
+
+            <div class="row input-group mb-3">
+                <label class="form-label" for="country-input">Country:</label>
+                <input class="form-control" id="country-input" name="country" type="text" placeholder="Enter country..."/>
+            </div>
+
+            <div class="row input-group mb-3">
+                <button class="btn btn-primary mb-3" type="submit">Save</button>
+            </div>
+        </form>
+    </div>
+</body>
+</html>

@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title th:text="|Edit ${book.title}|"></title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta1/dist/css/bootstrap.min.css"/>
+    <link rel="stylesheet" href="/css/base.css"/>
+</head>
+<body>
+    <div class="book-edit-container container-sm col-md-3">
+        <div th:insert="navbar :: navbar"></div>
+        <a class="link-primary text-decoration-none" href="books.html" th:href="@{/books/{id}(id=${book.id})}">&lt;&lt; back to book</a>
+        <h3>Edit book</h3>
+        <form id="edit-form" th:action="@{/books/{id}(id=${book.id})}" method="post" action="book_edit.html">
+            <div class="row input-group mb-3" hidden>
+                <label class="form-label" for="id-input">ID:</label>
+                <input class="form-control-plaintext" id="id-input" type="text" readonly disabled th:value="${ book.id }" value="12345"/>
+            </div>
+
+            <div class="row input-group mb-3">
+                <label class="form-label" for="title-input">Title:</label>
+                <input class="form-control" id="title-input" name="title" type="text" th:value="${ book.title }" value="BOOK TITLE" required/>
+            </div>
+
+            <div class="row input-group mb-3">
+                <label class="form-label" for="author-input">Author:</label>
+                <select class="form-select" id="author-input" name="authorId" th:value="${ book.authorId }">
+                    <option th:each="author : ${ authors }" th:text="${ author.name }" th:value="${ author.id }" th:selected="${ author.id == book.authorId}"></option>
+                    <option style="display:none">Open this select menu</option>
+                </select>
+            </div>
+
+            <div class="row input-group mb-3">
+                <label class="form-label" for="genre-input">Genre:</label>
+                <input class="form-control" id="genre-input" name="genreTitle" type="text" th:value="${ book.genreTitle }" value="GENRE TITLE"/>
+            </div>
+
+            <div class="row mb-3">
+                <button class="btn btn-primary mb-3" type="submit">Save</button>
+            </div>
+        </form>
+    </div>
+</body>
+</html>
