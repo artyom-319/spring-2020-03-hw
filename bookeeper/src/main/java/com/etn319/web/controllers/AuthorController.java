@@ -9,7 +9,6 @@ import com.etn319.web.dto.BookDto;
 import com.etn319.web.dto.mappers.AuthorMapper;
 import com.etn319.web.dto.mappers.BookMapper;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -24,7 +23,6 @@ import java.util.stream.Collectors;
 import static com.etn319.web.dto.mappers.AuthorMapper.toDomainObject;
 
 @Controller
-@Slf4j
 @RequiredArgsConstructor
 public class AuthorController {
     private final AuthorService service;
@@ -56,7 +54,6 @@ public class AuthorController {
 
     @GetMapping("/authors/edit")
     public String editView(Model model, @RequestParam("id") String id) {
-        log.info("GET /authors/edit?id={} received", id);
         AuthorDto author = service.getById(id)
                 .map(AuthorMapper::toDto)
                 .orElseThrow(notFoundExceptionSupplier(id));
@@ -66,27 +63,23 @@ public class AuthorController {
 
     @PostMapping("/authors/{id}")
     public String edit(AuthorDto authorDto) {
-        log.info("POST /authors/edit?id={} received", authorDto.getId());
         Author savedAuthor = service.save(toDomainObject(authorDto));
         return "redirect:/authors/" + savedAuthor.getId();
     }
 
     @GetMapping("/authors/new")
     public String newAuthorView() {
-        log.info("GET /authors/new received");
         return "author_new";
     }
 
     @PostMapping("/authors")
     public String newAuthor(AuthorDto authorDto) {
-        log.info("POST /authors/ received");
         Author savedAuthor = service.save(toDomainObject(authorDto));
         return "redirect:/authors/" + savedAuthor.getId();
     }
 
     @GetMapping("/authors/delete")
     public String delete(@RequestParam("id") String id) {
-        log.info("GET /authors/delete?id={} received", id);
         service.deleteById(id);
         return "redirect:/authors";
     }

@@ -10,7 +10,6 @@ import com.etn319.web.dto.mappers.AuthorMapper;
 import com.etn319.web.dto.mappers.BookMapper;
 import com.etn319.web.dto.mappers.CommentMapper;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -26,7 +25,6 @@ import static com.etn319.web.dto.mappers.BookMapper.toDomainObject;
 import static com.etn319.web.dto.mappers.BookMapper.toDto;
 
 @Controller
-@Slf4j
 @RequiredArgsConstructor
 public class BookController {
     private final BookService service;
@@ -34,7 +32,6 @@ public class BookController {
 
     @GetMapping("/books")
     public String list(Model model) {
-        log.info("GET /books received");
         List<BookDto> bookList = service.getAll()
                 .stream()
                 .map(BookMapper::toDto)
@@ -45,7 +42,6 @@ public class BookController {
 
     @GetMapping("/books/{id}")
     public String details(Model model, @PathVariable("id") String bookId) {
-        log.info("GET /books/{} received", bookId);
         Book book = service.getById(bookId).orElseThrow(notFoundExceptionSupplier(bookId));
         model.addAttribute("book", toDto(book));
         model.addAttribute("comments",
@@ -57,7 +53,6 @@ public class BookController {
 
     @GetMapping("/books/edit")
     public String editView(Model model, @RequestParam("id") String bookId) {
-        log.info("GET /books/edit?id={} received", bookId);
         Book book = service.getById(bookId).orElseThrow(notFoundExceptionSupplier(bookId));
         List<AuthorDto> authors = authorService.getAll()
                 .stream()
@@ -70,14 +65,12 @@ public class BookController {
 
     @PostMapping("/books/{id}")
     public String edit(BookDto bookDto) {
-        log.info("POST /books/edit?id={} received", bookDto.getId());
         Book savedBook = service.save(toDomainObject(bookDto));
         return "redirect:/books/" + savedBook.getId();
     }
 
     @GetMapping("/books/new")
     public String newBook(Model model) {
-        log.info("GET /books/new received");
         List<AuthorDto> authors = authorService.getAll()
                 .stream()
                 .map(AuthorMapper::toDto)
@@ -88,14 +81,12 @@ public class BookController {
 
     @PostMapping("/books")
     public String newBook(Model model, BookDto bookDto) {
-        log.info("POST /books/ received");
         Book savedBook = service.save(toDomainObject(bookDto));
         return "redirect:/books/" + savedBook.getId();
     }
 
     @GetMapping("/books/delete")
     public String deleteBook(@RequestParam("id") String bookId) {
-        log.info("GET /books/delete?id={} received", bookId);
         service.deleteById(bookId);
         return "redirect:/books";
     }
