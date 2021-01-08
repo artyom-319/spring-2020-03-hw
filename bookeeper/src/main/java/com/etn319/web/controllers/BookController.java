@@ -6,7 +6,9 @@ import com.etn319.service.common.api.BookService;
 import com.etn319.web.NotFoundException;
 import com.etn319.web.dto.AuthorDto;
 import com.etn319.web.dto.BookDto;
-import com.etn319.web.dto.CommentDto;
+import com.etn319.web.dto.mappers.AuthorMapper;
+import com.etn319.web.dto.mappers.BookMapper;
+import com.etn319.web.dto.mappers.CommentMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Controller;
@@ -20,6 +22,9 @@ import java.util.List;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
+import static com.etn319.web.dto.mappers.BookMapper.toDomainObject;
+import static com.etn319.web.dto.mappers.BookMapper.toDto;
+
 @Controller
 @Slf4j
 @RequiredArgsConstructor
@@ -32,7 +37,7 @@ public class BookController {
         log.info("GET /books received");
         List<BookDto> bookList = service.getAll()
                 .stream()
-                .map(BookDto::ofDao)
+                .map(BookMapper::toDto)
                 .collect(Collectors.toList());
         model.addAttribute("books", bookList);
         return "books";
@@ -42,10 +47,10 @@ public class BookController {
     public String details(Model model, @PathVariable("id") String bookId) {
         log.info("GET /books/{} received", bookId);
         Book book = service.getById(bookId).orElseThrow(notFoundExceptionSupplier(bookId));
-        model.addAttribute("book", BookDto.ofDao(book));
+        model.addAttribute("book", toDto(book));
         model.addAttribute("comments",
                 book.getComments().stream()
-                        .map(CommentDto::ofDao)
+                        .map(CommentMapper::toDto)
                         .collect(Collectors.toList()));
         return "book_details";
     }
@@ -56,9 +61,9 @@ public class BookController {
         Book book = service.getById(bookId).orElseThrow(notFoundExceptionSupplier(bookId));
         List<AuthorDto> authors = authorService.getAll()
                 .stream()
-                .map(AuthorDto::ofDao)
+                .map(AuthorMapper::toDto)
                 .collect(Collectors.toList());
-        model.addAttribute("book", BookDto.ofDao(book));
+        model.addAttribute("book", toDto(book));
         model.addAttribute("authors", authors);
         return "book_edit";
     }
@@ -66,7 +71,7 @@ public class BookController {
     @PostMapping("/books/{id}")
     public String edit(BookDto bookDto) {
         log.info("POST /books/edit?id={} received", bookDto.getId());
-        Book savedBook = service.save(bookDto.toDao());
+        Book savedBook = service.save(toDomainObject(bookDto));
         return "redirect:/books/" + savedBook.getId();
     }
 
@@ -75,7 +80,7 @@ public class BookController {
         log.info("GET /books/new received");
         List<AuthorDto> authors = authorService.getAll()
                 .stream()
-                .map(AuthorDto::ofDao)
+                .map(AuthorMapper::toDto)
                 .collect(Collectors.toList());
         model.addAttribute("authors", authors);
         return "book_new";
@@ -84,7 +89,7 @@ public class BookController {
     @PostMapping("/books")
     public String newBook(Model model, BookDto bookDto) {
         log.info("POST /books/ received");
-        Book savedBook = service.save(bookDto.toDao());
+        Book savedBook = service.save(toDomainObject(bookDto));
         return "redirect:/books/" + savedBook.getId();
     }
 

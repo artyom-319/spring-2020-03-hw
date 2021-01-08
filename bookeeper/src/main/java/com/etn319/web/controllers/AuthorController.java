@@ -6,6 +6,8 @@ import com.etn319.service.common.api.BookService;
 import com.etn319.web.NotFoundException;
 import com.etn319.web.dto.AuthorDto;
 import com.etn319.web.dto.BookDto;
+import com.etn319.web.dto.mappers.AuthorMapper;
+import com.etn319.web.dto.mappers.BookMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Controller;
@@ -19,6 +21,8 @@ import java.util.List;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
+import static com.etn319.web.dto.mappers.AuthorMapper.toDomainObject;
+
 @Controller
 @Slf4j
 @RequiredArgsConstructor
@@ -30,7 +34,7 @@ public class AuthorController {
     public String list(Model model) {
         List<AuthorDto> authors = service.getAll()
                 .stream()
-                .map(AuthorDto::ofDao)
+                .map(AuthorMapper::toDto)
                 .collect(Collectors.toList());
         model.addAttribute("authors", authors);
         return "authors";
@@ -39,11 +43,11 @@ public class AuthorController {
     @GetMapping("/authors/{id}")
     public String details(Model model, @PathVariable("id") String id) {
         AuthorDto author = service.getById(id)
-                .map(AuthorDto::ofDao)
+                .map(AuthorMapper::toDto)
                 .orElseThrow(notFoundExceptionSupplier(id));
         List<BookDto> booksByAuthor = bookService.getByAuthorId(id)
                 .stream()
-                .map(BookDto::ofDao)
+                .map(BookMapper::toDto)
                 .collect(Collectors.toList());
         model.addAttribute("author", author);
         model.addAttribute("books", booksByAuthor);
@@ -54,7 +58,7 @@ public class AuthorController {
     public String editView(Model model, @RequestParam("id") String id) {
         log.info("GET /authors/edit?id={} received", id);
         AuthorDto author = service.getById(id)
-                .map(AuthorDto::ofDao)
+                .map(AuthorMapper::toDto)
                 .orElseThrow(notFoundExceptionSupplier(id));
         model.addAttribute("author", author);
         return "author_edit";
@@ -63,7 +67,7 @@ public class AuthorController {
     @PostMapping("/authors/{id}")
     public String edit(AuthorDto authorDto) {
         log.info("POST /authors/edit?id={} received", authorDto.getId());
-        Author savedAuthor = service.save(authorDto.toDao());
+        Author savedAuthor = service.save(toDomainObject(authorDto));
         return "redirect:/authors/" + savedAuthor.getId();
     }
 
@@ -76,7 +80,7 @@ public class AuthorController {
     @PostMapping("/authors")
     public String newAuthor(AuthorDto authorDto) {
         log.info("POST /authors/ received");
-        Author savedAuthor = service.save(authorDto.toDao());
+        Author savedAuthor = service.save(toDomainObject(authorDto));
         return "redirect:/authors/" + savedAuthor.getId();
     }
 

@@ -4,6 +4,8 @@ import com.etn319.service.common.api.BookService;
 import com.etn319.service.common.api.GenreService;
 import com.etn319.web.dto.BookDto;
 import com.etn319.web.dto.GenreDto;
+import com.etn319.web.dto.mappers.BookMapper;
+import com.etn319.web.dto.mappers.GenreMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Controller;
@@ -26,7 +28,7 @@ public class GenreController {
         log.info("GET /genres received");
         List<GenreDto> genres = service.getAll()
                 .stream()
-                .map(GenreDto::ofDao)
+                .map(GenreMapper::toDto)
                 .collect(Collectors.toList());
         model.addAttribute("genres", genres);
         return "genres";
@@ -37,7 +39,7 @@ public class GenreController {
         log.info("GET /genres/{}/books received", title);
         List<BookDto> books = bookService.getByGenreTitle(title)
                 .stream()
-                .map(BookDto::ofDao)
+                .map(BookMapper::toDto)
                 .collect(Collectors.toList());
         model.addAttribute("books", books);
         return "books";
