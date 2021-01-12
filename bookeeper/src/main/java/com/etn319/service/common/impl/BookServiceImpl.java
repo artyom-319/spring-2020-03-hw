@@ -60,7 +60,10 @@ public class BookServiceImpl implements BookService {
         Objects.requireNonNull(book);
         checkNotEmpty(book.getTitle(), "Book title cannot be empty");
         try {
-            return dao.save(book);
+            // todo: разобраться!
+            var saved = dao.save(book);
+            Optional<Book> found = dao.findById(saved.getId());
+            return found.orElseThrow();
         } catch (DataAccessException e) {
             throw new ServiceLayerException(e);
         }
