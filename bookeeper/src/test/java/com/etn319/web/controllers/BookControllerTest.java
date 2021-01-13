@@ -1,4 +1,4 @@
-package com.etn319.web.controllers.rest;
+package com.etn319.web.controllers;
 
 import com.etn319.model.Book;
 import com.etn319.service.common.api.BookService;
@@ -31,8 +31,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@WebMvcTest(BookRestController.class)
-class BookRestControllerTest {
+@WebMvcTest(BookController.class)
+class BookControllerTest {
     private static final String EXISTING_ID = "EXISTING_ID";
     private static final String NOT_EXISTING_ID = "NOT_EXISTING_ID";
     private static final String SAVED_ID = "SAVED_ID";

@@ -1,7 +1,8 @@
-package com.etn319.web.controllers.rest;
+package com.etn319.web.controllers;
 
 import com.etn319.model.Author;
 import com.etn319.service.common.api.AuthorService;
+import com.etn319.service.common.api.BookService;
 import com.etn319.web.dto.AuthorDto;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
@@ -30,8 +31,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@WebMvcTest(AuthorRestController.class)
-class AuthorRestControllerTest {
+@WebMvcTest(AuthorController.class)
+class AuthorControllerTest {
     private ObjectWriter jackson = new ObjectMapper().writer().withDefaultPrettyPrinter();
     private List<Author> all = List.of(
             new Author("id1", "name1", "country1"),
@@ -40,6 +41,8 @@ class AuthorRestControllerTest {
     );
     @MockBean
     private AuthorService service;
+    @MockBean
+    private BookService bookService;
     @Autowired
     private MockMvc mvc;
 
