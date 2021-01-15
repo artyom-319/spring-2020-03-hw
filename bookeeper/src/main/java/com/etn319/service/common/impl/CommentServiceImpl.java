@@ -31,6 +31,11 @@ public class CommentServiceImpl implements CommentService {
     }
 
     @Override
+    public boolean exists(String id) {
+        return dao.existsById(id);
+    }
+
+    @Override
     public Optional<Comment> getById(String id) {
         return dao.findById(id);
     }

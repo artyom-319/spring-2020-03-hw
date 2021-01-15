@@ -48,8 +48,8 @@ class BookControllerTest {
     @BeforeEach
     void setUp() {
         given(service.save(any())).willReturn(SAVED);
-        // todo: отказаться в пользу exists
-        given(service.getById(anyString())).willReturn(Optional.of(new Book()));
+        given(service.exists(EXISTING_ID)).willReturn(true);
+        given(service.exists(NOT_EXISTING_ID)).willReturn(false);
         doNothing().when(service).deleteById(EXISTING_ID);
         doThrow(NotFoundException.class).when(service).deleteById(NOT_EXISTING_ID);
     }

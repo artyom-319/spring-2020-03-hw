@@ -59,8 +59,7 @@ public class BookController {
 
     @PutMapping("/api/books")
     public ResponseEntity<BookDto> updateBook(@RequestBody BookDto bookDto) {
-        // todo: exists в сервисах
-        if (service.getById(bookDto.getId()).isEmpty()) {
+        if (!service.exists(bookDto.getId())) {
             throw new NotFoundException("Book id=" + bookDto.getId() + " does not exist");
         }
         Book savedBook = service.save(toDomainObject(bookDto));

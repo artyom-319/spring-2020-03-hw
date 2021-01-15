@@ -14,6 +14,13 @@ public interface CommentService {
     long count();
 
     /**
+     * Проверить, существует ли объект с таким id
+     * @param id id объекта
+     * @return {@code true}, если существует, {@code false}, если нет
+     */
+    boolean exists(String id);
+
+    /**
      * Поиск комментария по id
      * @param id идентификатор искомого комментария
      * @return объект комментария, упакованный в <code>Optional</code>

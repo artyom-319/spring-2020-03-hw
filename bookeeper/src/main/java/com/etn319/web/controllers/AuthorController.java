@@ -68,8 +68,7 @@ public class AuthorController {
 
     @PutMapping("/api/authors")
     public ResponseEntity<AuthorDto> updateAuthor(@RequestBody AuthorDto authorDto) {
-        // todo: exists в сервисах
-        if (service.getById(authorDto.getId()).isEmpty()) {
+        if (!service.exists(authorDto.getId())) {
             throw new NotFoundException("Author id=" + authorDto.getId() + " does not exist");
         }
         Author savedAuthor = service.save(toDomainObject(authorDto));

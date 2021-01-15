@@ -15,6 +15,13 @@ public interface BookService {
     long count();
 
     /**
+     * Проверить, существует ли объект с таким id
+     * @param id id объекта
+     * @return {@code true}, если существует, {@code false}, если нет
+     */
+    boolean exists(String id);
+
+    /**
      * Поиск книги по id
      * @param id идентификатор искомой книги
      * @return объект книги, упакованный в <code>Optional</code>

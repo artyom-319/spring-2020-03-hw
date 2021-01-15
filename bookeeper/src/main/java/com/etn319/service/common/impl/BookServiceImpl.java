@@ -35,6 +35,11 @@ public class BookServiceImpl implements BookService {
     }
 
     @Override
+    public boolean exists(String id) {
+        return dao.existsById(id);
+    }
+
+    @Override
     public Optional<Book> getById(String id) {
         Optional<Book> oBook = dao.findById(id);
         if (oBook.isPresent()) {

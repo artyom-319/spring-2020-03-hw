@@ -30,6 +30,11 @@ public class AuthorServiceImpl implements AuthorService {
     }
 
     @Override
+    public boolean exists(String id) {
+        return dao.existsById(id);
+    }
+
+    @Override
     public Optional<Author> getById(String id) {
         return dao.findById(id);
     }
