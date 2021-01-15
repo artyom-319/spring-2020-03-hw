@@ -65,7 +65,8 @@ public class BookServiceImpl implements BookService {
         Objects.requireNonNull(book);
         checkNotEmpty(book.getTitle(), "Book title cannot be empty");
         try {
-            // todo: разобраться!
+            // вопрос: насколько корректно так делать, чтобы с фронта не гонять всю информацию о
+            // о вложенных сущностях, а в ответ вкладывать полную информацию
             var saved = dao.save(book);
             Optional<Book> found = dao.findById(saved.getId());
             return found.orElseThrow();

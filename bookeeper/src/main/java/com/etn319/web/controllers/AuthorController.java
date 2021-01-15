@@ -29,6 +29,7 @@ import static com.etn319.web.dto.mappers.AuthorMapper.toDomainObject;
 import static com.etn319.web.dto.mappers.AuthorMapper.toDto;
 
 @RestController
+// todo: убрать @CrossOrigin
 @CrossOrigin("*")
 @RequiredArgsConstructor
 public class AuthorController {
