@@ -28,6 +28,7 @@ import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.catchThrowable;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.doNothing;
@@ -89,6 +90,11 @@ class BookServiceImplTest {
 
         given(bookDao.findAllByAuthor_id(anyString())).willReturn(booksByAuthor);
         given(bookDao.findAllByGenreTitle(anyString())).willReturn(booksByGenre);
+        given(bookDao.save(any())).will(inv -> {
+            Book book = inv.getArgument(0);
+            book.setId(EXISTING_ID);
+            return book;
+        });
 
         bookService.clearCache();
     }
@@ -153,7 +159,7 @@ class BookServiceImplTest {
         bookService.save();
         var argumentCaptor = ArgumentCaptor.forClass(Book.class);
 
-        verify(bookDao, only()).save(argumentCaptor.capture());
+        verify(bookDao).save(argumentCaptor.capture());
         assertThat(argumentCaptor.getValue()).isSameAs(book);
     }
 

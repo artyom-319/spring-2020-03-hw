@@ -15,12 +15,9 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
-import java.util.Optional;
-
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doThrow;
@@ -57,7 +54,7 @@ class BookControllerTest {
     @Test
     void putBook_ShouldPassBookToService() throws Exception {
         BookDto dto = BookDto.builder()
-                .id("id")
+                .id(EXISTING_ID)
                 .title("new-title")
                 .build();
         ArgumentCaptor<Book> captor = ArgumentCaptor.forClass(Book.class);
@@ -73,7 +70,7 @@ class BookControllerTest {
         verify(service).save(captor.capture());
         assertThat(captor.getValue())
                 .extracting(Book::getId, Book::getTitle)
-                .containsExactly("id", "new-title");
+                .containsExactly(EXISTING_ID, "new-title");
     }
 
     @Test
