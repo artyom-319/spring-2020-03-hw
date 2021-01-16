@@ -6,7 +6,7 @@ import com.etn319.model.Author;
 import com.etn319.model.Book;
 import com.etn319.model.Comment;
 import com.etn319.model.Genre;
-import com.etn319.service.EntityNotFoundException;
+import com.etn319.service.EntityDoesNotExistException;
 import com.etn319.service.ServiceLayerException;
 import com.etn319.service.common.EmptyMandatoryFieldException;
 import com.etn319.service.common.api.BookService;
@@ -78,7 +78,7 @@ public class BookServiceImpl implements BookService {
     @Override
     public void deleteById(String id) {
         if (!dao.existsById(id)) {
-            throw new EntityNotFoundException();
+            throw new EntityDoesNotExistException("Could not delete: book id=" + id + " does not exist");
         }
 
         try {

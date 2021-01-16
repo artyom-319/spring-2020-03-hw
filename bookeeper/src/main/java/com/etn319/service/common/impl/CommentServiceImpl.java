@@ -3,7 +3,7 @@ package com.etn319.service.common.impl;
 import com.etn319.dao.mongo.CommentMongoRepository;
 import com.etn319.model.Book;
 import com.etn319.model.Comment;
-import com.etn319.service.EntityNotFoundException;
+import com.etn319.service.EntityDoesNotExistException;
 import com.etn319.service.ServiceLayerException;
 import com.etn319.service.common.EmptyMandatoryFieldException;
 import com.etn319.service.common.api.CommentService;
@@ -69,7 +69,7 @@ public class CommentServiceImpl implements CommentService {
     @Override
     public void deleteById(String id) {
         if (!dao.existsById(id)) {
-            throw new EntityNotFoundException();
+            throw new EntityDoesNotExistException("Could not delete: comment id=" + id + " does not exist");
         }
 
         try {

@@ -6,7 +6,7 @@ import com.etn319.model.Author;
 import com.etn319.model.Book;
 import com.etn319.model.Comment;
 import com.etn319.model.Genre;
-import com.etn319.service.EntityNotFoundException;
+import com.etn319.service.EntityDoesNotExistException;
 import com.etn319.service.caching.CacheHolder;
 import com.etn319.service.caching.EmptyCacheException;
 import com.etn319.service.caching.api.BookCachingService;
@@ -182,7 +182,7 @@ class BookServiceImplTest {
         Throwable thrown = catchThrowable(() -> bookService.deleteById(NOT_EXISTING_ID));
         ArgumentCaptor<String> argumentCaptor = ArgumentCaptor.forClass(String.class);
         verify(bookDao, only()).existsById(argumentCaptor.capture());
-        assertThat(thrown).isInstanceOf(EntityNotFoundException.class);
+        assertThat(thrown).isInstanceOf(EntityDoesNotExistException.class);
     }
 
     @Test
