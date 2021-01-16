@@ -9,7 +9,6 @@ import com.etn319.web.dto.mappers.BookMapper;
 import com.etn319.web.dto.mappers.GenreMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -19,7 +18,6 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @RestController
-@CrossOrigin("*")
 @RequiredArgsConstructor
 public class GenreController {
     private final GenreService service;

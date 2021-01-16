@@ -9,7 +9,6 @@ import com.etn319.web.dto.mappers.BookMapper;
 import com.etn319.web.dto.mappers.CommentMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -25,7 +24,6 @@ import static com.etn319.web.dto.mappers.BookMapper.toDomainObject;
 import static com.etn319.web.dto.mappers.BookMapper.toDto;
 
 @RestController
-@CrossOrigin("*")
 @RequiredArgsConstructor
 public class BookController {
     private final BookService service;

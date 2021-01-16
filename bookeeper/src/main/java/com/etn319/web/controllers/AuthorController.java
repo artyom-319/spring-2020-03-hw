@@ -11,7 +11,6 @@ import com.etn319.web.dto.mappers.AuthorMapper;
 import com.etn319.web.dto.mappers.BookMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -29,8 +28,6 @@ import static com.etn319.web.dto.mappers.AuthorMapper.toDomainObject;
 import static com.etn319.web.dto.mappers.AuthorMapper.toDto;
 
 @RestController
-// todo: убрать @CrossOrigin
-@CrossOrigin("*")
 @RequiredArgsConstructor
 public class AuthorController {
     private final AuthorService service;
