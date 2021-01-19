@@ -24,6 +24,11 @@ public class AuthorCachingServiceImpl implements AuthorCachingService {
     }
 
     @Override
+    public boolean exists(String id) {
+        return baseService.exists(id);
+    }
+
+    @Override
     public Optional<Author> getById(String id) {
         Optional<Author> author = baseService.getById(id);
         author.ifPresent(cache::setAuthor);

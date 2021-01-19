@@ -4,7 +4,7 @@ import com.etn319.dao.mongo.AuthorMongoRepository;
 import com.etn319.model.Author;
 import com.etn319.service.caching.CacheHolder;
 import com.etn319.service.caching.EmptyCacheException;
-import com.etn319.service.EntityNotFoundException;
+import com.etn319.service.EntityDoesNotExistException;
 import com.etn319.service.caching.api.AuthorCachingService;
 import com.etn319.service.common.api.AuthorService;
 import com.etn319.service.common.impl.AuthorServiceImpl;
@@ -161,7 +161,7 @@ class AuthorServiceImplTest {
         Throwable thrown = catchThrowable(() -> authorService.deleteById(NOT_EXISTING_ID));
         ArgumentCaptor<String> argumentCaptor = ArgumentCaptor.forClass(String.class);
         verify(authorDao, only()).existsById(argumentCaptor.capture());
-        assertThat(thrown).isInstanceOf(EntityNotFoundException.class);
+        assertThat(thrown).isInstanceOf(EntityDoesNotExistException.class);
     }
 
     @Test

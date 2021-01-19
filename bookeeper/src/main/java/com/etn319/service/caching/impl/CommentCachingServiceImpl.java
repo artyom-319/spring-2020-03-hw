@@ -25,6 +25,11 @@ public class CommentCachingServiceImpl implements CommentCachingService {
     }
 
     @Override
+    public boolean exists(String id) {
+        return baseService.exists(id);
+    }
+
+    @Override
     public Optional<Comment> getById(String id) {
         Optional<Comment> comment = baseService.getById(id);
         comment.ifPresent(cache::setComment);

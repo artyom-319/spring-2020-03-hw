@@ -1,6 +1,5 @@
 package com.etn319.dao.mongo.events;
 
-import com.etn319.model.Author;
 import com.etn319.model.Book;
 import com.etn319.model.Comment;
 import lombok.RequiredArgsConstructor;
@@ -8,7 +7,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.bson.Document;
 import org.springframework.data.mongodb.core.MongoOperations;
 import org.springframework.data.mongodb.core.mapping.event.AbstractMongoEventListener;
-import org.springframework.data.mongodb.core.mapping.event.BeforeConvertEvent;
 import org.springframework.data.mongodb.core.mapping.event.BeforeDeleteEvent;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
@@ -32,16 +30,5 @@ public class BookEventListener extends AbstractMongoEventListener<Book> {
             List<Comment> removed = template.findAllAndRemove(query, Comment.class);
             log.info("Deleted {} comments", removed.size());
         }
-    }
-
-    @Override
-    public void onBeforeConvert(BeforeConvertEvent<Book> event) {
-//        super.onBeforeConvert(event);
-//        Book source = event.getSource();
-//        Author author = source.getAuthor();
-//        if (author != null) {
-//            Author saved = template.save(author);
-//            log.info("Saved author id={}", saved.getId());
-//        }
     }
 }

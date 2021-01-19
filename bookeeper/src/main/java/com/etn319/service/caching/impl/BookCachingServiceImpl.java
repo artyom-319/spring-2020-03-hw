@@ -26,6 +26,11 @@ public class BookCachingServiceImpl implements BookCachingService {
     }
 
     @Override
+    public boolean exists(String id) {
+        return baseService.exists(id);
+    }
+
+    @Override
     public Optional<Book> getById(String id) {
         Optional<Book> book = baseService.getById(id);
         book.ifPresent(cache::setBook);

@@ -6,7 +6,7 @@ import com.etn319.model.Author;
 import com.etn319.model.Book;
 import com.etn319.model.Comment;
 import com.etn319.model.Genre;
-import com.etn319.service.EntityNotFoundException;
+import com.etn319.service.EntityDoesNotExistException;
 import com.etn319.service.ServiceLayerException;
 import com.etn319.service.common.EmptyMandatoryFieldException;
 import com.etn319.service.common.api.BookService;
@@ -35,6 +35,11 @@ public class BookServiceImpl implements BookService {
     }
 
     @Override
+    public boolean exists(String id) {
+        return dao.existsById(id);
+    }
+
+    @Override
     public Optional<Book> getById(String id) {
         Optional<Book> oBook = dao.findById(id);
         if (oBook.isPresent()) {
@@ -60,7 +65,11 @@ public class BookServiceImpl implements BookService {
         Objects.requireNonNull(book);
         checkNotEmpty(book.getTitle(), "Book title cannot be empty");
         try {
-            return dao.save(book);
+            // вопрос: насколько корректно так делать, чтобы с фронта не гонять всю информацию о
+            // о вложенных сущностях, а в ответ вкладывать полную информацию
+            var saved = dao.save(book);
+            Optional<Book> found = dao.findById(saved.getId());
+            return found.orElseThrow();
         } catch (DataAccessException e) {
             throw new ServiceLayerException(e);
         }
@@ -69,7 +78,7 @@ public class BookServiceImpl implements BookService {
     @Override
     public void deleteById(String id) {
         if (!dao.existsById(id)) {
-            throw new EntityNotFoundException();
+            throw new EntityDoesNotExistException("Could not delete: book id=" + id + " does not exist");
         }
 
         try {

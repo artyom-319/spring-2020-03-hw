@@ -6,7 +6,7 @@ import com.etn319.model.Author;
 import com.etn319.model.Book;
 import com.etn319.model.Comment;
 import com.etn319.model.Genre;
-import com.etn319.service.EntityNotFoundException;
+import com.etn319.service.EntityDoesNotExistException;
 import com.etn319.service.caching.CacheHolder;
 import com.etn319.service.caching.EmptyCacheException;
 import com.etn319.service.caching.api.BookCachingService;
@@ -28,6 +28,7 @@ import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.catchThrowable;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.doNothing;
@@ -89,6 +90,11 @@ class BookServiceImplTest {
 
         given(bookDao.findAllByAuthor_id(anyString())).willReturn(booksByAuthor);
         given(bookDao.findAllByGenreTitle(anyString())).willReturn(booksByGenre);
+        given(bookDao.save(any())).will(inv -> {
+            Book book = inv.getArgument(0);
+            book.setId(EXISTING_ID);
+            return book;
+        });
 
         bookService.clearCache();
     }
@@ -153,7 +159,7 @@ class BookServiceImplTest {
         bookService.save();
         var argumentCaptor = ArgumentCaptor.forClass(Book.class);
 
-        verify(bookDao, only()).save(argumentCaptor.capture());
+        verify(bookDao).save(argumentCaptor.capture());
         assertThat(argumentCaptor.getValue()).isSameAs(book);
     }
 
@@ -182,7 +188,7 @@ class BookServiceImplTest {
         Throwable thrown = catchThrowable(() -> bookService.deleteById(NOT_EXISTING_ID));
         ArgumentCaptor<String> argumentCaptor = ArgumentCaptor.forClass(String.class);
         verify(bookDao, only()).existsById(argumentCaptor.capture());
-        assertThat(thrown).isInstanceOf(EntityNotFoundException.class);
+        assertThat(thrown).isInstanceOf(EntityDoesNotExistException.class);
     }
 
     @Test

@@ -13,6 +13,13 @@ public interface AuthorService {
     long count();
 
     /**
+     * Проверить, существует ли объект с таким id
+     * @param id id объекта
+     * @return {@code true}, если существует, {@code false}, если нет
+     */
+    boolean exists(String id);
+
+    /**
      * Поиск автора по id
      * @param id идентификатор искомого автора
      * @return объект автора, упакованный в <code>Optional</code>

@@ -2,7 +2,7 @@ package com.etn319.service.common.impl;
 
 import com.etn319.dao.mongo.AuthorMongoRepository;
 import com.etn319.model.Author;
-import com.etn319.service.EntityNotFoundException;
+import com.etn319.service.EntityDoesNotExistException;
 import com.etn319.service.ServiceLayerException;
 import com.etn319.service.common.EmptyMandatoryFieldException;
 import com.etn319.service.common.api.AuthorService;
@@ -27,6 +27,11 @@ public class AuthorServiceImpl implements AuthorService {
     @Override
     public long count() {
         return dao.count();
+    }
+
+    @Override
+    public boolean exists(String id) {
+        return dao.existsById(id);
     }
 
     @Override
@@ -63,7 +68,7 @@ public class AuthorServiceImpl implements AuthorService {
     @Override
     public void deleteById(String id) {
         if (!dao.existsById(id)) {
-            throw new EntityNotFoundException();
+            throw new EntityDoesNotExistException("Could not delete: author id=" + id + " does not exist");
         }
 
         try {

@@ -10,6 +10,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.data.mongo.DataMongoTest;
 import org.springframework.context.annotation.Import;
+import org.springframework.data.mapping.MappingException;
 import org.springframework.data.mongodb.core.MongoOperations;
 import org.springframework.data.mongodb.core.aggregation.Aggregation;
 import org.springframework.data.mongodb.core.query.Criteria;
@@ -19,6 +20,7 @@ import org.springframework.test.annotation.DirtiesContext;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.catchThrowable;
 import static org.springframework.data.mongodb.core.aggregation.Aggregation.match;
 
 @DataMongoTest
@@ -48,31 +50,30 @@ public class BookMongoRepositoryTest {
 
     @Test
     @DirtiesContext
-    @DisplayName("При сохранении книги с автором, которого нет в базе, автор тоже должен туда записываться")
+    @DisplayName("При сохранении книги с автором, которого нет в базе, должно выбрасываться исключение")
     void saveNewEntityWithTransientAuthor__shouldSaveBoth() {
-        var book = dao.save(new Book("Title", TRANSIENT_AUTHOR, GENRE));
-        var author = book.getAuthor();
-
-        assertThat(dao.existsById(book.getId())).isTrue();
-        assertThat(authorDao.existsById(author.getId())).isTrue();
+        var bookToSave = new Book("Title", TRANSIENT_AUTHOR, GENRE);
+        Throwable t = catchThrowable(() -> dao.save(bookToSave));
+        assertThat(t).isInstanceOf(MappingException.class);
     }
 
     @Test
     @DirtiesContext
-    @DisplayName("При сохранении книги вложенный автор тоже должен обновляться")
+    @DisplayName("При сохранении книги вложенный автор не должен обновляться")
     void saveEntityWithExistingRelatedOne__shouldUpdateRelated() {
-        var author = authorDao.save(TRANSIENT_AUTHOR);
-        var book = dao.save(new Book("Title", author, GENRE));
+        var authorBefore = authorDao.save(TRANSIENT_AUTHOR);
+        var book = dao.save(new Book("Title", authorBefore, GENRE));
 
         String updatedName = "updated";
-        book.getAuthor().setName(updatedName);
+        var newAuthor = new Author(authorBefore.getId(), updatedName, authorBefore.getCountry());
+        book.setAuthor(newAuthor);
         dao.save(book);
-        var updatedAuthor = authorDao.findById(author.getId());
+        var authorAfter = authorDao.findById(authorBefore.getId());
 
-        assertThat(updatedAuthor)
+        assertThat(authorAfter)
                 .isPresent().get()
                 .extracting(Author::getName)
-                .isEqualTo(updatedName);
+                .isEqualTo(authorBefore.getName());
     }
 
     @Test
