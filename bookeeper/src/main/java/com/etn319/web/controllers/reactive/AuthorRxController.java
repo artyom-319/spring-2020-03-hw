@@ -2,7 +2,7 @@ package com.etn319.web.controllers.reactive;
 
 import com.etn319.dao.mongo.reactive.AuthorReactiveMongoRepository;
 import com.etn319.dao.mongo.reactive.BookReactiveMongoRepository;
-import com.etn319.model.Author;
+import com.etn319.service.ServiceLayerException;
 import com.etn319.service.common.EmptyMandatoryFieldException;
 import com.etn319.web.NotFoundException;
 import com.etn319.web.dto.AuthorDto;
@@ -10,6 +10,7 @@ import com.etn319.web.dto.BookDto;
 import com.etn319.web.dto.mappers.AuthorMapper;
 import com.etn319.web.dto.mappers.BookMapper;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.mapping.MappingException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -23,9 +24,9 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+import reactor.util.function.Tuple2;
 
 import static com.etn319.web.dto.mappers.AuthorMapper.toDomainObject;
-import static com.etn319.web.dto.mappers.AuthorMapper.toDto;
 
 @RestController
 @RequiredArgsConstructor
@@ -45,7 +46,7 @@ public class AuthorRxController {
         return repository
                 .findById(id)
                 .map(AuthorMapper::toDto)
-                .orElseThrow(() -> new NotFoundException("Author not found: id=" + id));
+                .switchIfEmpty(Mono.error(new NotFoundException("Author not found: id=" + id)));
     }
 
     @GetMapping("/api/authors/{id}/books")
@@ -59,27 +60,29 @@ public class AuthorRxController {
     @ResponseStatus(HttpStatus.CREATED)
     public Mono<AuthorDto> newAuthor(@RequestBody AuthorDto authorDto) {
         return Mono.just(authorDto)
+                .filter(dto -> dto.getName() != null)
+                .switchIfEmpty(Mono.error(new EmptyMandatoryFieldException("Author name cannot be empty")))
                 .map(AuthorMapper::toDomainObject)
-                // todo: exceptions
                 .flatMap(repository::save)
+                .onErrorMap(MappingException.class, ServiceLayerException::new)
                 .map(AuthorMapper::toDto);
     }
 
     @PutMapping("/api/authors")
-    public ResponseEntity<AuthorDto> updateAuthor(@RequestBody AuthorDto authorDto) {
-        if (!service.exists(authorDto.getId())) {
-            throw new NotFoundException("Author id=" + authorDto.getId() + " does not exist");
-        }
-        Author savedAuthor = service.save(toDomainObject(authorDto));
-        return ResponseEntity
-                .ok()
-                .body(toDto(savedAuthor));
+    public Mono<AuthorDto> updateAuthor(@RequestBody AuthorDto authorDto) {
+        return repository
+                .existsById(authorDto.getId())
+                .zipWhen(b -> b ?
+                        repository.save(toDomainObject(authorDto))
+                        : Mono.error(new NotFoundException("Author id=" + authorDto.getId() + " does not exist")))
+                .map(Tuple2::getT2)
+                .map(AuthorMapper::toDto);
     }
 
     @DeleteMapping("/api/authors/{id}")
-    public ResponseEntity<String> delete(@PathVariable("id") String id) {
-        service.deleteById(id);
-        return ResponseEntity.noContent().build();
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public Mono<Void> delete(@PathVariable("id") String id) {
+        return repository.deleteById(id);
     }
 
     @ExceptionHandler(EmptyMandatoryFieldException.class)
