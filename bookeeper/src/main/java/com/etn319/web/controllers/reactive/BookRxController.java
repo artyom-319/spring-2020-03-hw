@@ -24,7 +24,7 @@ import reactor.util.function.Tuple2;
 
 import static com.etn319.web.dto.mappers.BookMapper.toDomainObject;
 
-@RestController
+@RestController("/rx")
 @RequiredArgsConstructor
 public class BookRxController {
     private final BookReactiveMongoRepository repository;

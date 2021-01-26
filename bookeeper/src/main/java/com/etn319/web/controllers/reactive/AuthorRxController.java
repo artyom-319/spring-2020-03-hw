@@ -27,7 +27,7 @@ import reactor.util.function.Tuple2;
 
 import static com.etn319.web.dto.mappers.AuthorMapper.toDomainObject;
 
-@RestController
+@RestController("/rx")
 @RequiredArgsConstructor
 public class AuthorRxController {
     private final AuthorReactiveMongoRepository repository;

@@ -15,7 +15,7 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import reactor.core.publisher.Mono;
 
-@RestController
+@RestController("/rx")
 @RequiredArgsConstructor
 public class CommentRxController {
     private final CommentReactiveMongoRepository repository;
