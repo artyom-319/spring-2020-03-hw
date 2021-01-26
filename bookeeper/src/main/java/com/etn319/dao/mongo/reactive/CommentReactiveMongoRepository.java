@@ -8,4 +8,5 @@ import reactor.core.publisher.Flux;
 public interface CommentReactiveMongoRepository extends ReactiveMongoRepository<Comment, String> {
     Flux<Comment> findAllByCommenter(String commenterName);
     Flux<Comment> findAllByBook(Book book);
+    Flux<Comment> findAllByBook_Id(String id);
 }

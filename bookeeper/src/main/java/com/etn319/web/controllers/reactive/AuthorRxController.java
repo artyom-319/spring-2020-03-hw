@@ -12,7 +12,6 @@ import com.etn319.web.dto.mappers.BookMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.mapping.MappingException;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -60,7 +59,7 @@ public class AuthorRxController {
     @ResponseStatus(HttpStatus.CREATED)
     public Mono<AuthorDto> newAuthor(@RequestBody AuthorDto authorDto) {
         return Mono.just(authorDto)
-                .filter(dto -> dto.getName() != null)
+                .filter(dto -> isNotNullOrBlank(dto.getName()))
                 .switchIfEmpty(Mono.error(new EmptyMandatoryFieldException("Author name cannot be empty")))
                 .map(AuthorMapper::toDomainObject)
                 .flatMap(repository::save)
@@ -70,13 +69,16 @@ public class AuthorRxController {
 
     @PutMapping("/api/authors")
     public Mono<AuthorDto> updateAuthor(@RequestBody AuthorDto authorDto) {
-        return repository
-                .existsById(authorDto.getId())
+        return Mono.just(authorDto)
+                .filter(dto -> isNotNullOrBlank(dto.getName()))
+                .switchIfEmpty(Mono.error(new EmptyMandatoryFieldException("Author name cannot be empty")))
+                .flatMap(dto -> repository.existsById(dto.getId()))
                 .zipWhen(b -> b ?
                         repository.save(toDomainObject(authorDto))
                         : Mono.error(new NotFoundException("Author id=" + authorDto.getId() + " does not exist")))
                 .map(Tuple2::getT2)
-                .map(AuthorMapper::toDto);
+                .map(AuthorMapper::toDto)
+                .onErrorMap(MappingException.class, ServiceLayerException::new);
     }
 
     @DeleteMapping("/api/authors/{id}")
@@ -86,9 +88,12 @@ public class AuthorRxController {
     }
 
     @ExceptionHandler(EmptyMandatoryFieldException.class)
-    public ResponseEntity<String> emptyMandatoryFieldHandler(Throwable t) {
-        return ResponseEntity
-                .badRequest()
-                .body(t.getMessage());
+    public Mono<String> emptyMandatoryFieldHandler(Throwable t) {
+        return Mono.just(t)
+                .map(Throwable::getMessage);
+    }
+
+    private boolean isNotNullOrBlank(String source) {
+        return source != null && !source.trim().isBlank();
     }
 }
