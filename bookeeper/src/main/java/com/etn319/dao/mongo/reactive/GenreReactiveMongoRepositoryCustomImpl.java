@@ -43,7 +43,8 @@ public class GenreReactiveMongoRepositoryCustomImpl implements GenreReactiveMong
         Aggregation aggregation = newAggregation(
                 project().andExclude("_id").and("genre.title").as("title"),
                 match(Criteria.where("title").ne(null)),
-                group("_id", "title")
+                group("title"),
+                project().andExclude("_id").and("_id").as("title")
         );
         return template.aggregate(aggregation, Book.class, Genre.class);
     }
