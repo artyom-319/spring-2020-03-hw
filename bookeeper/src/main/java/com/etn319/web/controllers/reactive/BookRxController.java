@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import reactor.core.publisher.Flux;
@@ -24,7 +25,8 @@ import reactor.util.function.Tuple2;
 
 import static com.etn319.web.dto.mappers.BookMapper.toDomainObject;
 
-@RestController("/rx")
+@RestController
+@RequestMapping("/rx")
 @RequiredArgsConstructor
 public class BookRxController {
     private final BookReactiveMongoRepository repository;
