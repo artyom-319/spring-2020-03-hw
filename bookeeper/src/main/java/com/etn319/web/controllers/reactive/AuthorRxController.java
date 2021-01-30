@@ -2,6 +2,7 @@ package com.etn319.web.controllers.reactive;
 
 import com.etn319.dao.mongo.reactive.AuthorReactiveMongoRepository;
 import com.etn319.dao.mongo.reactive.BookReactiveMongoRepository;
+import com.etn319.service.EntityDoesNotExistException;
 import com.etn319.service.ServiceLayerException;
 import com.etn319.service.common.EmptyMandatoryFieldException;
 import com.etn319.web.NotFoundException;
@@ -77,7 +78,7 @@ public class AuthorRxController {
                 .flatMap(dto -> repository.existsById(dto.getId()))
                 .zipWhen(b -> b ?
                         repository.save(toDomainObject(authorDto))
-                        : Mono.error(new NotFoundException("Author id=" + authorDto.getId() + " does not exist")))
+                        : Mono.error(new EntityDoesNotExistException("Author id=" + authorDto.getId() + " does not exist")))
                 .map(Tuple2::getT2)
                 .map(AuthorMapper::toDto)
                 .onErrorMap(MappingException.class, ServiceLayerException::new);
@@ -86,10 +87,17 @@ public class AuthorRxController {
     @DeleteMapping("/api/authors/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public Mono<Void> delete(@PathVariable("id") String id) {
-        return repository.deleteById(id);
+        return repository
+                .existsById(id)
+                .zipWhen(exists -> exists ?
+                        repository.deleteById(id)
+                        : Mono.error(new EntityDoesNotExistException("Author id=" + id + " does not exist")))
+                .map(Tuple2::getT2)
+                .onErrorMap(MappingException.class, ServiceLayerException::new);
     }
 
     @ExceptionHandler(EmptyMandatoryFieldException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
     public Mono<String> emptyMandatoryFieldHandler(Throwable t) {
         return Mono.just(t)
                 .map(Throwable::getMessage);

@@ -2,6 +2,7 @@ package com.etn319.web.controllers.reactive;
 
 import com.etn319.dao.mongo.reactive.BookReactiveMongoRepository;
 import com.etn319.dao.mongo.reactive.CommentReactiveMongoRepository;
+import com.etn319.service.EntityDoesNotExistException;
 import com.etn319.service.ServiceLayerException;
 import com.etn319.service.common.EmptyMandatoryFieldException;
 import com.etn319.web.NotFoundException;
@@ -72,7 +73,7 @@ public class BookRxController {
                 .flatMap(dto -> repository.existsById(dto.getId()))
                 .zipWhen(exists -> exists ?
                         repository.save(toDomainObject(bookDto))
-                        : Mono.error(new NotFoundException("Book id=" + bookDto.getId() + " does not exist"))
+                        : Mono.error(new EntityDoesNotExistException("Book id=" + bookDto.getId() + " does not exist"))
                 )
                 .map(Tuple2::getT2)
                 .then(repository.findById(bookDto.getId()))
@@ -86,7 +87,7 @@ public class BookRxController {
                 .existsById(bookId)
                 .zipWhen(exists -> exists ?
                         repository.deleteById(bookId)
-                        : Mono.error(new NotFoundException("Book id=" + bookId + " does not exist")))
+                        : Mono.error(new EntityDoesNotExistException("Book id=" + bookId + " does not exist")))
                 .map(Tuple2::getT2)
                 .onErrorMap(MappingException.class, ServiceLayerException::new);
     }
