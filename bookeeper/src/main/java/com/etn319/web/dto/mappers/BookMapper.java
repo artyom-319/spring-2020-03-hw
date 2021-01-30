@@ -5,6 +5,8 @@ import com.etn319.model.Book;
 import com.etn319.model.Genre;
 import com.etn319.web.dto.BookDto;
 
+import java.util.stream.Collectors;
+
 public class BookMapper {
     public static BookDto toDto(Book domainObject) {
         return BookDto.builder()
@@ -13,6 +15,7 @@ public class BookMapper {
                 .genreTitle(domainObject.getGenre() == null ? null : domainObject.getGenre().getTitle())
                 .authorId(domainObject.getAuthor() == null ? null : domainObject.getAuthor().getId())
                 .authorName(domainObject.getAuthor() == null ? null : domainObject.getAuthor().getName())
+                .comments(domainObject.getComments().stream().map(CommentMapper::toDto).collect(Collectors.toList()))
                 .build();
     }
 
