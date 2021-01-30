@@ -15,7 +15,9 @@ public class BookMapper {
                 .genreTitle(domainObject.getGenre() == null ? null : domainObject.getGenre().getTitle())
                 .authorId(domainObject.getAuthor() == null ? null : domainObject.getAuthor().getId())
                 .authorName(domainObject.getAuthor() == null ? null : domainObject.getAuthor().getName())
-                .comments(domainObject.getComments().stream().map(CommentMapper::toDto).collect(Collectors.toList()))
+                .comments(domainObject.getComments() == null ? null : domainObject.getComments().stream()
+                        .map(CommentMapper::toDto)
+                        .collect(Collectors.toList()))
                 .build();
     }
 
