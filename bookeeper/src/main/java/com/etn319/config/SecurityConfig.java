@@ -6,27 +6,32 @@ import org.springframework.security.config.annotation.authentication.builders.Au
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
+import org.springframework.security.core.userdetails.User;
 import org.springframework.security.crypto.factory.PasswordEncoderFactories;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.servlet.config.annotation.CorsRegistry;
+import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
+
+import javax.servlet.http.HttpServletResponse;
 
 @EnableWebSecurity
-public class SecurityConfig extends WebSecurityConfigurerAdapter {
+public class SecurityConfig extends WebSecurityConfigurerAdapter implements WebMvcConfigurer {
     @Override
     protected void configure(HttpSecurity http) throws Exception {
         http
+                .cors().and()
                 .csrf().disable()
-                .cors().configurationSource(request -> new CorsConfiguration().applyPermitDefaultValues()).and()
+//                .cors().configurationSource(request -> new CorsConfiguration().applyPermitDefaultValues()).and()
                 .authorizeRequests().antMatchers("/**").permitAll()
                 .and()
 
-        .httpBasic()
-//                .formLogin().loginProcessingUrl("/login").usernameParameter("username").passwordParameter("password")
-//                .successHandler((rq, rs, auth) -> {
-//                    rs.getWriter().print(String.format("{ username: %s}", ((User) auth.getPrincipal()).getUsername()));
-//                    rs.getWriter().flush();
-//                })
-//                .failureHandler((rq, rs, e) -> rs.sendError(HttpServletResponse.SC_UNAUTHORIZED, e.getMessage()))
+//        .httpBasic()
+                .formLogin().loginProcessingUrl("/login").usernameParameter("username").passwordParameter("password")
+                .successHandler((rq, rs, auth) -> {
+                    rs.getWriter().print(String.format("{ username: %s}", ((User) auth.getPrincipal()).getUsername()));
+                    rs.getWriter().flush();
+                })
+                .failureHandler((rq, rs, e) -> rs.sendError(HttpServletResponse.SC_UNAUTHORIZED, e.getMessage()))
 //                .and()
 //                .rememberMe().alwaysRemember(true).key("secret")
 
@@ -45,5 +50,13 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .withUser("admin")
                 .password(passwordEncoder().encode("password"))
                 .roles("ADMIN");
+    }
+
+    @Override
+    public void addCorsMappings(CorsRegistry registry) {
+        registry.addMapping("/**")
+                .allowedOrigins("http://localhost:8080")
+                .allowedMethods("*")
+                .allowCredentials(true);
     }
 }
