@@ -1,5 +1,6 @@
 package com.etn319.web.controllers;
 
+import com.etn319.dao.mongo.UserMongoRepository;
 import com.etn319.model.Author;
 import com.etn319.service.common.api.AuthorService;
 import com.etn319.service.common.api.BookService;
@@ -43,6 +44,8 @@ class AuthorControllerTest {
     private AuthorService service;
     @MockBean
     private BookService bookService;
+    @MockBean
+    private UserMongoRepository userRepository;
     @Autowired
     private MockMvc mvc;
 

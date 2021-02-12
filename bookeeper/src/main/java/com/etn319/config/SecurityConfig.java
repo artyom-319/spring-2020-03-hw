@@ -1,14 +1,17 @@
 package com.etn319.config;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import com.etn319.dao.mongo.UserMongoRepository;
+import com.etn319.security.UserDetailsServiceImpl;
 import org.springframework.context.annotation.Bean;
-import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.core.userdetails.User;
+import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.factory.PasswordEncoderFactories;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.web.authentication.HttpStatusEntryPoint;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
@@ -21,20 +24,18 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter implements WebM
         http
                 .cors().and()
                 .csrf().disable()
-//                .cors().configurationSource(request -> new CorsConfiguration().applyPermitDefaultValues()).and()
-                .authorizeRequests().antMatchers("/**").permitAll()
+                .authorizeRequests().antMatchers("/**").authenticated()
                 .and()
-
-//        .httpBasic()
                 .formLogin().loginProcessingUrl("/login").usernameParameter("username").passwordParameter("password")
                 .successHandler((rq, rs, auth) -> {
                     rs.getWriter().print(String.format("{ username: %s}", ((User) auth.getPrincipal()).getUsername()));
                     rs.getWriter().flush();
                 })
                 .failureHandler((rq, rs, e) -> rs.sendError(HttpServletResponse.SC_UNAUTHORIZED, e.getMessage()))
-//                .and()
-//                .rememberMe().alwaysRemember(true).key("secret")
-
+                .and()
+                .logout().logoutUrl("/logout").invalidateHttpSession(true)
+                .and()
+                .exceptionHandling().authenticationEntryPoint(new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED))
         ;
     }
 
@@ -43,20 +44,16 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter implements WebM
         return PasswordEncoderFactories.createDelegatingPasswordEncoder();
     }
 
-    @Autowired
-    @Override
-    public void configure(AuthenticationManagerBuilder auth) throws Exception {
-        auth.inMemoryAuthentication()
-                .withUser("admin")
-                .password(passwordEncoder().encode("password"))
-                .roles("ADMIN");
-    }
-
     @Override
     public void addCorsMappings(CorsRegistry registry) {
         registry.addMapping("/**")
                 .allowedOrigins("http://localhost:8080")
                 .allowedMethods("*")
                 .allowCredentials(true);
+    }
+
+    @Bean
+    public UserDetailsService userDetailsService(UserMongoRepository repository) {
+        return new UserDetailsServiceImpl(repository);
     }
 }
