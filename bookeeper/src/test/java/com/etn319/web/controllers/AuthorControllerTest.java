@@ -2,6 +2,7 @@ package com.etn319.web.controllers;
 
 import com.etn319.dao.mongo.UserMongoRepository;
 import com.etn319.model.Author;
+import com.etn319.model.ServiceUser;
 import com.etn319.service.common.api.AuthorService;
 import com.etn319.service.common.api.BookService;
 import com.etn319.web.dto.AuthorDto;
@@ -15,6 +16,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
+import org.springframework.security.test.context.support.WithMockUser;
+import org.springframework.security.test.context.support.WithUserDetails;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.List;
@@ -24,6 +27,8 @@ import static java.util.Collections.emptyList;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.verify;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -59,9 +64,12 @@ class AuthorControllerTest {
         given(service.getById("id3")).willReturn(Optional.of(all.get(2)));
         given(service.save(any(Author.class)))
                 .willAnswer(inv -> inv.getArgument(0));
+        given(userRepository.findByName(anyString()))
+                .willReturn(Optional.of(new ServiceUser("test_user", "pass", emptyList())));
     }
 
     @Test
+    @WithMockUser
     void getAllAuthors_shouldReturnServiceResult() throws Exception {
         mvc.perform(get("/api/authors/"))
                 .andDo(print())
@@ -73,6 +81,7 @@ class AuthorControllerTest {
     }
 
     @Test
+    @WithMockUser
     void getAuthor_shouldReturnSingleResult() throws Exception {
         mvc.perform(get("/api/authors/id1/"))
                 .andDo(print())
@@ -83,6 +92,7 @@ class AuthorControllerTest {
     }
 
     @Test
+    @WithMockUser
     void getNotExistingAuthor_shouldReturn404() throws Exception {
         mvc.perform(get("/api/authors/id0/"))
                 .andDo(print())
@@ -90,6 +100,7 @@ class AuthorControllerTest {
     }
 
     @Test
+    @WithMockUser
     void postAuthor_shouldPassDomainAuthorToService() throws Exception {
         AuthorDto dto = AuthorDto.builder()
                 .name("new-author")
