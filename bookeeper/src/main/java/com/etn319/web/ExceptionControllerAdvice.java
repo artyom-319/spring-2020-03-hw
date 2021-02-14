@@ -6,25 +6,28 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import reactor.core.publisher.Mono;
 
 @Slf4j
 @ControllerAdvice
 public class ExceptionControllerAdvice {
     @ExceptionHandler(EmptyMandatoryFieldException.class)
-    public ResponseEntity<String> handleEmptyMandatoryField(EmptyMandatoryFieldException e) {
+    public Mono<ResponseEntity<String>> handleEmptyMandatoryField(EmptyMandatoryFieldException e) {
         log.info("Empty Mandatory field", e);
-        return ResponseEntity.badRequest().body(e.getMessage());
+        return Mono.just(e.getMessage())
+                .map(m -> ResponseEntity.badRequest().body(m));
     }
 
     @ExceptionHandler(NotFoundException.class)
-    public ResponseEntity<String> handleNotFound(Exception e) {
+    public Mono<ResponseEntity<String>> handleNotFound(Exception e) {
         log.info("Not found", e);
-        return ResponseEntity.notFound().build();
+        return Mono.just(ResponseEntity.notFound().build());
     }
 
     @ExceptionHandler(EntityDoesNotExistException.class)
-    public ResponseEntity<String> handleNotExists(Exception e) {
+    public Mono<ResponseEntity<String>> handleNotExists(Exception e) {
         log.info("Not exists", e);
-        return ResponseEntity.badRequest().body(e.getMessage());
+        return Mono.just(e.getMessage())
+                .map(m -> ResponseEntity.badRequest().body(m));
     }
 }

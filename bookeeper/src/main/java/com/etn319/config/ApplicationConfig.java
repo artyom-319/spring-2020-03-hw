@@ -1,6 +1,5 @@
 package com.etn319.config;
 
-import com.etn319.web.CustomRequestLoggingFilter;
 import com.github.cloudyrock.mongock.Mongock;
 import com.github.cloudyrock.mongock.SpringMongockBuilder;
 import com.mongodb.MongoClient;
@@ -19,17 +18,5 @@ public class ApplicationConfig {
     public Mongock mongock(MongoProps mongoProps, MongoClient mongoClient) {
         return new SpringMongockBuilder(mongoClient, mongoProps.getDatabase(), CHANGELOGS_PACKAGE)
                 .build();
-    }
-
-    @Bean
-    public CustomRequestLoggingFilter customRequestLoggingFilter() {
-        CustomRequestLoggingFilter filter = new CustomRequestLoggingFilter();
-        filter.setIncludeQueryString(true);
-        filter.setIncludePayload(true);
-        filter.setMaxPayloadLength(10000);
-        filter.setIncludeHeaders(false);
-        filter.setAfterMessagePrefix("");
-        filter.setAfterMessageSuffix("");
-        return filter;
     }
 }
