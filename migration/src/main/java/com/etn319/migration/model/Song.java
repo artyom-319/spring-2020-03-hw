@@ -9,4 +9,5 @@ public class Song {
     private String title;
     private Album album;
     private long length;
+    private long listenedTimes;
 }

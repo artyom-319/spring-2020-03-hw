@@ -1,9 +1,14 @@
 spring:
   datasource:
-    url: jdbc:h2:mem:testdb
+    jdbc-url: jdbc:h2:mem:testdb
     driverClassName: org.h2.Driver
     username: sa
     password:
+  business-datasource:
+    jdbc-url: jdbc:postgresql://localhost:5432/migration-db
+    driverClassName: org.postgresql.Driver
+    username: migration-master
+    password: migr-pass
 
   h2:
     console:
