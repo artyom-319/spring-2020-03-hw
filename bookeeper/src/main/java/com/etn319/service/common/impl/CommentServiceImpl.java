@@ -12,11 +12,15 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Primary;
 import org.springframework.dao.DataAccessException;
 import org.springframework.data.domain.Example;
+import org.springframework.security.access.annotation.Secured;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+
+import static com.etn319.security.Roles.ROLE_CAN_COMMENT;
+import static com.etn319.security.Roles.ROLE_CAN_DELETE;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -51,6 +55,7 @@ public class CommentServiceImpl implements CommentService {
     }
 
     @Override
+    @Secured(ROLE_CAN_COMMENT)
     public Comment save(Comment comment) {
         Objects.requireNonNull(comment);
         Objects.requireNonNull(comment.getCommenter(), "Commenter name cannot be empty");
@@ -67,6 +72,7 @@ public class CommentServiceImpl implements CommentService {
     }
 
     @Override
+    @Secured(ROLE_CAN_DELETE)
     public void deleteById(String id) {
         if (!dao.existsById(id)) {
             throw new EntityDoesNotExistException("Could not delete: comment id=" + id + " does not exist");

@@ -19,6 +19,11 @@ import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import static com.etn319.security.Roles.ROLE_CAN_ADMINISTER;
+import static com.etn319.security.Roles.ROLE_CAN_COMMENT;
+import static com.etn319.security.Roles.ROLE_CAN_DELETE;
+import static com.etn319.security.Roles.ROLE_CAN_UPDATE;
+
 @Slf4j
 @ChangeLog
 public class InitChangeLog {
@@ -44,15 +49,15 @@ public class InitChangeLog {
     public void insertUsers(MongoTemplate template) {
         users = List.of(
                 new ServiceUser("admin", encoder.encode("admin"),
-                        List.of("ROLE_CAN_DELETE", "ROLE_CAN_UPDATE")),
+                        List.of(ROLE_CAN_DELETE, ROLE_CAN_UPDATE, ROLE_CAN_ADMINISTER)),
                 new ServiceUser("moderator", encoder.encode("moderator"),
                         Collections.emptyList()),
                 new ServiceUser("Dan", encoder.encode("password"),
                         Collections.emptyList()),
                 new ServiceUser("Kate", encoder.encode("password"),
-                        List.of("ROLE_CAN_COMMENT")),
+                        List.of(ROLE_CAN_COMMENT)),
                 new ServiceUser("Eugene", encoder.encode("password"),
-                        List.of("ROLE_CAN_COMMENT")),
+                        List.of(ROLE_CAN_COMMENT)),
                 new ServiceUser("Albert", encoder.encode("password"),
                         Collections.emptyList())
         ).stream().collect(Collectors.toMap(ServiceUser::getName, Function.identity()));
