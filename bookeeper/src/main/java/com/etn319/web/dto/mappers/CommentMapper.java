@@ -2,6 +2,7 @@ package com.etn319.web.dto.mappers;
 
 import com.etn319.model.Book;
 import com.etn319.model.Comment;
+import com.etn319.model.ServiceUser;
 import com.etn319.web.dto.CommentDto;
 
 public class CommentMapper {
@@ -9,7 +10,8 @@ public class CommentMapper {
         return CommentDto.builder()
                 .id(domainObject.getId())
                 .text(domainObject.getText())
-                .commenter(domainObject.getCommenter())
+                .commenterId(domainObject.getCommenter() == null ? null : domainObject.getCommenter().getId())
+                .commenterName(domainObject.getCommenter() == null ? null : domainObject.getCommenter().getName())
                 .bookId(domainObject.getBook() == null ? null : domainObject.getBook().getId())
                 .build();
     }
@@ -21,6 +23,14 @@ public class CommentMapper {
             book = new Book();
             book.setId(bookId);
         }
-        return new Comment(dto.getText(), dto.getCommenter(), book);
+        ServiceUser commenter = null;
+        String commenterId = dto.getCommenterId();
+        if (commenterId != null && !commenterId.isBlank()) {
+            commenter = new ServiceUser();
+            commenter.setId(commenterId);
+            commenter.setName(dto.getCommenterName());
+        }
+
+        return new Comment(dto.getText(), commenter, book);
     }
 }

@@ -12,6 +12,7 @@ import lombok.NoArgsConstructor;
 public class CommentDto {
     private String id;
     private String text;
-    private String commenter;
+    private String commenterId;
+    private String commenterName;
     private String bookId;
 }

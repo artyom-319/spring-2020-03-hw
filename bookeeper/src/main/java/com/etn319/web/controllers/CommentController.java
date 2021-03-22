@@ -1,7 +1,9 @@
 package com.etn319.web.controllers;
 
 import com.etn319.model.Comment;
+import com.etn319.model.ServiceUser;
 import com.etn319.service.common.api.CommentService;
+import com.etn319.service.common.api.UserService;
 import com.etn319.web.dto.CommentDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -19,10 +21,14 @@ import static com.etn319.web.dto.mappers.CommentMapper.toDto;
 @RequiredArgsConstructor
 public class CommentController {
     private final CommentService service;
+    private final UserService userService;
 
     @PostMapping("/api/books/{id}/comments")
     public ResponseEntity<CommentDto> newComment(@RequestBody CommentDto commentDto, @PathVariable String id) {
-        Comment savedComment = service.save(toDomainObject(commentDto));
+        Comment commentToSave = toDomainObject(commentDto);
+        ServiceUser user = userService.loadCurrentAuthenticatedUser().orElseThrow();
+        commentToSave.setCommenter(user);
+        Comment savedComment = service.save(commentToSave);
         return ResponseEntity
                 .created(URI.create("/api/comments/" + savedComment.getId()))
                 .body(toDto(savedComment));

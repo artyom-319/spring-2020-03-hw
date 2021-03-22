@@ -53,7 +53,7 @@ public class CommentServiceImpl implements CommentService {
     @Override
     public Comment save(Comment comment) {
         Objects.requireNonNull(comment);
-        checkNotEmpty(comment.getCommenter(), "Commenter name cannot be empty");
+        Objects.requireNonNull(comment.getCommenter(), "Commenter name cannot be empty");
         checkNotEmpty(comment.getText(), "Comment text cannot be empty");
         if (comment.getBook() == null) {
             throw new EmptyMandatoryFieldException("A book must be wired in order to save comment");
