@@ -8,6 +8,7 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -23,5 +24,15 @@ public class UserServiceImpl implements UserService {
             return repository.findByName(username);
         }
         return Optional.empty();
+    }
+
+    @Override
+    public List<ServiceUser> getAllWithRoles() {
+        return repository.findAllWithRoles();
+    }
+
+    @Override
+    public List<ServiceUser> updateUserRoles(List<ServiceUser> users) {
+        return repository.updateUserRoles(users);
     }
 }
