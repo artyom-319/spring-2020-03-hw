@@ -34,6 +34,27 @@ spring:
     properties:
       hibernate:
         format_sql: true
+---
+spring:
+  profiles: acl
+  h2:
+    console:
+      enabled: true
+  datasource:
+    url: jdbc:h2:mem:acl
+    username: acl
+    password:
+    initialization-mode : embedded
+    schema: classpath:schema.sql
+    data: classpath:data.sql
+  jpa:
+    generate-ddl: false
+    hibernate:
+      ddl-auto: validate
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
 
 ---
 spring:
@@ -47,4 +68,4 @@ spring:
 ---
 spring:
   profiles:
-    active: mongo
+    active: mongo, acl
