@@ -1,0 +1,14 @@
+package com.etn319.security.acl;
+
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
+
+@Retention(RetentionPolicy.RUNTIME)
+@Target(ElementType.METHOD)
+public @interface DeleteAcl {
+    boolean byObjectId() default false;
+    String idParameterName() default "id";
+    Class<?> aclClass() default Object.class;
+}
