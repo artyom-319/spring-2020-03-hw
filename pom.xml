@@ -18,6 +18,7 @@
     <modules>
         <module>thin-quizzy</module>
         <module>bookeeper</module>
+        <module>horror-park</module>
     </modules>
 
     <properties>
