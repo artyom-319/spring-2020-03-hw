@@ -1,23 +1,26 @@
-insert into authors (name, country)
-values ('Jack London', 'USA'),
-       ('Erich Maria Remarque', 'Germany')
-;
+INSERT INTO acl_sid (id, principal, sid) VALUES
+(1, 1, 'admin'),
+(2, 1, 'user'),
+(3, 0, 'ROLE_EDITOR');
 
-insert into genres (title)
-values ('Novel'),
-       ('Drama')
-;
+INSERT INTO acl_class (id, class, class_id_type) VALUES
+(1, 'com.etn319.model.Comment', 'java.lang.String');
 
-insert into books (title, author_id, genre_id)
-values ('Martin Eden', 1, 1),
-       ('Three Comrades', 2, 1),
-       ('Sea Wolf', 1, 1)
-;
+INSERT INTO system_message(id,content) VALUES 
+(1,'First Level Message'),
+(2,'Second Level Message'),
+(3,'Third Level Message');
 
-insert into comments (text, commenter, book_id)
-values ('10/10, pishi esche', 'Commenter 1', 1),
-       ('5/10', 'Commenter 2', 2),
-       ('Good', 'Commenter 3', 3),
-       ('Super', 'Commenter 3', 2),
-       ('Very nice', 'Commenter 3', 1)
-;
+INSERT INTO acl_object_identity (id, object_id_class, object_id_identity, parent_object, owner_sid, entries_inheriting) VALUES
+(1, 1, 1, NULL, 3, 0),
+(2, 1, 2, NULL, 3, 0),
+(3, 1, 3, NULL, 3, 0);
+
+INSERT INTO acl_entry (id, acl_object_identity, ace_order, sid, mask, granting, audit_success, audit_failure) VALUES
+(1, 1, 1, 1, 1, 1, 1, 1),
+(2, 1, 2, 1, 2, 1, 1, 1),
+(3, 1, 3, 3, 1, 1, 1, 1),
+(4, 2, 1, 2, 1, 1, 1, 1),
+(5, 2, 2, 3, 1, 1, 1, 1),
+(6, 3, 1, 3, 1, 1, 1, 1),
+(7, 3, 2, 3, 2, 1, 1, 1);

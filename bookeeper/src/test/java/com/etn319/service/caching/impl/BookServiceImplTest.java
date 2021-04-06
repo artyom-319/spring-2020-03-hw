@@ -6,6 +6,7 @@ import com.etn319.model.Author;
 import com.etn319.model.Book;
 import com.etn319.model.Comment;
 import com.etn319.model.Genre;
+import com.etn319.model.ServiceUser;
 import com.etn319.service.EntityDoesNotExistException;
 import com.etn319.service.caching.CacheHolder;
 import com.etn319.service.caching.EmptyCacheException;
@@ -44,11 +45,12 @@ class BookServiceImplTest {
     private static final String NEW_TITLE = "10 Years Later";
     private static final Book BOOK = new Book("1L", TITLE, new Author(), new Genre());
 
+    private final ServiceUser commenter = new ServiceUser("Commenter", "", Collections.emptyList());
     private final List<Book> allBooks = Collections.nCopies(5, BOOK);
     private final List<Book> booksByGenre = Collections.nCopies(4, BOOK);
     private final List<Book> booksByAuthor = Collections.nCopies(3, BOOK);
     private final List<Comment> commentsByBook =
-            Collections.nCopies(2, new Comment("text", "commenter", BOOK));
+            Collections.nCopies(2, new Comment("text", commenter, BOOK));
 
     @Configuration
     static class Config {

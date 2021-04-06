@@ -1,30 +1,59 @@
-create table authors (
-    id      bigserial not null
-        constraint authors_pkey primary key,
-    name    varchar(512),
-    country varchar(256)
+create table IF NOT EXISTS system_message (id integer not null, content varchar(255), primary key (id));
+
+CREATE TABLE IF NOT EXISTS acl_sid (
+  id bigint(20) NOT NULL AUTO_INCREMENT,
+  principal tinyint(1) NOT NULL,
+  sid varchar(100) NOT NULL,
+  PRIMARY KEY (id),
+  UNIQUE KEY unique_uk_1 (sid,principal)
 );
 
-create table genres (
-    id    bigserial not null
-        constraint genres_pkey primary key,
-    title varchar(256)
+CREATE TABLE IF NOT EXISTS acl_class (
+  id bigint(20) NOT NULL AUTO_INCREMENT,
+  class varchar(255) NOT NULL,
+  class_id_type varchar(100),
+  PRIMARY KEY (id),
+  UNIQUE KEY unique_uk_2 (class)
 );
+ 
+CREATE TABLE IF NOT EXISTS acl_entry (
+  id bigint(20) NOT NULL AUTO_INCREMENT,
+  acl_object_identity bigint(20) NOT NULL,
+  ace_order int(11) NOT NULL,
+  sid bigint(20) NOT NULL,
+  mask int(11) NOT NULL,
+  granting tinyint(1) NOT NULL,
+  audit_success tinyint(1) NOT NULL,
+  audit_failure tinyint(1) NOT NULL,
+  PRIMARY KEY (id),
+  UNIQUE KEY unique_uk_4 (acl_object_identity,ace_order)
+);
+ 
+CREATE TABLE IF NOT EXISTS acl_object_identity (
+  id bigint(20) NOT NULL AUTO_INCREMENT,
+  object_id_class bigint(20) NOT NULL,
+  object_id_identity varchar(64) NOT NULL,
+  parent_object bigint(20) DEFAULT NULL,
+  owner_sid bigint(20) DEFAULT NULL,
+  entries_inheriting tinyint(1) NOT NULL,
+  PRIMARY KEY (id),
+  UNIQUE KEY unique_uk_3 (object_id_class,object_id_identity)
+);
+ 
+ALTER TABLE acl_entry
+ADD FOREIGN KEY (acl_object_identity) REFERENCES acl_object_identity(id);
 
-create table books (
-    id        bigserial not null constraint books_pkey
-            primary key,
-    title     varchar(1024),
-    author_id bigint
-        constraint books_author_fkey references authors on delete set null ,
-    genre_id  bigint
-        constraint books_genre_fkey references genres on delete set null
-);
+ALTER TABLE acl_entry
+ADD FOREIGN KEY (sid) REFERENCES acl_sid(id);
+ 
+--
+-- Constraints for table acl_object_identity
+--
+ALTER TABLE acl_object_identity
+ADD FOREIGN KEY (parent_object) REFERENCES acl_object_identity (id);
 
-create table comments (
-    id          bigserial not null constraint comments_pkey primary key,
-    text        varchar(1024),
-    commenter   varchar(256),
-    book_id     bigint
-        constraint comments_book_fkey references books
-);
+ALTER TABLE acl_object_identity
+ADD FOREIGN KEY (object_id_class) REFERENCES acl_class (id);
+
+ALTER TABLE acl_object_identity
+ADD FOREIGN KEY (owner_sid) REFERENCES acl_sid (id);

@@ -3,6 +3,7 @@ package com.etn319.dao.mongo;
 import com.etn319.dao.mongo.events.BookEventListener;
 import com.etn319.model.Book;
 import com.etn319.model.Comment;
+import com.etn319.model.ServiceUser;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,6 +13,7 @@ import org.springframework.data.mongodb.core.MongoOperations;
 import org.springframework.data.mongodb.repository.config.EnableMongoRepositories;
 import org.springframework.test.annotation.DirtiesContext;
 
+import java.util.Collections;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -30,7 +32,8 @@ public class CommentMongoRepositoryTest {
     @DisplayName("При удалении книги комментарии к ней также должны удаляться")
     void bookRemoval_ShouldDeleteRelatedComment() {
         var book = template.save(new Book("Book Title", null, null));
-        var commentBefore = template.save(new Comment("Text", "Commenter", book));
+        var commenter = new ServiceUser("Commenter", "", Collections.emptyList());
+        var commentBefore = template.save(new Comment("Text", commenter, book));
         assertThat(dao.findById(commentBefore.getId())).isPresent();
 
         template.remove(book);

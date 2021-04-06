@@ -13,7 +13,16 @@ import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.security.crypto.factory.PasswordEncoderFactories;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+
+import static com.etn319.security.Roles.ROLE_CAN_ADMINISTER;
+import static com.etn319.security.Roles.ROLE_CAN_COMMENT;
+import static com.etn319.security.Roles.ROLE_CAN_DELETE;
+import static com.etn319.security.Roles.ROLE_CAN_UPDATE;
 
 @Slf4j
 @ChangeLog
@@ -29,6 +38,8 @@ public class InitChangeLog {
 
     private PasswordEncoder encoder = PasswordEncoderFactories.createDelegatingPasswordEncoder();
 
+    private Map<String, ServiceUser> users;
+
     @ChangeSet(order = "000", id = "dropDB", author = "etn319", runAlways = true)
     public void dropDB(MongoDatabase database){
         database.drop();
@@ -36,11 +47,21 @@ public class InitChangeLog {
 
     @ChangeSet(order = "001", id = "initUsers", author = "etn319", runAlways = true)
     public void insertUsers(MongoTemplate template) {
-        template.insert(List.of(
-                new ServiceUser("admin", encoder.encode("admin"), List.of("ROLE_ADMIN", "ROLE_MODERATOR")),
-                new ServiceUser("user", encoder.encode("user"), List.of("ROLE_USER")),
-                new ServiceUser("moderator", encoder.encode("moderator"), List.of("ROLE_MODERATOR")))
-        , ServiceUser.class);
+        users = List.of(
+                new ServiceUser("admin", encoder.encode("admin"),
+                        List.of(ROLE_CAN_DELETE, ROLE_CAN_UPDATE, ROLE_CAN_ADMINISTER)),
+                new ServiceUser("moderator", encoder.encode("moderator"),
+                        Collections.emptyList()),
+                new ServiceUser("Dan", encoder.encode("password"),
+                        Collections.emptyList()),
+                new ServiceUser("Kate", encoder.encode("password"),
+                        List.of(ROLE_CAN_COMMENT)),
+                new ServiceUser("Eugene", encoder.encode("password"),
+                        List.of(ROLE_CAN_COMMENT)),
+                new ServiceUser("Albert", encoder.encode("password"),
+                        Collections.emptyList())
+        ).stream().collect(Collectors.toMap(ServiceUser::getName, Function.identity()));
+        template.insert(users.values(), ServiceUser.class);
         log.info("Users: {}", template.findAll(ServiceUser.class));
     }
 
@@ -74,11 +95,11 @@ public class InitChangeLog {
 
     @ChangeSet(order = "004", id = "initComments", author = "etn319", runAlways = true)
     public void insertComments(MongoTemplate template) {
-        template.save(new Comment("10/10, pishi esche", "Dan", eden));
-        template.save(new Comment("5/10", "Eugene", comrades));
-        template.save(new Comment("Good", "Kate", seaWolf));
-        template.save(new Comment("Super", "Kate", eden));
-        template.save(new Comment("Very nice", "Albert", comrades));
-        template.save(new Comment("So sad", "Albert", othello));
+        template.save(new Comment("10/10, pishi esche", users.get("Dan"), eden));
+        template.save(new Comment("5/10", users.get("Eugene"), comrades));
+        template.save(new Comment("Good", users.get("Kate"), seaWolf));
+        template.save(new Comment("Super", users.get("Kate"), eden));
+        template.save(new Comment("Very nice", users.get("Albert"), comrades));
+        template.save(new Comment("So sad", users.get("Albert"), othello));
     }
 }

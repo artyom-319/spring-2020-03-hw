@@ -5,14 +5,14 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.List;
+
 @Data
 @Builder
-@NoArgsConstructor
 @AllArgsConstructor
-public class CommentDto {
+@NoArgsConstructor
+public class UserDto {
     private String id;
-    private String text;
-    private String commenterId;
-    private String commenterName;
-    private String bookId;
+    private String name;
+    private List<String> roles;
 }

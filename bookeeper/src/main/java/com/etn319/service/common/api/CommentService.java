@@ -50,6 +50,24 @@ public interface CommentService {
     Comment save(Comment comment);
 
     /**
+     * Создаёт комментарий
+     * @param comment комментарий
+     * @return объект комментария
+     * @throws com.etn319.service.ServiceLayerException, если произошла ошибка при сохранении
+     * или если id ненулевой
+     */
+    Comment create(Comment comment);
+
+    /**
+     * Обновляет комментарий
+     * @param comment комментарий
+     * @return обновлённый объект комментария
+     * @throws com.etn319.service.ServiceLayerException, если произошла ошибка при сохранении
+     * или если id пустой
+     */
+    Comment update(Comment comment);
+
+    /**
      * Удаляет комментарий по id
      * @param id id комментария, который нужно удалить
      * @throws com.etn319.service.ServiceLayerException, если произошла ошибка при удалении

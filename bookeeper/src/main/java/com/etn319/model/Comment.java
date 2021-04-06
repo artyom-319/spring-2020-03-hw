@@ -15,7 +15,8 @@ public class Comment {
     private String id;
 
     @Field("commenter")
-    private String commenter;
+    @DBRef
+    private ServiceUser commenter;
 
     @Field("text")
     private String text;
@@ -23,7 +24,7 @@ public class Comment {
     @DBRef
     private Book book;
 
-    public Comment(String text, String commenter, Book book) {
+    public Comment(String text, ServiceUser commenter, Book book) {
         this.commenter = commenter;
         this.text = text;
         this.book = book;
@@ -33,7 +34,7 @@ public class Comment {
     public String toString() {
         return "Comment{" +
                 "id=" + id +
-                ", commenter='" + commenter + '\'' +
+                ", commenter='" + (commenter == null ? null : commenter.getName()) + '\'' +
                 ", text='" + text + '\'' +
                 ", book name='" + (book == null ? null : book.getTitle()) + '\'' +
                 '}';

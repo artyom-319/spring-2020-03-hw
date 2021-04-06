@@ -2,6 +2,7 @@ package com.etn319.service.caching.impl;
 
 import com.etn319.model.Book;
 import com.etn319.model.Comment;
+import com.etn319.model.ServiceUser;
 import com.etn319.service.caching.CacheHolder;
 import com.etn319.service.caching.api.CommentCachingService;
 import com.etn319.service.common.api.CommentService;
@@ -60,6 +61,16 @@ public class CommentCachingServiceImpl implements CommentCachingService {
     }
 
     @Override
+    public Comment create(Comment comment) {
+        return save(comment);
+    }
+
+    @Override
+    public Comment update(Comment comment) {
+        return save(comment);
+    }
+
+    @Override
     public void deleteById(String id) {
         baseService.deleteById(id);
     }
@@ -82,7 +93,7 @@ public class CommentCachingServiceImpl implements CommentCachingService {
 
     @Override
     public Comment create(String text, String commenter) {
-        var comment = new Comment(text, commenter, null);
+        var comment = new Comment(text, createUserByName(commenter), null);
         cache.setComment(comment);
         return comment;
     }
@@ -93,7 +104,7 @@ public class CommentCachingServiceImpl implements CommentCachingService {
         if (text != null)
             comment.setText(text);
         if (commenter != null)
-            comment.setCommenter(commenter);
+            comment.setCommenter(createUserByName(commenter));
         return comment;
     }
 
@@ -113,5 +124,11 @@ public class CommentCachingServiceImpl implements CommentCachingService {
     @Override
     public Comment getCache() {
         return cache.getComment();
+    }
+
+    private ServiceUser createUserByName(String name) {
+        var user = new ServiceUser();
+        user.setName(name);
+        return user;
     }
 }

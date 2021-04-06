@@ -5,6 +5,7 @@ import com.etn319.security.UserDetailsServiceImpl;
 import org.springframework.context.annotation.Bean;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.builders.WebSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.core.userdetails.User;
@@ -20,20 +21,29 @@ import javax.servlet.http.HttpServletResponse;
 @EnableWebSecurity
 public class SecurityConfig extends WebSecurityConfigurerAdapter implements WebMvcConfigurer {
     @Override
+    public void configure(WebSecurity web) {
+        web.ignoring().antMatchers("/h2-console/**");
+    }
+
+    @Override
     protected void configure(HttpSecurity http) throws Exception {
         http
                 .cors().and()
                 .csrf().disable()
-                .authorizeRequests().antMatchers("/**").authenticated()
+                .authorizeRequests().antMatchers("/api/**").authenticated()
                 .and()
                 .formLogin().loginProcessingUrl("/login").usernameParameter("username").passwordParameter("password")
                 .successHandler((rq, rs, auth) -> {
-                    rs.getWriter().print(String.format("{ username: %s}", ((User) auth.getPrincipal()).getUsername()));
+                    String responseBody = String.format("{ 'username': '%s'}", ((User) auth.getPrincipal()).getUsername());
+                    rs.setContentType("application/json");
+                    rs.setStatus(HttpServletResponse.SC_OK);
+                    rs.getWriter().append(responseBody);
                     rs.getWriter().flush();
                 })
                 .failureHandler((rq, rs, e) -> rs.sendError(HttpServletResponse.SC_UNAUTHORIZED, e.getMessage()))
                 .and()
                 .logout().logoutUrl("/logout").invalidateHttpSession(true)
+                .logoutSuccessHandler(((rq, rs, auth) -> {}))
                 .and()
                 .exceptionHandling().authenticationEntryPoint(new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED))
         ;
