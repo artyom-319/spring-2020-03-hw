@@ -1,5 +1,6 @@
 package com.etn319.web.controllers;
 
+import com.etn319.dao.mongo.UserMongoRepository;
 import com.etn319.model.Book;
 import com.etn319.service.common.api.BookService;
 import com.etn319.web.NotFoundException;
@@ -12,8 +13,15 @@ import org.mockito.ArgumentCaptor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
 import org.springframework.http.MediaType;
+import org.springframework.security.core.userdetails.User;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
+
+import java.util.Collections;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.is;
@@ -41,6 +49,8 @@ class BookControllerTest {
     private BookService service;
     @Autowired
     private MockMvc mvc;
+    @MockBean
+    private UserMongoRepository userRepository;
 
     @BeforeEach
     void setUp() {
@@ -52,6 +62,7 @@ class BookControllerTest {
     }
 
     @Test
+    @WithMockUser
     void putBook_ShouldPassBookToService() throws Exception {
         BookDto dto = BookDto.builder()
                 .id(EXISTING_ID)
@@ -74,6 +85,7 @@ class BookControllerTest {
     }
 
     @Test
+    @WithMockUser
     void deleteBook_ShouldCallServiceDeleteMethod() throws Exception {
         ArgumentCaptor<String> captor = ArgumentCaptor.forClass(String.class);
         mvc.perform(delete("/api/books/{id}/", EXISTING_ID))
@@ -84,6 +96,7 @@ class BookControllerTest {
     }
 
     @Test
+    @WithMockUser
     void deleteNotExistingBook_ShouldReturn404() throws Exception {
         ArgumentCaptor<String> captor = ArgumentCaptor.forClass(String.class);
         mvc.perform(delete("/api/books/{id}/", NOT_EXISTING_ID))
