@@ -61,6 +61,16 @@ public class CommentCachingServiceImpl implements CommentCachingService {
     }
 
     @Override
+    public Comment create(Comment comment) {
+        return save(comment);
+    }
+
+    @Override
+    public Comment update(Comment comment) {
+        return save(comment);
+    }
+
+    @Override
     public void deleteById(String id) {
         baseService.deleteById(id);
     }
