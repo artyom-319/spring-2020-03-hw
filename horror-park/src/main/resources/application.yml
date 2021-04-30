@@ -1,0 +1,15 @@
+horror-park:
+  mine-field:
+    length: 5
+    mine-chance: 0.3
+    min-damage: 1
+    max-damage: 2
+  monster:
+    agility: 7
+    intellect: 15
+    min-damage: 1
+    max-damage: 4
+  canyon:
+    width: 1
+    wind-speed: 5
+    lucky-factor: 3
