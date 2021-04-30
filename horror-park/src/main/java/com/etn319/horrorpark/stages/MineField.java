@@ -23,21 +23,16 @@ public class MineField {
     }
 
     public Attender accept(Attender attender) {
-        // todo: remove
-        if (attender.isAlive()) {
-            logAndWait(log, "{} попадает на минное поле. Вряд ли он был к этому готов... Что ж, удачи!",
-                    attender.getName());
-            for (int step = 0; step < length; step++) {
-                tryMakeStep(attender);
-                if (!attender.isAlive()) {
-                    logAndWait(log, "{} погибает при попытке преодолеть минное поле. Увы :(", attender.getName());
-                    return attender;
-                }
+        logAndWait(log, "{} попадает на минное поле. Вряд ли он был к этому готов... Что ж, удачи!",
+                attender.getName());
+        for (int step = 0; step < length; step++) {
+            tryMakeStep(attender);
+            if (!attender.isAlive()) {
+                logAndWait(log, "{} погибает при попытке преодолеть минное поле. Увы :(", attender.getName());
+                return attender;
             }
-            logAndWait(log, "{} преодолевает минное поле!", attender.getName());
-        } else {
-            log.error("поступил мертвец, где катафалки??");
         }
+        logAndWait(log, "{} преодолевает минное поле!", attender.getName());
         return attender;
     }
 

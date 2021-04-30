@@ -7,6 +7,8 @@ import java.util.Random;
 public class PersonStat {
     public static final int MIN_INITIAL_VALUE = 5;
     public static final int MAX_INITIAL_VALUE = 10;
+    public static PersonStat ZERO_VALUE = new PersonStat(0);
+
     @Getter
     private int value;
 

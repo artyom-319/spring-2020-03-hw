@@ -2,12 +2,14 @@ package com.etn319.horrorpark.config;
 
 import com.etn319.horrorpark.domain.Attender;
 import com.etn319.horrorpark.domain.AttenderGroup;
+import com.etn319.horrorpark.domain.DeadAttender;
+import com.etn319.horrorpark.integration.AliveCountReleaseStrategy;
+import com.etn319.horrorpark.integration.AttenderGroupAggregator;
 import com.etn319.horrorpark.misc.AttenderGroupCoordinator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.integration.annotation.Transformer;
-import org.springframework.integration.channel.PublishSubscribeChannel;
 import org.springframework.integration.channel.QueueChannel;
 import org.springframework.integration.dsl.IntegrationFlow;
 import org.springframework.integration.dsl.IntegrationFlows;
@@ -30,11 +32,6 @@ public class IntegrationConfig {
     }
 
     @Bean
-    public QueueChannel afterForkChannel() {
-        return MessageChannels.queue().get();
-    }
-
-    @Bean
     public QueueChannel meetingPointChannel() {
         return MessageChannels.queue().get();
     }
@@ -45,12 +42,7 @@ public class IntegrationConfig {
     }
 
     @Bean
-    public PublishSubscribeChannel crematoryChannel() {
-        return MessageChannels.publishSubscribe().get();
-    }
-
-    @Bean
-    public PollableChannel pollableCrematoryChannel() {
+    public PollableChannel crematoryChannel() {
         return MessageChannels.queue(5).get();
     }
 
@@ -60,20 +52,24 @@ public class IntegrationConfig {
     }
 
     @Bean
-    public AttenderGroupAggregator customAggregator() {
-        return new AttenderGroupAggregator(groupCoordinator);
+    public AttenderGroupAggregator attenderGroupAggregator() {
+        return new AttenderGroupAggregator();
     }
 
     @Bean
-    public Consumer<RecipientListRouterSpec> deadAttenderRedirector() {
+    public AliveCountReleaseStrategy aliveCountReleaseStrategy() {
+        return new AliveCountReleaseStrategy(groupCoordinator);
+    }
+
+    public Consumer<RecipientListRouterSpec> deadAttenderRedirector(String recipientChannel) {
         return spec -> spec
-                .recipient("transformerChannel", Attender::isDead)
+                .recipient(recipientChannel, Attender::isDead)
                 .defaultOutputToParentFlow();
     }
 
     @Transformer(inputChannel = "transformerChannel", outputChannel = "meetingPointChannel")
     public Attender transformer(Attender attender) {
-        return attender;
+        return new DeadAttender(attender);
     }
 
     @Bean
@@ -81,7 +77,7 @@ public class IntegrationConfig {
         return IntegrationFlows.from("entranceChannel")
                 .handle("monsterRoom", "accept")
                 .split(AttenderGroup.class, AttenderGroup::getAttenders)
-                .routeToRecipients(deadAttenderRedirector())
+                .routeToRecipients(deadAttenderRedirector("transformerChannel"))
                 .<Attender, Boolean>route(at -> at.getHealth().getValue() > 5,
                         mapping -> mapping
                         .subFlowMapping(true, sf -> sf
@@ -91,12 +87,13 @@ public class IntegrationConfig {
                                 .handle("canyon", "accept")
                         )
                 )
-                .routeToRecipients(deadAttenderRedirector())
+                .routeToRecipients(deadAttenderRedirector("transformerChannel"))
                 .channel("meetingPointChannel")
-                .log()
-                // todo: divide aggregator and release strategy
-                .aggregate(spec -> spec.processor(customAggregator(), "aggregator"))
-                .log()
+                .aggregate(spec -> spec.processor(attenderGroupAggregator(), "aggregator"))
+                .split(AttenderGroup.class, AttenderGroup::getAttenders)
+                .routeToRecipients(deadAttenderRedirector("crematoryChannel"))
+                .aggregate(spec -> spec.processor(attenderGroupAggregator(), "aggregator")
+                        .releaseStrategy(aliveCountReleaseStrategy()))
                 .channel("exitChannel")
                 .get();
     }

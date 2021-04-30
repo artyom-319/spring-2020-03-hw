@@ -23,8 +23,8 @@ public class Canyon {
         logAndWait(log, "{} подходит к каньону. Через него прокинут подвесной мост," +
                 " но удержаться на мосту не так-то просто", attender.getName());
         int agility = attender.getAgility().getValue();
-        int luckyFactor = new Random().nextInt(2 * this.luckyFactor) - this.luckyFactor;
-        int sum = agility + luckyFactor + bridgeWidth - windSpeed;
+        int resultLuckyFactor = new Random().nextInt(2 * luckyFactor) - luckyFactor;
+        int sum = agility + resultLuckyFactor + bridgeWidth - windSpeed;
         boolean shallPass = sum > 0;
         if (!shallPass) {
             logAndWait(log, "{} срывается в пропасть, его крик уносится в пустоту", attender.getName());

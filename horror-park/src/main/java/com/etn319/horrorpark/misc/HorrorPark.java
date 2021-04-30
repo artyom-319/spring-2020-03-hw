@@ -6,6 +6,6 @@ import org.springframework.integration.annotation.MessagingGateway;
 
 @MessagingGateway
 public interface HorrorPark {
-    @Gateway(requestChannel = "entranceChannel", replyChannel = "exitChannel")
+    @Gateway(requestChannel = "entranceChannel", replyChannel = "exitChannel", replyTimeout = 2 * 60 * 1000)
     AttenderGroup enter(AttenderGroup attenders);
 }

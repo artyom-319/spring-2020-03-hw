@@ -49,7 +49,7 @@ public class Monster {
                 escaped.forEach(this::injure);
             }
         } else {
-            logAndWait(log, "Чудовище явно не в настроении и сейчас задаст жару");
+            logAndWait(log, "Чудовище явно не в настроении и сейчас задаст жару не успевшим убежать");
             stayed.forEach(this::injure);
         }
     }
