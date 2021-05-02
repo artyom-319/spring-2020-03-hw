@@ -3,7 +3,7 @@ services:
   bookeeper-app:
     build:
       context: .
-      dockerfile: Dockerfile
+      dockerfile: bookeeper/Dockerfile
     privileged: true
     ports:
       - "8080:8080"
