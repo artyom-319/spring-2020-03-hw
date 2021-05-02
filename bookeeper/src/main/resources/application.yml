@@ -40,15 +40,21 @@ spring:
   profiles: mongo
   data:
     mongodb:
-      host: localhost
+      host: ${mongo.host}
       port: 27017
       database: mydb
       mongock-enabled: true
+
+---
+spring:
+  profiles: container
+  shell:
+    interactive:
+      enabled: false
 ---
 spring:
   profiles:
-    active: mongo
-
+    active: mongo, container
 management:
   endpoints:
     web:
