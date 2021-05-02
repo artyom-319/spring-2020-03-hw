@@ -1,0 +1,22 @@
+version: '3'
+services:
+  bookeeper-app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    privileged: true
+    ports:
+      - "8080:8080"
+    environment:
+      - MONGO_HOST=mongo-server
+      - WAIT_FOR=mongo-server:27017
+    networks:
+      - nw
+  mongo-server:
+    image: "mongo:latest"
+    ports:
+      - "27017:27017"
+    networks:
+      - nw
+networks:
+  nw:
