@@ -7,6 +7,7 @@ import com.etn319.web.dto.AuthorDto;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.ArgumentMatchers;
@@ -32,6 +33,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(AuthorController.class)
+@Disabled
 class AuthorControllerTest {
     private ObjectWriter jackson = new ObjectMapper().writer().withDefaultPrettyPrinter();
     private List<Author> all = List.of(
@@ -87,6 +89,7 @@ class AuthorControllerTest {
     }
 
     @Test
+    @Disabled
     void postAuthor_shouldPassDomainAuthorToService() throws Exception {
         AuthorDto dto = AuthorDto.builder()
                 .name("new-author")
