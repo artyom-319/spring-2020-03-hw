@@ -48,3 +48,26 @@ spring:
 spring:
   profiles:
     active: mongo
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health, info, metrics, prometheus, logfile
+  health:
+    mongo:
+      enabled: true
+    defaults:
+      enabled: true
+  endpoint:
+    health:
+      show-details: always
+
+logging:
+  file:
+    path: spring-logs
+
+weather-service:
+  city-id: 524901 # Moscow
+  #city-id: 2950159 Berlin
+  app-id: 0830b9bc178d96e61cdf65482fcd57f7
