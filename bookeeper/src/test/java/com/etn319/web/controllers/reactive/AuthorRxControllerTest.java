@@ -31,15 +31,4 @@ public class AuthorRxControllerTest {
                 .expectStatus()
                 .isCreated();
     }
-
-
-    @Test
-    void customTest() {
-        String block = Mono.just("MyString")
-                .filter(a -> a.length() > 10)
-                .switchIfEmpty(Mono.error(new RuntimeException("AAAAA")))
-                .log()
-                .block();
-        System.out.println(block);
-    }
 }
